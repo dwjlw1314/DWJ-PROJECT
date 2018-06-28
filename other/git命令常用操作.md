@@ -219,3 +219,11 @@ Git主要有两种类型的标签：轻量标签 lightweight 与附注标签 ann
 检出标签，Git 中你并不能真的检出一个标签，需要在特定的标签上创建一个新分支，如果再进行了一次提交那么 branchname 分支就会和
 tagname 标签就不同了，需要注意
 >[root@dwj /] git checkout -b [branchname] [tagname]
+
+<font color=#FF0000 size=4><p align="center">git branch 分支操作</p></font> <br>
+Git在当前 commit 对象上新建一个分支指针,该命令仅仅是建立了一个新的分支，但不会自动切换到这个分支中去，所以我们依然还在 master 分支里工作
+>[root@dwj /] git branch lgl_branch
+
+切换到lgl_branch分支，可以执行 git checkout 命令，这样 HEAD 就指向了 lgl_branch 分支
+>[root@dwj /] git checkout lgl_branch <br>
+>[root@dwj /] git checkout -b lgl_branch  这相当于执行了上面两条命令
