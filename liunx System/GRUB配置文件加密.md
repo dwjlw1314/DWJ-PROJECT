@@ -34,6 +34,7 @@ title Red Hat Enterprise Linux (2.6.32-431.el6.x86_64)
 ```
 使用password,lock命令实现几种加密方法如下：
 ```
+标注： ^^^^^其中lock部分系统可以不加^^^^^
 1、单纯对GRUB界面加密，而不对被引导的系统加密在timeout一行下面加一行：password --md5 PASSWORD
 2、对GRUB界面加密，同时对被引导的系统加密在timeout一行下面加一行：password --md5 PASSWORD 在title一行下面加一行：lock
   在lock一行下面紧贴着再加一行：password --md5 PASSWORD 注：lock不能单独使用

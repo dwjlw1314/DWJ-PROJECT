@@ -26,6 +26,8 @@
     3. Windows server 2008 FTP服务器站点创建及配置
     4. Windows server 2008远程桌面多用户设置方法及安全设置
     5. win10在VM安装64位linux提示与hyper-v不兼容问题
+    6. Windows server 2012 负载均衡服务器安装及配置
+    7. Windows server 2012 故障转移服务器安装及配置
 
 三. 开源软件安装
     1. NFS的安装与配置
@@ -73,6 +75,7 @@
     20. iso镜像文件制作
     21. iftop流量监控工具
     22. Nmap基本用法
+    23. Linux替换^M字符方法
 
 五. windows常用指令
     1. win7 系统常用命令
