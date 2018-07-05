@@ -25,6 +25,7 @@
 /etc/networks                                     #文件主要功能是路由表，其他的功能，如添加静态路由、删除路由等可参考man
 /etc/mtab                                         #系统在启动时创建的信息文件，内容为已经mount的文件系统，可参考/proc/mounts
 
+/etc/vimrc                                        #vim编辑器参数配置文件
 /etc/selinux/config                               #系统策略配置文件
 /etc/security/limits.conf                         #系统运行时参数配置文件
 /etc/init.d

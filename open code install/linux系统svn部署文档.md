@@ -22,8 +22,10 @@
 
 5.![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.20.3.png)
 
-6.选中Subclipes 和 SVNkit  然后一路next 即可完成安装  <br>
-7.启动windows svn 服务(自定义安装)； 命令格式：svnserve -d -r D:\svnhome  <br>
+6.选中Subclipes 和 SVNkit  然后一路next 即可完成安装
+
+7.启动windows svn 服务(自定义安装)； 命令格式：svnserve -d -r D:\svnhome
+
 8.Eclipse中新建工程，选择svn选项  <br>
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.20.4.jpg)
 

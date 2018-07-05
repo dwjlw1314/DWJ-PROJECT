@@ -5,7 +5,7 @@ Qt安装包主要包含以下几部分：
 * Qt Assistant：Qt帮助工具，包含了Qt教程、示例、类参考手册、模块介绍等，是Qt的官方资料，类似MSDN
 * Qt Linguist：Qt语言包，是Qt的国际化工具，借助它可以很方便让程序支持多种语言，面向全球用户
 
-<font color=#FF0000>在Windows下，GUI解决方案比较多，基于C++的有Qt、MFC、WTL、wxWidgets、DirectUI、Htmlayout，基于C#的有WinForm、WPF，基于Java的有AWT、Swing，基于Pascal的有Delphi，最新的aardio；有Web开发经验，可以基于Webkit或Chromium将网页转换为桌面程序，总起来说，Qt主要用于桌面程序开发和嵌入式开发</font> <br>
+<font color=#FF0000>在Windows下，GUI解决方案基于C++的有Qt、MFC、WTL、wxWidgets、DirectUI、Htmlayout，基于C#的有WinForm、WPF，基于Java的有AWT、Swing，基于Pascal的有Delphi，最新的aardio；有Web开发经验，可以基于Webkit或Chromium将网页转换为桌面程序，总起来说，Qt主要用于桌面程序开发和嵌入式开发</font> <br>
 
 Qt是一个跨平台的框架。跨平台GUI通常有三种实现策略：
 
@@ -85,6 +85,23 @@ Qt 4 也分成若干模块，但是这些模块与 Qt 5 有些许多不同。下
 下面是专门供 Unix 平台的模块：
 * QtDBus，使用 D-Bus 提供进程间交互
 
+<font color=#FF0000 size=4> <p align="center">qtcreator支持的编译器以及对应调试器</p></font>
+windows系统下主要的调试器：
+```
+CDB    只能调试用户程序,只有控制台界面，以命令行形式工作
+NTSD   能调试用户程序,只有控制台界面，以命令行形式工作
+KD     主要用于内核调试，有时候也用于用户态调试,只有控制台界面，以命令行形式工作
+WinDbg 在用户态、内核态下都能够发挥调试功能,采用了可视化的用户界面
+```
+
+Platform | Compiler	| Native Debugger
+---|---|---
+Linux |	GCC/ICC	| GDB, LLDB (experimental)
+Unix	|GCC/ICC |	GDB
+macOS |	GCC/Clang	| LLDB,FSF GDB(experimental)
+Windows/MinGW |	GCC	 | GDB
+Windows/MSVC  |	Microsoft Visual C++ Compiler |	Debugging Tools for Windows/CDB
+
 <font color=#FF0000 size=4> <p align="center">signal和slot</p></font>
 在Qt5中，QObject::connect() 有五个重载,返回值都是 QMetaObject::Connection：
 ```c++
@@ -105,8 +122,55 @@ QMetaObject::Connection connect(const QObject *, PointerToMemberFunction, Functo
 最常用的形式: connect(sender, signal, receiver, slot); <br>
 >第一个是发出信号的对象，第二个是发送对象发出的信号，第三个是接收信号的对象，第四个是接收对象在接收到信号之后所需要调用的函数。也就是说，当 sender 发出了 signal 信号之后，会自动调用 receiver 的 slot 函数
 
-1. 自定义类只有继承了 QObject 类，才具有信号槽的能力。凡是继承 QObject 类，都应该在第一行代码写上 Q_OBJECT宏。这个宏的展开将为我们的类提供信号槽机制、国际化机制以及 Qt 提供的不基于 C++ RTTI 的反射能力，这个宏将由 moc（可以将其理解为一种预处理器，比 C++ 预处理器更早执行）做特殊处理，moc 只会读取标记了 Q_OBJECT 的<头文件内容>，生成以 moc_ 为前缀的文件，例如 moc_file.cpp。如果类放到了cpp文件中，我们就需要手动调用 moc 工具处理 main.cpp，并且将 main.cpp 中的 include "header.h"改为 include "moc_header.h" 就可以了
+1. 自定义类只有继承了 QObject 类，才具有信号槽的能力。凡是继承 QObject 类，都应该在第一行代码写上 Q_OBJECT宏。这个宏的展开将为我们的类提供信号槽机制、国际化机制以及 Qt 提供的不基于 C++ RTTI 的反射能力，这个宏将由 moc（可以将其理解为一种预处理器，比 C++ 预处理器更早执行）做特殊处理，moc 只会读取标记了 Q_OBJECT 的<头文件内容>，生成以 moc_ 为前缀的文件
 
 2. 类中 signals 块所列出的一个个的函数名就是该类的信号，返回值是 void（因为无法获得信号的返回值，所以也就无需返回任何值），参数是传递到slot的数据。信号作为函数名，不需要在 cpp 函数中添加任何实现（Qt 程序能够使用普通的 make 进行编译。没有实现的函数名怎么会通过编译？这里 moc 会帮我们实现信号函数所需要的函数体。emit 是 Qt 对 C++ 的扩展，是一个关键字（其实也是一个宏）
 
 3. 自定义信号槽需要注意的5个事项：1.发送者和接收者都需要是 QObject 的子类（当然，槽函数是全局函数、Lambda 表达式等无需接收者的时候除外）; 2.使用 signals 标记信号函数，信号是一个函数声明，返回 void，不需要实现函数代码; 3.槽函数是普通的成员函数，作为成员函数，会受到访问控制符的影响; 4.使用 QObject::connect() 函数连接信号和槽; 5.emit 在恰当的位置发送信号
+
+<font color=#FF0000 size=4> <p align="center">Qt调试关联工具</p></font>
+qt内存泄露检查：
+```
+Linux ,Mac OS X ： Valgrind
+Windows： Visual Leak Detector for Visual C++ 2008-2015 (VLD, Open-source)
+```
+
+<font color=#FF0000 size=4> <p align="center">Qt moc</p></font>
+实际在使用标准 C++ 编译器编译 Qt 源程序之前，Qt 扩展了标准 C++，先使用一个叫做 moc（Meta Object Compiler，元对象编译器）的工具，先对 Qt 源代码进行一次预处理（注意，这个预处理与标准 C++ 的预处理有所不同。Qt 的 moc 预处理发生在标准 C++ 预处理器工作之前，并且 Qt 的 moc 预处理不是递归的），生成标准 C++ 源代码，然后再使用标准 C++ 编译器进行编译。信号函数是不需要编写实现代码的，moc为信号函数这样的语法进行了处理，这样就可以通过标准 C++ 的编译了。类通过继承 QObject 类，可以很方便地获得这些特性。当然，这些特性都是由 moc 帮助实现的。moc 其实实现的是一个叫做元对象系统（meta-object system）的机制，正如上面所说，这是一个标准 C++ 的扩展，更适合于进行 GUI 编程。虽然利用模板可以达到类似的效果，但是 Qt 没有选择使用模板。按照 Qt 官方的说法，模板虽然是内置语言特性，但是其语法实在是复杂，并且由于 GUI 是动态的，利用静态的模板机制有时候很难处理。而使用 moc 生成代码更为灵活，虽然效率有些降低（一个信号槽的调用大约相当于四个模板函数调用），现代计算机上这点性能损耗实在是可以忽略的
+
+Qt 使用 moc，为标准 C++ 增加了一些特性：
+* 信号槽机制，用于解决对象之间的通讯，可以认为是 Qt 最明显的特性之一
+* 可查询，并且可设计的对象属性
+* 强大的事件机制以及事件过滤器
+* 基于上下文的字符串翻译机制（国际化），也就是 tr() 函数
+* 复杂的定时器实现，用于在事件驱动的 GUI 中嵌入能够精确控制的任务集成
+* 层次化的可查询的对象树，提供一种自然的方式管理对象关系
+* 智能指针（QPointer），在对象析构之后自动设为 0，防止野指针
+* 能够跨越库边界的动态转换机制
+
+<font color=#FF0000 size=4> <p align="center">Qt对象树</p></font>
+QObjects 是以对象树的形式组织起来的。当创建一个 QObject 对象时，会看到 QObject 的构造函数接收一个 QObject 指针作为参数，这个参数就是 parent，也就是父对象指针。这相当于，在创建 QObject 对象时，可以提供一个其父对象，创建的这个 QObject 对象会自动添加到其父对象的 children() 列表。当父对象析构的时候，这个列表中的所有对象也会被析构
+```
+标准 C++ （ISO/IEC 14882:2003）要求，局部对象的析构顺序应该按照其创建顺序的相反过程
+```
+
+<font color=#FF0000 size=4> <p align="center">Qt对话框分类</p></font>
+对话框分为模态对话框和非模态对话框。所谓模态对话框，就是会阻塞同一应用程序中其它窗口的输入，其中，Qt 有两种级别的模态对话框：应用程序级别的模态和窗口级别的模态，默认是应用程序级别的模态，应用程序级别的模态是指，当该种模态的对话框出现时，必须首先对对话框进行交互，直到关闭对话框，然后才能访问程序中其他的窗口，窗口级别的模态是指，该模态仅仅阻塞与对话框关联的窗口，但是依然允许与程序中其它窗口交互。窗口级别的模态尤其适用于多窗口模式
+```
+QDialog::exec() 实现应用程序级别的模态对话框
+QDialog::open() 实现窗口级别的模态对话框
+QDialog::show() 实现非模态对话框
+```
+Qt 的内置对话框大致分为以下几类：
+
+类名 | 描述
+---|---
+QColorDialog | 颜色选择
+QFileDialog  | 文件或者目录选择
+QFontDialog  | 字体选择
+QInputDialog | 允许用户输入一个值，并将其值返回
+QMessageBox  | 模态对话框，用于显示信息、询问问题等
+QPageSetupDialog | 为打印机提供纸张相关的选项
+QPrintDialog | 打印机配置
+QPrintPreviewDialog | 打印预览
+QProgressDialog | 显示操作过程
