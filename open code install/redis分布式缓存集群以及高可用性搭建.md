@@ -235,6 +235,7 @@ keepalived基本安装完成，启动测试
 >[root@diwj keepalived]# service keepalived start
 
 使用ip a命令验证是否正常，如下图有虚拟ip显示表示成功
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.12.1.jpg)
 
 启动正确后将此服务设置为开机启动

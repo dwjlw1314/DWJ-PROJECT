@@ -2,11 +2,12 @@
 
 vnc:虚拟网络计算机的缩写，是一种linux系统下常用的图形化远程管理工具
 
-前提： VNC软件包，VMware服务端 <br>
-eg：vnc-server-4.1.2-14.el5_5.4.x86_64;  <br>
-    VNCViewerPlu安装包，windows显示客户端  <br>
+前提： VNC软件包，VMware服务端
+```
+eg：vnc-server-4.1.2-14.el5_5.4.x86_64;
+    VNCViewerPlu安装包，windows显示客户端
     VMware-Workstation-Full-11.0.0-2305329.x86_64.bundle
-
+```
 安装过程：
 
 1.首先，检查系统是否安装过vnc服务

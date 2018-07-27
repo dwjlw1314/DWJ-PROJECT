@@ -3,7 +3,7 @@
 #LVS（linux virtual system） 是在传输层，nginx是在应用层
 #LVS有NAT、IP Tunneling、DR(Direct Routing)这3种模式
 
-<font color=#FF0000 size=4>1、nginx平滑升级</font>
+<font color=#FF0000 size=5>1、nginx平滑升级</font>
 
     [root@dwj /usr/local/nginx]#ps -ef|grep nginx        #查看旧版本nginx服务
     [root@dwj /usr/local/nginx]#sbin/nginx -V            #查看旧版本编译选项，可以沿用configure arguments
@@ -22,7 +22,7 @@
 
 访问html页面查看版本信息，升级成功
 
-<font color=#FF0000 size=4>2、nginx 配置文件说明</font>
+<font color=#FF0000 size=5>2、nginx 配置文件说明</font>
 
 nginx.conf文件常用字段优化含义(后期扩展):
 ```

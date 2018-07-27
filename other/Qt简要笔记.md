@@ -85,7 +85,7 @@ Qt 4 也分成若干模块，但是这些模块与 Qt 5 有些许多不同。下
 下面是专门供 Unix 平台的模块：
 * QtDBus，使用 D-Bus 提供进程间交互
 
-<font color=#FF0000 size=4> <p align="center">qtcreator支持的编译器以及对应调试器</p></font>
+<font color=#FF0000 size=5> <p align="center">Qt creator支持的编译器以及对应调试器</p></font>
 windows系统下主要的调试器：
 ```
 CDB    只能调试用户程序,只有控制台界面，以命令行形式工作
@@ -102,7 +102,18 @@ macOS |	GCC/Clang	| LLDB,FSF GDB(experimental)
 Windows/MinGW |	GCC	 | GDB
 Windows/MSVC  |	Microsoft Visual C++ Compiler |	Debugging Tools for Windows/CDB
 
-<font color=#FF0000 size=4> <p align="center">signal和slot</p></font>
+Qt 可视化组件的继承关系图
+
+![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/7.2.1.png)
+
+<font color=#FF0000 size=5> <p align="center">exec()、signal和slot</p></font>
+```
+标准 C++ 语言的限制：参数默认值只能使用在直接地函数调用中
+当使用函数指针取其地址的时候，默认参数是不可见的，我们不能在函数指针中使用函数参数的默认值
+```
+
+ exec() 函数在执行后是开始 Qt 的事件循环。当事件发生时，Qt 将创建一个事件对象。所有事件类都继承于 QEvent。在事件对象创建完毕后，将这个事件对象传递给 QObject 的 event() 函数，该函数并不直接处理事件，而是按照事件对象的类型分派给特定的事件处理函数event handler
+
 在Qt5中，QObject::connect() 有五个重载,返回值都是 QMetaObject::Connection：
 ```c++
 QMetaObject::Connection connect(const QObject *, const char *,
@@ -128,14 +139,14 @@ QMetaObject::Connection connect(const QObject *, PointerToMemberFunction, Functo
 
 3. 自定义信号槽需要注意的5个事项：1.发送者和接收者都需要是 QObject 的子类（当然，槽函数是全局函数、Lambda 表达式等无需接收者的时候除外）; 2.使用 signals 标记信号函数，信号是一个函数声明，返回 void，不需要实现函数代码; 3.槽函数是普通的成员函数，作为成员函数，会受到访问控制符的影响; 4.使用 QObject::connect() 函数连接信号和槽; 5.emit 在恰当的位置发送信号
 
-<font color=#FF0000 size=4> <p align="center">Qt调试关联工具</p></font>
+<font color=#FF0000 size=5> <p align="center">Qt调试关联工具</p></font>
 qt内存泄露检查：
 ```
 Linux ,Mac OS X ： Valgrind
 Windows： Visual Leak Detector for Visual C++ 2008-2015 (VLD, Open-source)
 ```
 
-<font color=#FF0000 size=4> <p align="center">Qt moc</p></font>
+<font color=#FF0000 size=5> <p align="center">Qt moc</p></font>
 实际在使用标准 C++ 编译器编译 Qt 源程序之前，Qt 扩展了标准 C++，先使用一个叫做 moc（Meta Object Compiler，元对象编译器）的工具，先对 Qt 源代码进行一次预处理（注意，这个预处理与标准 C++ 的预处理有所不同。Qt 的 moc 预处理发生在标准 C++ 预处理器工作之前，并且 Qt 的 moc 预处理不是递归的），生成标准 C++ 源代码，然后再使用标准 C++ 编译器进行编译。信号函数是不需要编写实现代码的，moc为信号函数这样的语法进行了处理，这样就可以通过标准 C++ 的编译了。类通过继承 QObject 类，可以很方便地获得这些特性。当然，这些特性都是由 moc 帮助实现的。moc 其实实现的是一个叫做元对象系统（meta-object system）的机制，正如上面所说，这是一个标准 C++ 的扩展，更适合于进行 GUI 编程。虽然利用模板可以达到类似的效果，但是 Qt 没有选择使用模板。按照 Qt 官方的说法，模板虽然是内置语言特性，但是其语法实在是复杂，并且由于 GUI 是动态的，利用静态的模板机制有时候很难处理。而使用 moc 生成代码更为灵活，虽然效率有些降低（一个信号槽的调用大约相当于四个模板函数调用），现代计算机上这点性能损耗实在是可以忽略的
 
 Qt 使用 moc，为标准 C++ 增加了一些特性：
@@ -148,13 +159,29 @@ Qt 使用 moc，为标准 C++ 增加了一些特性：
 * 智能指针（QPointer），在对象析构之后自动设为 0，防止野指针
 * 能够跨越库边界的动态转换机制
 
-<font color=#FF0000 size=4> <p align="center">Qt对象树</p></font>
-QObjects 是以对象树的形式组织起来的。当创建一个 QObject 对象时，会看到 QObject 的构造函数接收一个 QObject 指针作为参数，这个参数就是 parent，也就是父对象指针。这相当于，在创建 QObject 对象时，可以提供一个其父对象，创建的这个 QObject 对象会自动添加到其父对象的 children() 列表。当父对象析构的时候，这个列表中的所有对象也会被析构
+<font color=#FF0000 size=5> <p align="center">Qt事件机制</p></font>
+Qt 中有很多种事件：鼠标事件、键盘事件、大小改变的事件、位置移动的事件等等。处理这些事件有两种选择:
+1. 所有事件对应一个事件处理函数，在这个事件处理函数中用一个很大的分支语句进行选择，其代表作就是 win32 API 的 WndProc() 函数
+2. 每一种事件对应一个事件处理函数。Qt 就是使用这种机制,具有多种事件处理函数，需要有一个分发函数 event()对事件进行处理
+
+Qt 提供了另外一种解决方案：事件过滤器，事件的调用最终都会追溯到 QCoreApplication::notify() 函数，最大的控制权实际上是重写该函数
+
+Qt 的事件处理，实际上是有五个层次：
+```
+1. 重写 mousePressEvent() 等事件处理函数。这是最普通、最简单的形式，同时功能也最简单
+2. 重写 event() 函数。该函数是所有对象的事件入口，QObject 和 QWidget 中的实现，默认是把事件传递给特定的事件处理函数
+3. 在特定对象上面安装事件过滤器。该过滤器仅过滤该对象接收到的事件
+4. 在 QCoreApplication::instance() 上面安装事件过滤器。该过滤器将过滤所有对象的所有事件，但是它更灵活，因为可以安装多个过滤器。全局的事件过滤器可以看到 disabled 组件上面发出的鼠标事件。全局过滤器有一个问题：只能用在主线程
+5. 重写 QCoreApplication::notify() 函数。这是最强大的，和全局事件过滤器一样提供完全控制，并且不受线程的限制。但是全局范围内只能有一个被使用（因为 QCoreApplication 是单例的）
+```
+
+<font color=#FF0000 size=5> <p align="center">Qt对象树</p></font>
+QObjects 是以对象树的形式组织起来的。当创建一个 QObject 对象时，会看到它的构造函数接收一个 QObject 指针作为参数，这个参数就是 parent，也就是父对象指针。这相当于，在创建 QObject 对象时，可以提供一个其父对象，创建的这个 QObject 对象会自动添加到其父对象的 children() 列表。当父对象析构的时候，这个列表中的所有对象也会被析构
 ```
 标准 C++ （ISO/IEC 14882:2003）要求，局部对象的析构顺序应该按照其创建顺序的相反过程
 ```
 
-<font color=#FF0000 size=4> <p align="center">Qt对话框分类</p></font>
+<font color=#FF0000 size=5> <p align="center">Qt对话框分类</p></font>
 对话框分为模态对话框和非模态对话框。所谓模态对话框，就是会阻塞同一应用程序中其它窗口的输入，其中，Qt 有两种级别的模态对话框：应用程序级别的模态和窗口级别的模态，默认是应用程序级别的模态，应用程序级别的模态是指，当该种模态的对话框出现时，必须首先对对话框进行交互，直到关闭对话框，然后才能访问程序中其他的窗口，窗口级别的模态是指，该模态仅仅阻塞与对话框关联的窗口，但是依然允许与程序中其它窗口交互。窗口级别的模态尤其适用于多窗口模式
 ```
 QDialog::exec() 实现应用程序级别的模态对话框
@@ -174,3 +201,188 @@ QPageSetupDialog | 为打印机提供纸张相关的选项
 QPrintDialog | 打印机配置
 QPrintPreviewDialog | 打印预览
 QProgressDialog | 显示操作过程
+
+<font color=#FF0000 size=5> <p align="center">Qt绘图系统</p></font>  <br>
+整个绘图系统基于 QPainter，QPainterDevice 和 QPaintEngine 三个类
+```
+QPainter 用于进行绘制的实际操作；
+QPaintDevice 是那些能够让 QPainter 进行绘制的二维空间的抽象层;其子类有 QWidget、QPixmap、QPicture、QImage 和 QPrinter QPaintEngine 提供供 QPainter 使用的用于在不同设备上绘制的统一的接口
+```
+绘图系统定义了两个关键属性：画刷和画笔
+
+QBrush 定义了 QPainter 的填充模式，具有样式、颜色、渐变以及纹理等画刷属性
+1. style() 定义了填充的样式，使用 Qt::BrushStyle 枚举，默认值是 Qt::NoBrush，也就是不进行任何填充
+2. color() 定义了填充模式的颜色。这个颜色可以是预定义的颜色常量，也就是 Qt::GlobalColor，也可以是任意 QColor 对象
+3. gradient() 定义了渐变填充。渐变可以由 QGradient 对象表示。提供了三种渐变：线性渐变（QLinearGradient）、辐射渐变（QRadialGradient）和角度渐变（QConicalGradient），它们都是 QGradient 的子类
+4. texture() 定义了用于填充的纹理。当你调用 setTexture() 函数时，QBrush 会自动将 style() 设置为 Qt::TexturePattern
+
+QPen 定义了用于 QPainter 应该怎样画线或者轮廓线。画笔具有样式、宽度、画刷、笔帽样式和连接样式等画笔属性
+1. 画刷 style() 定义了线的样式
+2. 画刷 brush() 用于填充画笔所绘制的线条
+3. 笔帽样式 capStyle() 定义了使用 QPainter 绘制的线的末端
+4. 连接样式 joinStyle() 则定义了两条线如何连接起来
+5. 画笔宽度 width() 或 widthF() 定义了画笔的宽。宽度至少是 1 像素
+
+光栅图形显示器上绘制非水平、非垂直的直线或多边形边界时，或多或少会呈现锯齿状外观。这是因为直线和多边形的边界是连续的，而光栅则是由离散的点组成。在光栅显示设备上表现直线、多边形等，必须在离散位置采样。由于采样不充分重建后造成的信息失真，就叫走样；用于减少或消除这种效果的技术，就称为反走样，用以防止“锯齿”现象的出现
+
+基于像素的设备上(比如显示器)，坐标的默认单位是像素，在打印机上则是点(1/72 英寸)
+
+Qt 提供了四种坐标变换：平移 translate，旋转 rotate，缩放 scale 和扭曲 shear
+
+Graphics View Framework 有三个主要部分：
+```
+QGraphicsScene：能够管理元素的非 GUI 容器
+QGraphicsItem：能够被添加到场景的元素
+QGraphicsView：能够观察场景的可视化组件视图,它可以分成三个部分：元素 item、场景 scene 和视图 view
+```
+
+<font color=#FF0000 size=5> <p align="center">Qt文件读写与IO系统</p></font>
+Qt 通过QIODevice类提供了对 I/O 设备的抽象，使其具有读写字节块的能力。下面是QT5 I/O 设备的类图：
+
+![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/7.2.2.png)
+
+途中所涉及的类及其用途简要说明如下：
+
+类名 | 作用
+---|---
+QIODevice	 | 所有 I/O 设备类的父类，提供了字节块读写的通用操作以及基本接口
+QBuffer    | 读写QByteArray
+QFlie	     | 访问本地文件或者嵌入资源
+QProcess   | 运行外部程序，处理进程间通讯
+QUdpSocket | 传输 UDP 报文
+QTcpSocket | TCP协议网络数据传输
+QSslSocket | 使用 SSL/TLS 传输数据
+QFileDevice| Qt5新增加的类，提供了有关文件操作的通用实现
+QTemporaryFile  | 创建和访问本地文件系统的临时文件
+QAbstractSocket | 所有套接字类的父类
+
+open()函数中打开方式的区别：
+
+枚举值 | 描述
+---|---
+QIODevice::NotOpen   | 未打开
+QIODevice::ReadOnly  | 以只读方式打开
+QIODevice::WriteOnly | 以只写方式打开
+QIODevice::ReadWrite | 以读写方式打开
+QIODevice::Append    | 以追加的方式打开，新增加的内容将被追加到文件末尾
+QIODevice::Truncate  | 以重写的方式打开，在写入新的数据时会将游标设置在文件开头，并不是将文件内容清空
+QIODevice::Text	     | 在读取时，将行结束符转换成 \n；在写入时，将行结束符转换成本地格式，例如 Win32 平台上是 \r\n
+QIODevice::Unbuffered| 忽略缓存
+
+方便起见，QTextStream 同 std::cout 一样提供了很多描述符，被称为 stream manipulators，这些描述符只是一些函数的简写
+
+描述符 | 等价于
+---|---
+bin	            | setIntegerBase(2)
+oct	            | setIntegerBase(8)
+dec	            | setIntegerBase(10)
+hex	            | setIntegerBase(16)
+showbase	      | setNumberFlags(numberFlags() ↑ ShowBase)
+forcesign	      | setNumberFlags(numberFlags() ↑ ForceSign)
+forcepoint	    | setNumberFlags(numberFlags() ↑ ForcePoint)
+noshowbase      | setNumberFlags(numberFlags() & ~ShowBase)
+noforcesign     | setNumberFlags(numberFlags() & ~ForceSign)
+noforcepoint  	| setNumberFlags(numberFlags() & ~ForcePoint)
+uppercasebase	  | setNumberFlags(numberFlags() ↑ UppercaseBase)
+uppercasedigits	| setNumberFlags(numberFlags() ↑ UppercaseDigits)
+lowercasebase	  | setNumberFlags(numberFlags() & ~UppercaseBase)
+lowercasedigits	| setNumberFlags(numberFlags() & ~UppercaseDigits)
+fixed	          | setRealNumberNotation(FixedNotation)
+scientific	    | setRealNumberNotation(ScientificNotation)
+left	          | setFieldAlignment(AlignLeft)
+right	          | setFieldAlignment(AlignRight)
+center	        | setFieldAlignment(AlignCenter)
+endl	          | operator<<(‘\n’) and flush()
+flush	          | flush()
+reset	          | reset()
+ws	            | skipWhiteSpace()
+bom             |	setGenerateByteOrderMark(true)
+
+<font color=#FF0000 size=5> <p align="center">Qt容器类</p></font>
+```
+存储容器(containers)有时候也被称为集合(collections), 且是线程安全的
+Qt 顺序存储容器：QList，QLinkedList，QVector，QStack 和 QQueue
+Qt 关联容器：QMap，QMultiMap，QHash，QMultiHash 和 QSet。带有“Multi”字样的容器支持在一个键上面关联多个值
+Hash容器提供了基于散列函数的更快的查找，而非Hash容器则是基于二分搜索的有序集合
+QCache 和 QContiguousCache 提供了在有限缓存空间中的高效 hash 查找
+```
+Qt 各类容器总结:
+```
+QList<T>：这是至今为止提供的最通用的容器类。它将给定的类型 T 的对象以列表的形式进行存储，与一个整型的索引关联。QList 在内部使用数组实现，同时提供基于索引的快速访问。我们可以使用 QList::append() 和 QList::prepend() 在列表尾部或头部添加元素，也可以使用 QList::insert() 在中间插入。相比其它容器类，QList 专门为这种修改操作作了优化。QStringList 继承自 QList<QString>
+
+QLinkedList<T>：类似于 QList，除了它是使用遍历器进行遍历，而不是基于整数索引的随机访问。对于在中部插入大量数据，它的性能要优于 QList。同时具有更好的遍历器语义（只要数据元素存在，QLinkedList 的遍历器就会指向一个合法元素，相比而言，当插入或删除数据时，QList 的遍历器就会指向一个非法值）
+
+QVector<T>：用于在内存的连续区存储一系列给定类型的值。在头部或中间插入数据可能会非常慢，因为这会引起大量数据在内存中的移动
+
+QStack<T>：这是 QVector 的子类，提供了后进先出（LIFO）语义。相比 QVector，它提供了额外的函数：push()，pop() 和 top()
+
+QQueue<T>：这是 QList 的子类，提供了先进先出（FIFO）语义。相比 QList，它提供了额外的函数：enqueue()，dequeue() 和 head()
+
+QSet<T>：提供单值的数学上面的集合，具有快速的查找性能
+
+QMap<Key, T>：提供了字典数据结构（关联数组），将类型 T 的值同类型 Key 的键关联起来。通常，每个键与一个值关联。QMap 以键的顺序存储数据；如果顺序无关，QHash 提供了更好的性能
+
+QMultiMap<Key, T>：这是 QMap 的子类，提供了多值映射：一个键可以与多个值关联
+
+QHash<Key, T>：该类同 QMap 的接口几乎相同，但是提供了更快的查找。QHash 以字母顺序存储数据
+
+QMultiHash<Key, T>：这是 QHash 的子类，提供了多值散列
+````
+
+算法复杂度描述，引入大写字母 O
+```
+常量时间：O(1)，如果一个函数的运行时间与容器中数据量无关，我们说这个函数是常量时间的。QLinkedList::insert() 就是常量时间
+对数时间：O(log n)，如果一个函数的运行时间是容器数据量的对数关系，我们说这个函数是对数时间的。qBinaryFind() 就是对数时间
+线性时间：O(n)，如果一个函数的运行时间是容器数据量的线性关系，与数量相关，这个函数是线性时间的。QVector::insert() 就是线性时间
+线性对数时间：O(n log n)，线性对数时间要比线性时间慢，但是要比平方时间快
+平方时间：O(n²)，平方时间与容器数据量的平方关系
+```
+Qt 顺序容器的算法复杂度：
+
+容器类名 | 查找	| 插入 | 前方添加 | 后方追加
+---|---|---|---|---
+QLinkedList<T> | O(n) | O(1) | O(1) | O(1)
+QList<T> | O(1) | O(n) | 统计O(1) | 统计 O(1)
+QVector<T> | O(1) | O(n) | O(n) | 统计O(1)
+
+Qt 关联容器的算法复杂度：
+
+容器类名 | 查找键平均 | 查找键最坏 | 插入平均 | 插入最坏
+---|---|---|---|--- |
+QMap<Key, T> | O(log n) | O(log n) | O(log n) | O(log n)
+QMultiMap<Key, T> | O(log n) | O(log n) | O(log n) | O(log n)
+QHash<Key, T> | 统计O(1) | O(n) | O(1) | 统计O(n)
+QSet<Key, T> | 统计O(1) | O(n) | O(1) | 统计O(n)
+
+Java 风格的遍历器：一种只读访问，一种读写访问：
+
+容器 | 只读遍历器 | 读写遍历器
+---|---|---
+QList<T>, QQueue<T> | QListIterator<T> | QMutableListIterator<T>
+QLinkedList<T> | QLinkedListIterator<T> | QMutableLinkedListIterator<T>
+QVector<T>, QStack<T> | QVectorIterator<T> | QMutableVectorIterator<T>
+QSet<T> | QSetIterator<T> | QMutableSetIterator<T>
+QMap<Key, T>, QMultiMap<Key, T> | QMapIterator<T> | QMutableMapIterator<T>
+QHash<Key, T>, QMultiHash<Key, T> | QHashIterator<T> | QMutableHashIterator<T>
+
+STL 风格的遍历器：一种只读访问，一种读写访问：
+
+容器 | 只读遍历器 | 读写遍历器
+---|---|---
+QList<T>, QQueue<T> | QList<T>::const_iterator | QList<T>::iterator
+QLinkedList<T> | QLinkedList<T>::const_iterator | QLinkedList<T>::iterator
+QVector<T>, QStack<T> | QVector<T>::const_iterator | QVector<T>::iterator
+QSet<T> | QSet<T>::const_iterator | QSet<T>::iterator
+QMap<Key, T>, QMultiMap<Key, T> | QMap<Key, T>::const_iterator | QMap<Key, T>::iterator
+QHash<Key, T>, QMultiHash<Key, T> | QHash<Key, T>::const_iterator | QHash<Key, T>::iterator
+
+<font color=#FF0000 size=5> <p align="center">Qt函数</p></font>
+```
+QString("[%1, %2]").arg(x, y); 语句将会使用 x 替换 %1，y 替换 %2，最终生成的 QString 为 [x, y];
+QPainter::translate(x, y); 函数意思是将坐标系的原点设置到 (x, y) 点，原有坐标变成(-x，-y);
+QTimer::singleShot(0, this, SLOT(f())); QTimer处理是将f()调用放到事件列表中，等到下一次事件循环开始时立刻调用槽函数
+QVector<T>、QHash<Key, T>、QSet<T>、QString 和 QByteArray 3个成员函数含义：
+capacity()：返回实际已经分配内存的元素数目(对于 QHash 和 QSet，则是散列表中桶的个数);
+reserve(size)：为指定数目的元素显式地预分配内存，通过调用来减少内存占用;
+squeeze()：释放那些不需要真实存储数据的内存空间,释放所有未使用的预分配空间;
+```

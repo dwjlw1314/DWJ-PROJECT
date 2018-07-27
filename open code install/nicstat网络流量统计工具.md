@@ -2,10 +2,12 @@
 
 二. 在解压包目录nicstat-1.95内,有个nicstat.sh脚本
 
-1.查看网卡速度(-l)：  <br>
+1.查看网卡速度(-l)：
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.15.1.jpg)
 
-2.间隔3秒,查看2次结果(留意%Util和Sat):  <br>
+2.间隔3秒,查看2次结果(留意%Util和Sat):
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.15.2.jpg)
 
 字段名 | 含义
@@ -21,10 +23,12 @@ wAvs  | 传输的数据包平均大小
 %Util | 网卡利用率(百分比)
 Sat   | 网卡每秒的错误数.网卡是否接近饱满的一个指标
 
-3.查看扩展信息(-x 和 -s):  <br>
+3.查看扩展信息(-x 和 -s):
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.15.3.jpg)
 
-4.查看tcp相关信息(-t):  <br>
+4.查看tcp相关信息(-t):
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.15.4.jpg)
 
 字段名 | 含义

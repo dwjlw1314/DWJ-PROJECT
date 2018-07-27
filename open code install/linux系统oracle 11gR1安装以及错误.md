@@ -58,7 +58,7 @@
     [root@gjsy /]# chown -R oracle /home/oracle/database
     [root@gjsy /]# chgrp -R oinstall /home/oracle/database
 
-<font color=#FF0000 size=4>可选配置<配置内核参数和资源限制>(根据实际设置)</font>
+<font color=#FF0000 size=5><p align="center">可选配置<配置内核参数和资源限制>(根据实际设置)</p></font>
 
     [root@gjsy /]# vim /etc/sysctl.conf  (在最后添加下面的参数)
     fs.aio-max-nr = 1048576
@@ -275,17 +275,17 @@ Software Location:/opt/oracle/product/OraHome
 
     SQL> grant connect,resource,dba to ant2;
 
-<font color=#FF0000 size=4> <p align="center">常用命令</p></font>
+<font color=#FF0000 size=5> <p align="center">常用命令</p></font>
 
-   Sqlplus> alter user ant identified by “oracle”;       #修改密码
-   Sqlplus> alter user antvideo identified by “oracle”;
-   Sqlplus> shutdown immediate                           #关闭服务器
-   Sqlplus> startup                                      #启动服务器
-   Sqlplus> drop user ant cascade;                       #删除用户
-   Sqlplus> drop user antvideo cascade;
-   Sqlplus> show parameter db;                           #查看数据库信息
+    Sqlplus> alter user ant identified by “oracle”;       #修改密码
+    Sqlplus> alter user antvideo identified by “oracle”;
+    Sqlplus> shutdown immediate                           #关闭服务器
+    Sqlplus> startup                                      #启动服务器
+    Sqlplus> drop user ant cascade;                       #删除用户
+    Sqlplus> drop user antvideo cascade;
+    Sqlplus> show parameter db;                           #查看数据库信息
 
-<font color=#FF0000 size=4> <p align="center">Oracle dbstart和dbshut</p></font>  <br>
+<font color=#FF0000 size=5> <p align="center">Oracle dbstart和dbshut</p></font>  <br>
 一、用dbstart和dbshut启动和关闭数据库实例
 
 先启动监听 lsnrctl start
@@ -326,7 +326,7 @@ Processing Database instance "dwj": log file /home/oracle/product/10g/startup.lo
     su - oracle -c "lsnrctl start"
     su - oracle -c "dbstart"
 
-<font color=#FF0000 size=4> <p align="center">00020-error</p></font>  <br>
+<font color=#FF0000 size=5> <p align="center">00020-error</p></font>  <br>
 ```
 sqlplus> select count(*) from v$process;              //取得数据库目前的进程数。
 sqlplus> select value from v$parameter where name = 'processes';      //取得进程数的上限。
@@ -334,7 +334,7 @@ sqlplus> alter system set processes=500 scope=spfile sid=‘orcl’      //设�
 修改后重新启动数据库就好了。
 show parameter processes;查看
 ```
-<font color=#FF0000 size=4> <p align="center">Oracle RMAN 备份及恢复步骤</p></font>  <br>
+<font color=#FF0000 size=5> <p align="center">Oracle RMAN 备份及恢复步骤</p></font>  <br>
 
 1、切换服务器归档模式，如果已经是归档模式可跳过此步：
 ```

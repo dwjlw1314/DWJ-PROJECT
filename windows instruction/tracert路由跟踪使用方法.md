@@ -5,10 +5,9 @@ Tracert路由跟踪程序，用于确定IP数据报访问目标所采取的路�
 通过向目标发送不同IP生存时间(TTL)值的Internet控制消息协议(ICMP)回应数据包，Tracert诊断程序确定到目标所采取的路由。要求路径上的每个路由器在转发数据包之前至少将数据包上的TTL递 1。数据包上的TTL减为0时，路由器应该将ICMP已超时的消息发回源系统,Tracert先发送TTL为1的回应数据包，并在随后的每次发送过程将TTL递增1，直到目标响应或TTL达到最大值，从而确定路由。通过检查中间路由器发回的ICMP已超时的消息确定路由。某些路由器不经询问直接丢弃TTL过期的数据包，这在Tracert实用程序中看不到
 
 3.Tracert命令详解及用法
-
-    用法: tracert [-d] [-h maximum_hops] [-j host-list] [-w timeout]
-          [-R] [-S srcaddr] [-4] [-6] target_name
-```          
+```
+用法: tracert [-d] [-h maximum_hops] [-j host-list] [-w timeout]
+      [-R] [-S srcaddr] [-4] [-6] target_name      
 选项:
     -d                 不将地址解析成主机名
     -h maximum_hops    搜索目标的最大跃点数

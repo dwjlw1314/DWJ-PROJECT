@@ -81,7 +81,7 @@ minute hour day-of-month month-of-year day-of-week commands
 >42 4 1 * * root run-parts /etc/cron.monthly   <br>
 注意: "run-parts"这个参数了，如果去掉这个参数的话，后面就可以写要运行的某个脚本名，而不是文件夹名　
 
-<font color=#FF0000 size=4> <p align="center">at用法</p></font>
+<font color=#FF0000 size=5> <p align="center">at用法</p></font>
 at命令的使用顺序如下：先用at命令后接想要程序执行的确定时刻,再输入你想要在以上指定时刻执行的命令
 
 例如：

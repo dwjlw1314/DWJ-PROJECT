@@ -1,10 +1,10 @@
-<font size=4>一、strace简介</font>
+<font size=5>一、strace简介</font>
 
 strace是Linux系统下的一个用来跟踪进程执行时系统调用和所接收的信号的工具，它的实现基础是ptrace系统调用。在Linux世界，
 进程不能直接访问硬件设备，当进程需要访问硬件设备(比如读取磁盘文件，接收网络数据等等)时，必须由用户态模式切换至内核态模式，
 通过系统调用访问硬件设备。strace可以跟踪到一个进程产生的系统调用,包括参数，返回值，执行消耗的时间，安装strace之后，就可以使用了。
 
-<font size=4>二、strace使用</font>
+<font size=5>二、strace使用</font>
 
 1.strace PROG，PROG是要执行的程序。strace命令执行的结果就是按照调用顺序打印出所有的系统调用，包括函数名、参数列表以及返回值
 
@@ -38,7 +38,7 @@ strace是Linux系统下的一个用来跟踪进程执行时系统调用和所接
 
 跟踪28979进程的所有系统调用，并统计系统调用的花费时间，以及开始时间（可视化的时分秒格式显示），最后将结果存在output.txt文件里面
 
-<font size=4>三、strace参数</font>
+<font size=5>三、strace参数</font>
 
 参数名 | 描述
 ---|---
@@ -82,7 +82,7 @@ strace是Linux系统下的一个用来跟踪进程执行时系统调用和所接
 -s strsize  |指定输出的字符串的最大长度.默认为32文件名一直全部输出
 -u username |username的UID和GID执行被跟踪的命令
 
-<font size=4>四、strace案例</font>
+<font size=5>四、strace案例</font>
 
 1.用strace调试程序，在理想世界里，每当一个程序不能正常执行一个功能时，它就会给出一个有用的错误提示，告诉你在足够的改正错误的线索。但遗憾的是，我们不是生活在理想世界 里，起码不总是生活在理想世界里。有时候一个程序出现了问题，你无法找到原因，这就是调试程序出现的原因。strace是一个必不可少的 调试工具，strace用来监视系统调用。你不仅可以调试一个新开始的程序，也可以调试一个已经在运行的程序（把strace绑定到一个已有的PID上 面），首先让我们看一个真实的例子：启动KDE时出现问题，前一段时间，我在 启动KDE的时候出了问题，KDE的错误信息无法给我任何有帮助的线索。
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.18.3.png)

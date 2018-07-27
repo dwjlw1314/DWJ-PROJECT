@@ -3,6 +3,7 @@
 Blktrace是一个用户态的工具，针对Linux内核块设备I/O层的跟踪，用来收集磁盘IO信息中当IO进行到块设备层（block层，所以叫blktrace）时的详细信息（如IO请求提交，入队，合并，完成，进行读写的进程名称、进程号、执行时间、读写的物理块号、块大小等等一些列的信息）
 
 块设备层处于下图中的“block layer”
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.13.1.jpg)
 
 Blktrace工作原理
@@ -13,7 +14,7 @@ Blktrace工作原理
 
 (3)blktrace需要结合blkparse来使用，由blkparse来解析blktrace产生的特定格式的二进制数据
 
-(4)blkparse仅打开blktrace产生的文件，从文件里面取数据做展示以及最后做per cpu的统计输出，但blkparse中展示的数据状态（如 A，U，Q，详细见下）是blkparse在t->action & 0xffff之后自己把数值转换为“A，Q，U之类的状态”来展示的
+(4)blkparse仅打开blktrace产生的文件，从文件里面取数据做展示以及最后做per cpu的统计输出，但blkparse中展示的数据状态（如 A，U，Q，详细见下表）是blkparse在t->action & 0xffff之后自己把数值转换为“A，Q，U之类的状态”来展示的
 
 <p align="center">Blktrace主要选项</p>
 

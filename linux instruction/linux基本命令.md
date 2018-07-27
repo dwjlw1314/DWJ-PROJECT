@@ -149,7 +149,7 @@ vm.drop_caches=1/2/3 使用 [root@dwj /opt]# sysctl -p 生效设置
 另外，可以使用sync命令来清理文件系统缓存，还会清理僵尸(zombie)对象和它们占用的内存
 [root@dwj /opt]# sync
 ```
-<font color=#FF0000 size=4> <p align="center">chmod</p></font>
+<font color=#FF0000 size=5> <p align="center">chmod</p></font>
 一个文件都有一个所有者, 表示该文件是谁创建的. 同时, 该文件还有一个组编号, 表示该文件所属的组, 一般为文件所有者所属的组
 如果是一个可执行文件, 那么在执行时, 一般该文件只拥有调用该文件的用户具有的权限. 而setuid, setgid可以来改变这种设置
 
@@ -187,7 +187,7 @@ vm.drop_caches=1/2/3 使用 [root@dwj /opt]# sysctl -p 生效设置
 设置目录或文件粘滞位，给目录设置粘滞位可以阻止一个用户随意删除可写目录下面其他人的文件
 >[root@dwj opt]# chmod +t  filename
 
-<font color=#FF0000 size=4> <p align="center">内核参数和环境变量修改</p></font>
+<font color=#FF0000 size=5> <p align="center">内核参数和环境变量修改</p></font>
 ulimit -a              #显示系统部分内核参数配置信息  <br>
 ulimit -SHn 102400     #修改当前session有效文件描述符的限制  <br>
 永久变更需要修改/etc/security/limits.conf 文件，如下：
@@ -205,7 +205,7 @@ ulimit -SHn 102400     #修改当前session有效文件描述符的限制  <br>
     whoami / who am i                          #显示当前登录系统用户
     who 和 w                                   #显示当前登录用户详细信息
 
-<font color=#FF0000 size=4> <p align="center">系统时间</p></font>
+<font color=#FF0000 size=5> <p align="center">系统时间</p></font>
 ```
 date -R                                    #查看时区信息
 date -s 时间字符串                          #修改操作系统时间
@@ -245,7 +245,7 @@ Real Time Clock(RTC) and System Clock（硬件时间时钟和系统时钟）
     [root@dwj zoneinfo]# hwclock -w                  #同步硬件时间
     [root@dwj zoneinfo]# cat /etc/adjtime            #hwclock -w命令后秒数存放的文件
 
-<font color=#FF0000 size=4> <p align="center">NTP安装</p></font>
+<font color=#FF0000 size=5> <p align="center">NTP安装</p></font>
 NTP是网络时间协议(Network Time Protocol)，它是用来同步网络中各个计算机的时间的协议
 
 1.检查是否安装了NTP的rpm包，本次已经安装
@@ -290,13 +290,13 @@ restrict 192.168.1.0 mask 255.255.255.0 nomodify notrap
 6.查看NTP服务的运行状况
 >[root@dwj ~]# watch ntpq -p
 
-<font color=#FF0000 size=4> <p align="center">邮箱默认端口</p></font>
+<font color=#FF0000 size=5> <p align="center">邮箱默认端口</p></font>
 SMTP,  简单的邮件传输协议，TCP 25端口，加密时使用TCP 465端口  <br>
 POP3， 第三版邮局协议，TCP 110端口，加密时使用995端口  <br>
 IMAP4，第四版互联网消息访问协议，TCP 143端口，加密时使用993端口  <br>
 MUA（邮件用户代理），MTA（邮件传输代理）， MDA（又见分发代理），MRA（邮件检索代理）
 
-<font color=#FF0000 size=4> <p align="center">NFS参数</p></font>
+<font color=#FF0000 size=5> <p align="center">NFS参数</p></font>
 ```
 exportfs #命令用来管理当前NFS共享的文件系统列表
 -a 打开或取消所有目录共享
@@ -308,7 +308,7 @@ exportfs #命令用来管理当前NFS共享的文件系统列表
 -v 输出详细信息。当共享或者取消共享时，显示在做什么。显示当前共享列表的时候，同时显示共享的选项
 ```
 
-<font color=#FF0000 size=4> <p align="center">用户添加-删除</p></font>
+<font color=#FF0000 size=5> <p align="center">用户添加-删除</p></font>
 ```
 [root@dwj ~]# useradd -d /usr/dwj -m dwj
 -d 　指定用户根目录
@@ -336,7 +336,7 @@ exportfs #命令用来管理当前NFS共享的文件系统列表
 [root@dwj ~]# userdel dwj        #删除用户  <br>
 [root@dwj ~]# passwd dwj         #修改用户密码
 
-<font color=#FF0000 size=4> <p align="center">vim注释和删除注释</p></font>
+<font color=#FF0000 size=5> <p align="center">vim注释和删除注释</p></font>
 1.多行注释：
 
     a. 按下Ctrl + v，进入列模式;
@@ -382,7 +382,7 @@ d+G      #删除光标到末尾全部行
 vim -O /etc/passwd /opt/gjsy.txt    #左右分屏显示,使用ctrl+w两次进行左右光标切换
 ```
 
-<font color=#FF0000 size=4> <p align="center">SELinux设置</p></font>
+<font color=#FF0000 size=5> <p align="center">SELinux设置</p></font>
 查看SELinux状态：
 >[root@dwj ~]# /usr/sbin/sestatus -v    #SELinux status: enabled即为开启状态
 
@@ -398,7 +398,7 @@ vim -O /etc/passwd /opt/gjsy.txt    #左右分屏显示,使用ctrl+w两次进行
 将SELINUX=enforcing改为SELINUX=disabled  <br>
 重启机器即可
 
-<font color=#FF0000 size=4> <p align="center">/usr/share/man手册页</p></font>
+<font color=#FF0000 size=5> <p align="center">/usr/share/man手册页</p></font>
 ```
 /usr/share/<mandir>/<locale> 细述整个系统中手册页的组织：
 Man1：用户程序手册。本节中包含了描述公共访问的命令的手册页面。用户需要使用的绝大多数程序文档位于这里
@@ -410,7 +410,7 @@ Man6：游戏。这一节是游戏、演示和通常很琐碎的程序的文档
 Man7：各种难以归类的手册页，Troff和其他文本处理宏包（的手册）放在这里
 Man8：系统管理员用来进行系统操作和维护的系统管理程序的文档放在这里。有些程序有时也对普通用户有用
 ```
-<font color=#FF0000 size=4> <p align="center">Top</p></font>
+<font color=#FF0000 size=5> <p align="center">Top</p></font>
 >[root@dwj ~]# top   #运行命令
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.1.2.png)
 
@@ -519,7 +519,7 @@ P：根据CPU使用百分比大小进行排序
 T：根据时间/累计时间进行排序
 W：将当前设置写入~/.toprc文件中。这是写top配置文件的推荐方法
 ```
-<font color=#FF0000 size=4> <p align="center">vmstat</p></font>
+<font color=#FF0000 size=5> <p align="center">vmstat</p></font>
 vmstat命令是Linux监控工具，可以展现给定时间间隔的服务器的状态值,包括服务器的CPU使用率，内存使用，虚拟内存交换，IO读写情况
 相比top，可以看到整个机器的CPU,内存,IO的使用情况，而不是单单看到各个进程的CPU使用率和内存使用率(使用场景不一样)
 一般vmstat工具的使用是通过两个数字参数来完成的，第一个参数是采样的时间间隔数，单位是秒，第二个参数是采样的次数
@@ -547,7 +547,7 @@ sy 系统CPU时间，如果太高，表示系统调用时间长，例如是IO操
 id 空闲CPU时间，一般来说，id + us + sy = 100,一般我认为id是空闲CPU使用率，us是用户CPU使用率，sy是系统CPU使用率
 wt 等待IO CPU时间
 ```
-<font color=#FF0000 size=4> <p align="center">mpstat</p></font>
+<font color=#FF0000 size=5> <p align="center">mpstat</p></font>
 mpstat是Multiprocessor Statistics的缩写，是实时系统监控工具。其报告与CPU的一些统计信息，这些信息存放在/proc/stat文件中。在多CPUs系统里，其不但能查看所有CPU的平均状况信息，而且能够查看特定CPU的信息。mpstat最大的特点是：可以查看多核心cpu中每个计算核心的统计数据；而类似工具vmstat只能查看系统整体cpu情况
 
 mpstat [-P {|ALL}] [internal [count]]      #参数解释
@@ -569,7 +569,7 @@ count 采样的次数，count只能和delay一起使用
 %soft       在internal时间段里，软中断时间(%)     (softirq/total)*100
 %idle       在internal时间段里，CPU除去等待磁盘IO操作外的因为任何原因而空闲的时间闲置时间(%) (idle/total)*100
 ```
-<font color=#FF0000 size=4> <p align="center">pidstat</p></font>
+<font color=#FF0000 size=5> <p align="center">pidstat</p></font>
 pidstat主要用于监控全部或指定进程占用系统资源的情况，如CPU，内存、设备IO、任务切换、线程等。
 执行pidstat，将输出系统启动后所有活动进程的cpu统计信息
 
@@ -592,7 +592,7 @@ kB_rd/s: 每秒进程从磁盘读取的数据量(以kB为单位)
 kB_wr/s: 每秒进程向磁盘写的数据量(以kB为单位)
 Command: 拉起进程对应的命令
 ```
-<font color=#FF0000 size=4> <p align="center">iostat</p></font>
+<font color=#FF0000 size=5> <p align="center">iostat</p></font>
 iostat命令查看IO请求下发情况、系统IO处理能力，以及命令执行结果中各字段的含义详解
 
 1.不加选项执行iostat，我们先来看直接执行iostat的输出结果
@@ -631,7 +631,7 @@ await: 平均每次IO请求等待时间(包括等待时间和处理时间，毫�
 svctm: 平均每次IO请求的处理时间(毫秒为单位)
 %util: 采用周期内用于IO操作的时间比率，即IO队列非空的时间比率
 ```
-<font color=#FF0000 size=4> <p align="center">ifstat</p></font>
+<font color=#FF0000 size=5> <p align="center">ifstat</p></font>
 ifstat命令是一个统计网络接口活动状态的工具，选项含义如下：
 ```
 [root@dwj ~]# ifstat -tT
@@ -652,7 +652,7 @@ ifstat命令是一个统计网络接口活动状态的工具，选项含义如�
 -v 显示版本信息
 -d 指定一个驱动来收集状态信息
 ```
-<font color=#FF0000 size=4> <p align="center">dstat</p></font>
+<font color=#FF0000 size=5> <p align="center">dstat</p></font>
 dstat是一个可以取代vmstat，iostat，netstat，ifstat的多功能产品,可以实时的监控cpu、磁盘、网络、IO、内存等使用情况，功能描述：
 ```
 1.结合了vmstat，iostat，ifstat，netstat以及更多的信息
@@ -702,7 +702,7 @@ dstat是一个可以取代vmstat，iostat，netstat，ifstat的多功能产品,�
 
 通过dstat --list可以查看dstat能使用的所有参数，/usr/share/dstat中是dstat的插件目录，这些插件可以监控电源、mysql等相关系统数据
 
-<font color=#FF0000 size=4> <p align="center">traceroute</p></font>
+<font color=#FF0000 size=5> <p align="center">traceroute</p></font>
 traceroute 是用来发出数据包从主机到目标主机之间所经过的网关的工具。traceroute 的原理是试图以最小的TTL发出探测包来跟踪数据包到达目标主机所经过的网关，然后监听一个来自网关ICMP的应答。发送数据包的大小默认为38个字节
 
 使用格式：traceroute [参数选项] 域名、 hostname、IP地址
@@ -729,7 +729,7 @@ traceroute 是用来发出数据包从主机到目标主机之间所经过的网
 [root@localhost ~]# traceroute -w 3 linuxsir.org          #把对外发探测包的等待响应时间设置为5秒  <br>
 在windows系统中，用tracert来跟踪路由
 
-<font color=#FF0000 size=4> <p align="center">iotop</p></font>
+<font color=#FF0000 size=5> <p align="center">iotop</p></font>
 iotop命令是一个用来监视磁盘I/O使用状况的top类工具。iotop具有与top相似的UI，其中包括PID、用户、I/O、进程等相关信息。Linux下的IO统计工具如iostat，nmon等大多数是只能统计到per设备的读写情况，如果你想知道每个进程是如何使用IO的就比较麻烦，使用iotop命令可以很方便的查看
 
 ```
@@ -751,7 +751,7 @@ p：进程/线程的显示方式的切换
 a：显示累积使用量
 q：退出
 ```
-<font color=#FF0000 size=4> <p align="center">slabtop</p></font>
+<font color=#FF0000 size=5> <p align="center">slabtop</p></font>
 Linux slabtop命令显示内核片缓存信息，Linux内核需要为临时对象如任务或者设备结构和节点分配内存，缓存分配器管理着这些类型对象的缓存。
 现代Linux内核部署了该缓存分配器以持有缓存，称之为片。不同类型的片缓存由片分配器维护，linux系统透过/proc/slabinfo来向用户暴露slab的信息
 

@@ -53,7 +53,7 @@
 /etc/timezone                                     #时间和时区文件
 /etc/services                                     #网络服务系统中对应端口关系表库
 ```
-<font color=#FF0000 size=4> <p align="center">porc(系统内存文件，开机自动生成)</p></font>
+<font color=#FF0000 size=5> <p align="center">porc(系统内存文件，开机自动生成)</p></font>
 ```
 /proc/cpuinfo                           #cpu信息
 /proc/meminfo                           #memory信息
@@ -75,7 +75,7 @@ major   minor   #blocks    name
   253       1    3907584   dm-1
 ```
 
-<font color=#FF0000 size=4> <p align="center">其他</p></font>
+<font color=#FF0000 size=5> <p align="center">其他</p></font>
 ```
 /usr/src/kernels/3.10.0-327.el7.x86_64/fs           #centos系统支持的文件系统目录
 /usr/share/vim/vim72/tutor/tutor.zh.utf-8           #vim基础学习文档

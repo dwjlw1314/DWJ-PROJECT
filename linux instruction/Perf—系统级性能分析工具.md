@@ -21,7 +21,7 @@ perf-top
 perf-record
 perf-report
 ```
-<font size=4>一、perf list 用来查看perf所支持的性能事件，有软件的也有硬件的</font>
+<font size=5>一、perf list 用来查看perf所支持的性能事件，有软件的也有硬件的</font>
 
 Description：List all symbolic event types    <br>
 perf list [hw | sw | cache | tracepoint | event_glob]
@@ -48,7 +48,7 @@ sw实际上是内核的计数器，与硬件无关；hw和cache是CPU架构相�
 [root@dwj ~]# perf top -e cycles:k                   #显示内核和模块中，消耗最多CPU周期的函数
 [root@dwj ~]# perf top -e kmem:kmem_cache_alloc      #显示分配高速缓存最多的函数
 ```
-<font size=4>二、perf top 性能事件(默认是CPU周期)，显示消耗最多的函数或指令</font>
+<font size=5>二、perf top 性能事件(默认是CPU周期)，显示消耗最多的函数或指令</font>
 
 Description：System profiling tool. Generates and displays a performance counter profile in real time <br>
 perf top [-e <EVENT> | --event=EVENT] [<options>]
@@ -97,7 +97,7 @@ perf top -G graph | 路径概率为绝对值，加起来为该函数的热度
 [root@dwj ~]# perf top --comms nginx,top       #仅显示属于指定进程的符号
 [root@dwj ~]# perf top --symbols kfree         #仅显示指定的符号
 ```
-<font size=4>三、perf stat 用于分析指定程序的性能概况</font>
+<font size=5>三、perf stat 用于分析指定程序的性能概况</font>
 
 Description：Run a command and gather performance counter statistics   <br>
 perf stat [-e <EVENT> | --event=EVENT] [-a] <command>     <br>
@@ -161,7 +161,7 @@ Cache-misses | cache 失效的次数
 [root@dwj ~]# perf stat -a -A ls > /dev/null         #单独给出每个CPU上的信息
 [root@dwj ~]# perf stat -e syscalls:sys_enter ls     #ls命令执行了多少次系统调用
 ```
-<font size=4>四、perf-record 收集采样信息，记录在数据文件中,用perf-report对文件进行分析</font>
+<font size=5>四、perf-record 收集采样信息，记录在数据文件中,用perf-report对文件进行分析</font>
 
 Description：Run a command and record its profile into perf.data.This command runs a command and gathers a performance counter profile from it, into perf.data,without displaying anything. This file can then be inspected later on, using perf report
 
@@ -184,7 +184,7 @@ Description：Run a command and record its profile into perf.data.This command r
     [root@dwj ~]# perf record -p 'pgrep -d ',' nginx'      #记录nginx进程的性能数据
     [root@dwj ~]# perf record -e syscalls:sys_enter ls     #记录执行ls时的系统调用，可以知道哪些系统调用最频繁
 
-<font size=4>五、perf-report 读取perf record创建的数据文件，并给出热点分析结果</font>   <br>
+<font size=5>五、perf-report 读取perf record创建的数据文件，并给出热点分析结果</font>   <br>
 Description：Read perf.data (created by perf record) and display the profile This command displays the performance counter profile information recorded via perf record.
 
 1.输出格式：

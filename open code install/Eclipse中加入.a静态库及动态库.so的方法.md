@@ -45,6 +45,7 @@ linux下的静态链接库 为.a文件，动态链接库为.so文件。用eclips
 7、添加include搜索路径，选择C/C++ General -> Path and Symbols ->Reference,会看到所有的工程名称，选择share工程，这样会自动在include 的搜索路径中加入 share所在路径。注意：在Configuration 一栏 最好选择 All Configurations，一般不支持
 
 8、添加LD_LIBRARY_PATH环境变量，右键 mass 工程 -> Run As ->Run Configurations
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.17.1.png)
 
 左边选择 mass 工程 -> Environment -> New，name为LD_LIBRARY_PATH，value为${workspace_loc:/mylib/Debug}，

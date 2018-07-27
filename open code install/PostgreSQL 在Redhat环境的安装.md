@@ -1,11 +1,11 @@
 ------ rhel-server-6.4-x86_64 系统 --------
 
-<font color=#FF0000 size=4>一、PostgreSQL简介</font>
+<font color=#FF0000 size=5>一、PostgreSQL简介</font>
 
 PostgreSQL是以加州大学伯克利分校计算机系开发的 POSTGRES 版本 4.2 为基础的对象关系型数据库管理系统（ORDBMS）,简称pgsql,它支持大部分 SQL 标准并且提供了许多其他现代特性：复杂查询 外键 触发器 视图 事务完整性 多版本并发控制 同样，PostgreSQL 可以用许多方法扩展
 比如， 通过增加新的：数据类型 函数 操作符 聚集函数 索引方法 过程语言
 
-<font color=#FF0000 size=4>二、 PostgreSQL安装</font>
+<font color=#FF0000 size=5>二、 PostgreSQL安装</font>
 
 1.安装依赖包，某些系统只需要部分安装
 
@@ -131,7 +131,7 @@ PostgreSQL是以加州大学伯克利分校计算机系开发的 POSTGRES 版本
 ```
 9.使用 pgadmin3 管理即可
 
-<font color=#FF0000 size=4> <p align="center">Error</p></font>
+<font color=#FF0000 size=5> <p align="center">Error</p></font>
 
 错误信息：
 

@@ -26,13 +26,16 @@
 
 7.启动windows svn 服务(自定义安装)； 命令格式：svnserve -d -r D:\svnhome
 
-8.Eclipse中新建工程，选择svn选项  <br>
+8.Eclipse中新建工程，选择svn选项
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.20.4.jpg)
 
-9.选择Create a new repository location 然后next  <br>
+9.选择Create a new repository location 然后next
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.20.5.jpg)
 
-10.url中输入对应的版本控制工程地址 ，next  <br>
+10.url中输入对应的版本控制工程地址 ，next
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.20.6.jpg)
 
 11.![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.20.7.jpg)

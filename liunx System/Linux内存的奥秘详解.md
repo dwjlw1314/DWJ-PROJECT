@@ -27,7 +27,8 @@ used的空间(457M)到底用到哪里去了？
 
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/1.9.4.png)
 
-使用的内存的去向我们很自然的就想到操作系统系统上的各种进程需要消耗各种内存，透过top命令查看sshd进程：<br>
+使用的内存的去向我们很自然的就想到操作系统系统上的各种进程需要消耗各种内存，透过top命令查看sshd进程：
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/1.9.5.png)
 
 我们看进程的RES这一项，这个数字通过strace对top和nmon的追踪和结合源码，我们确定这个值是从/proc/PID/statm的第二个字段读取出计算来的

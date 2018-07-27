@@ -27,7 +27,7 @@ flush privileges;                                                               
 
 drop database zabbix;                                                           #删除用户数据库
 
-<font color=#FF0000 size=4> <p align="center">ERROR CODE</p></font>
+<font color=#FF0000 size=5> <p align="center">ERROR CODE</p></font>
 
 ~~ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES) <br>
 原因：数据库中存在空用户所致  <br>

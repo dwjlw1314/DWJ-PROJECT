@@ -1,4 +1,4 @@
-﻿<font color=#FF0000 size=4><p align="center">git log 查看所有提交历史</p></font>
+﻿<font color=#FF0000 size=5><p align="center">git log 查看所有提交历史</p></font>
 
 查看全部提交历史并展示比当前HEAD更新的branch
 >[root@dwj Desktop]# git log --all
@@ -87,7 +87,7 @@ fromat   该参数后跟指定时间格式
 %cr |提交日期，按多久以前的方式显示
 %s  |提交说明
 
-<font color=#FF0000 size=4><p align="center">git rebase 合并多个</p></font>
+<font color=#FF0000 size=5><p align="center">git rebase 合并多个</p></font>
 
 ```
 rebase命令将提交到某一分支上的所有修改都移至另一分支上，叫做变基
@@ -139,7 +139,7 @@ s commitver '注释*********'
 ```
 输入wq保存并退出, 再次输入git log查看commit历史信息，你会发现这两个commit已经合并了
 
-<font color=#FF0000 size=4><p align="center">git config 设置控制Git外观和行为的配置变量</p></font>
+<font color=#FF0000 size=5><p align="center">git config 设置控制Git外观和行为的配置变量</p></font>
 
 这些变量存储在三个不同的位置：
 1. /etc/gitconfig 文件: 包含系统上每一个用户及他们仓库的通用配置。从此文件读写配置变量使用--system选项
@@ -164,7 +164,7 @@ s commitver '注释*********'
 #这样，可以用last轻松地看到最后一次提交
 >[root@dwj /]# git last
 
-<font color=#FF0000 size=4><p align="center">git status 工作区和暂存区文件状态简览</p></font>
+<font color=#FF0000 size=5><p align="center">git status 工作区和暂存区文件状态简览</p></font>
 
 >[root@dwj /]# git status -s   状态报告输出如下：
 
@@ -177,12 +177,12 @@ M lib/simplegit.rb
 ```
 新添加的未跟踪文件前面有 ?? 标记，新添加到暂存区中的文件前面有 A 标记，修改过的文件前面有 M 标记。你可能注意到了 M 有两个可以出现的位置，出现在右边的 M 表示该文件被修改了但是还没放入暂存区，出现在靠左边的 M 表示该文件被修改了并放入了暂存区。 例如，上面的状态报告显示： README 文件在工作区被修改了但是还没有将修改后的文件放入暂存区,lib/simplegit.rb 文件被修改了并将修改后的文件放入了暂存区。 而Rakefile 在工作区被修改并提交到暂存区后又在工作区中被修改了，所以在暂存区和工作区都有该文件被修改了的记录
 
-<font color=#FF0000 size=4><p align="center">git commit 提交暂存区文件</p></font>
+<font color=#FF0000 size=5><p align="center">git commit 提交暂存区文件</p></font>
 
 命令会将暂存区中的文件尝试重新提交,快照会保持不变，而修改的只是提交信息和commit id
 >[root@dwj /]# git commit --amend
 
-<font color=#FF0000 size=4><p align="center">git remote 远程仓库的使用</p></font>
+<font color=#FF0000 size=5><p align="center">git remote 远程仓库的使用</p></font>
 
 从服务器上抓取本地没有的数据,其含义是一个 git fetch 紧接着一个git merge 命令
 >[root@dwj /]# git fetch origin
@@ -215,7 +215,7 @@ M lib/simplegit.rb
 从服务器上删除 lgl_branch 分支
 >[root@dwj /]# git push origin --delete lgl_branch
 
-<font color=#FF0000 size=4><p align="center">git tag 标签的使用</p></font> <br>
+<font color=#FF0000 size=5><p align="center">git tag 标签的使用</p></font> <br>
 Git主要有两种类型的标签：轻量标签 lightweight 与附注标签 annotated，默认push不会将标签上传到远程仓库服务器上
 
 基本和特定模式查找标签
@@ -246,7 +246,7 @@ Git主要有两种类型的标签：轻量标签 lightweight 与附注标签 ann
 tagname 标签就不同了，需要注意
 >[root@dwj /]# git checkout -b [branchname] [tagname]
 
-<font color=#FF0000 size=4><p align="center">git branch/git checkout 分支操作</p></font> <br>
+<font color=#FF0000 size=5><p align="center">git branch/git checkout 分支操作</p></font> <br>
 获取当前所有分支的一个列表，注意 master 分支前的 * 字符：表示现在检出的那一个分支，既当前 HEAD 指针所指向的分支
 >[root@dwj /]# git branch
 
@@ -273,7 +273,7 @@ Git在当前 commit 对象上新建一个分支指针,该命令仅仅是建立�
 使用带 -d 选项的 git branch 命令来删除分支，如果真的想要删除分支并丢掉那些工作，可以替换为 -D 选项强制删除它
 >[root@dwj /]# git branch -d lgl_branch
 
-<font color=#FF0000 size=4><p align="center">git diff</p></font>
+<font color=#FF0000 size=5><p align="center">git diff</p></font>
 
 默认可以查看你工作环境与你的暂存区的差异
 >[root@dwj /]# git diff

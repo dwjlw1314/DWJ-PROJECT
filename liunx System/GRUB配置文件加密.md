@@ -51,17 +51,19 @@ title Red Hat Enterprise Linux (2.6.32-431.el6.x86_64)
 6、编辑/boot/grub/grub.conf，去掉“password --md5 $1$iBmEv/$yTgeFNcwYvOdaLqO2gFz10”这一行即可
 ```
 使用password,lock命令实现几种加密方法如下：
-* 单纯对GRUB界面加密，而不对被引导的系统加密在timeout一行下面加一行：password --md5 PASSWORD
-* 对GRUB界面加密，同时对被引导的系统加密在timeout一行下面加一行：password --md5 PASSWORD 在title一行下面加一行：lock  <br>
+```
+1、单纯对GRUB界面加密，而不对被引导的系统加密在timeout一行下面加一行：password --md5 PASSWORD
+2、对GRUB界面加密，同时对被引导的系统加密在timeout一行下面加一行：password --md5 PASSWORD 在title一行下面加一行：lock
   在lock一行下面紧贴着再加一行：password --md5 PASSWORD 注：lock不能单独使用
-* 同时存在多个被引导系统，针对特定的系统实例分别加密(未对GRUB操作界面加密) 在title一行下面加一行：lock  <br>
+3、同时存在多个被引导系统，针对特定的系统实例分别加密(未对GRUB操作界面加密) 在title一行下面加一行：lock
   在lock一行下面紧贴着再加一行：password --md5 PASSWORD
-
+```
 3、解密，当Linux系统管理员密码忘记，又不能编辑grub菜单进行单用户模式重置密码，怎么办呢，只有对grub进行解密了
-
-    1、用Linux第一张安装光盘引导系统，进入修复模式
-    2、光盘引导系统，选择区域和语言，不用启动网卡
-    3、出现Rescue菜单，选择Continue，再弹出一个Rescue菜单，会显示“chroot /mnt/sysimage”，OK
-    4、[root@dwj ~]# chroot /mnt/sysimage，若不执行此步，进系统不能进行改写
-    5、执行passwd对用户密码进行重置，完后重启正常进入系统
-    6、编辑/boot/grub/grub.conf，去掉“password --md5 $1$iBmEv/$yTgeFNcwYvOdaLqO2gFz10”这一行即可
+```
+1、用Linux第一张安装光盘引导系统，进入修复模式
+2、光盘引导系统，选择区域和语言，不用启动网卡
+3、出现Rescue菜单，选择Continue，再弹出一个Rescue菜单，会显示“chroot /mnt/sysimage”，OK
+4、[root@dwj ~]# chroot /mnt/sysimage，若不执行此步，进系统不能进行改写
+5、执行passwd对用户密码进行重置，完后重启正常进入系统
+6、编辑/boot/grub/grub.conf，去掉“password --md5 $1$iBmEv/$yTgeFNcwYvOdaLqO2gFz10”这一行即可
+```

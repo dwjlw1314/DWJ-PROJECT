@@ -1,6 +1,6 @@
 ------ rhel-server-6.4-x86_64 系统 --------
 
-<font color=#FF0000 size=4>一、Nagios简介</font> <br>
+<font color=#FF0000 size=5>一、Nagios简介</font> <br>
 
 1.主要功能
 
@@ -60,7 +60,7 @@ Nagios 通过NRPE 来远端管理服务
 
 5.Nagios 依次读取队列中的信息，再把结果显示出来
 
-<font color=#FF0000 size=4>二、部署测试环境</font>  <br>
+<font color=#FF0000 size=5>二、部署测试环境</font>  <br>
 
 Host Name | OS | IP | Software
 :--|:--|:--|:--
@@ -79,7 +79,7 @@ Client 安装了NRPE等客户端，根据监控机的请求执行监控，然后
 测试环境主机实现监控功能：
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.11.3.jpg)
 
-<font color=#FF0000 size=4>三、Nagios软件安装配置</font>  <br>
+<font color=#FF0000 size=5>三、Nagios软件安装配置</font>  <br>
 
 安装包版本：nagios-4.2.4.tar.gz；nagios-plugins-2.1.4.tar.gz
 

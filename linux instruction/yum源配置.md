@@ -37,7 +37,6 @@ gpgcheck=1          #有1和0两个选择，分别代表是否是否进行gpg(GN
 [root@dwj /]# cd /mnt/Packages                         #进去系统安装包目录
 ```
 通过find命令查找到对应的yum包 ---> find *yum*
-
 >[root@dwj /]# rpm ivh 对应yum包名称         #安装yum程序
 
  1.以本地ISO镜像为例，进行yum源配置：

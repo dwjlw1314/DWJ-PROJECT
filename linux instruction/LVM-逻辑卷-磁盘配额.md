@@ -28,7 +28,7 @@
     [root@dwj ~]# mount /dev/Vg1/LV1 /opt/dwj
     [root@dwj ~]# ls !$
 
-<font color=#FF0000 size=4> <p align="center">扩展LV1和Vg1大小</p></font>
+<font color=#FF0000 size=5> <p align="center">扩展LV1和Vg1大小</p></font>
 查看Vg1和LV1大小，然后进行LV1扩容   <br>
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.3.1.png)
 
@@ -47,7 +47,7 @@
 
     [root@dwj ~]# vgextend Vg1 /dev/sdb3
 
-<font color=#FF0000 size=4> <p align="center">缩小LV1大小</p></font>
+<font color=#FF0000 size=5> <p align="center">缩小LV1大小</p></font>
 检查文件系统完整性，前提是没有挂载目录，参数-f是强制
 
     [root@dwj ~]# e2fsck -f /dev/Vg1/LV1
@@ -59,19 +59,19 @@
 
 重新挂载目录即可使用
 
-<font color=#FF0000 size=4> <p align="center">缩小Vg1大小</p></font>
+<font color=#FF0000 size=5> <p align="center">缩小Vg1大小</p></font>
 说明： VG缩减时，可以不卸载正在使用的LV，另外，只能缩减没有使用的pv，否则提示错误
 
     [root@dwj ~]# vgreduce Vg1 /dev/sdb3
 
-<font color=#FF0000 size=4> <p align="center">删除LVM</p></font>
+<font color=#FF0000 size=5> <p align="center">删除LVM</p></font>
 先删除lv，然后vg和pv
 
     [root@dwj ~]# lvremove /dev/Vg1/LV1
     [root@dwj ~]# vgremove Vg1
     [root@dwj ~]# pvremove /dev/sdb3
 
-<font color=#FF0000 size=4> <p align="center">LVM快照</p></font>
+<font color=#FF0000 size=5> <p align="center">LVM快照</p></font>
 前提是需要有LV1，-s 是创建快照参数
 
     [root@dwj ~]# lvcreate -s -n lv1_sp -L 300M /dev/Vg1/LV1
@@ -86,7 +86,7 @@
 
 读取相应的备份文件中的数据进行压缩存档，上述方法是热备
 
-<font color=#FF0000 size=4> <p align="center">磁盘配额</p></font>
+<font color=#FF0000 size=5> <p align="center">磁盘配额</p></font>
 使用sdb3分区进行实验,磁盘配额需要quota包的支持
 
     [root@dwj sdb3]# rpm -q quota

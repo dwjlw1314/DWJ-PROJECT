@@ -1,6 +1,6 @@
 ------ rhel-server-6.4-x86_64 系统 --------
 
-<font color=#FF0000 size=4>一、Zabbix简介</font>
+<font color=#FF0000 size=5>一、Zabbix简介</font>
 
 Linux下常用的系统监控软件有Nagios、Cacti、Zabbix、Monit等
 
@@ -16,7 +16,7 @@ zabbix agent需要安装在被监视的目标服务器上，它主要完成对�
 
 Zabbix主要功能：CPU负荷,内存使用,磁盘使用,网络状况,端口监视,日志监视
 
-<font color=#FF0000 size=4>二、软件版本</font>
+<font color=#FF0000 size=5>二、软件版本</font>
 
 zabbix的安装需要LAMP或者LNMP环境（Linux，Apache/Nginx，Mysql/MariaDB+Perl/PHP/Python）
 
@@ -26,7 +26,7 @@ zabbix的安装需要LAMP或者LNMP环境（Linux，Apache/Nginx，Mysql/MariaDB
 4. httpd-2.2.32.tar.bz；
 5. php-7.1.2.tar.gz
 
-<font color=#FF0000 size=4>三、Zabbix软件安装配置</font>
+<font color=#FF0000 size=5>三、Zabbix软件安装配置</font>
 
     增加zabbix用户和组
     [root@dwj ~]# groupadd zabbix
@@ -319,7 +319,7 @@ zabbix服务器安装步骤:  <br>
 5.http://localhost/zabbix/index.php   使用账号和密码进行登录    账号：admin ；密码：zabbix
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.10.8.png)
 
-<font color=#FF0000 size=4>zabbix_server.conf参数含义</font>
+<font color=#FF0000 size=5>zabbix_server.conf参数含义</font>
 ```
 DBName=zabbix                       zabbix所属数据库名称
 DBUser=zabbix                       zabbix所属数据库用户

@@ -59,7 +59,7 @@ vsftp提供3种远程的登录方式：
 
 添加dwj用户到/etc/vsftpd/user_list文件中，这样就允许访问了
 
-<font color=#FF0000 size=4> <p align="center">多用户不同根目录设置</p></font>
+<font color=#FF0000 size=5> <p align="center">多用户不同根目录设置</p></font>
 
 1.创建两个用户 : dwj和lgl
 
@@ -118,7 +118,7 @@ vsftp提供3种远程的登录方式：
     [root@dwj /]#  ps –xf |grep ftp
     [root@dwj /]#  kill 进程号
 
-<font color=#FF0000 size=4> <p align="center">脚本安装方式</p></font>
+<font color=#FF0000 size=5> <p align="center">脚本安装方式</p></font>
 ```bash
 #! /bin/sh
 
