@@ -6,19 +6,25 @@
 /etc/sysconfig/network-scripts/ifcfg-eth0         #网络ip配置文件
 /etc/sysconfig/network                            #主机名配置
 /etc/sysconfig/iptables-config                    #iptables配置文件
+/etc/sysconfig/i18n	                              #设置linux系统语言和字符类型
+/etc/crontab                                      #系统定义的任务计划
+/etc/anacrontab                                   #实现检查过期和未完成的crontab的任务的配置文件
+/etc/securetty                                    #确认某个安全终端允许root登录,一般只列出虚拟控制台
 /etc/resolv.conf                                  #DNS配置文件
 /etc/nsswitch.conf                                #地址服务器配置文件
+/etc/motd                                         #成功登录后自动输出，内容由系统管理员确定，经常用于通告信息
 /etc/X11/*                                        #XFree86窗口配置文件
 /etc/skel                                         #创建用户时自动创建文件的模版目录
-/etc/default/useradd                                                                          
----/etc/login.defs                                #创建用户时用户属性值默认文件
+/etc/inittab                                      #系统默认启动级别的配置文件
+/etc/default/useradd                              #添加用户的默认信息的文件                                         
+/etc/login.defs                                   #用户密码信息的默认属性文件
 
 /etc/host.conf                                    #指定主机名查找方法，通常指先查找文件/etc/hosts,找不到时再向DNS服务器请求
 /etc/xinetd.conf                                  #xinetd服务配置文件
 /etc/xinetd.d/*                                   #该目录下面的每一个文件是就是一个用inetd方式启动的服务
 /etc/services                                     #经过定义的有效服务名称(如telnet,echo等)，服务名字到端口的映射关系
 /etc/protocols                                    #定义过的协议类型(如最常见的是tcp和udp)
-/etc/hosts.allow                                  #设置允许使用xinetd服务的机器，如: All:210.38即允许所有来自210.38.x.x的请求
+/etc/hosts.allow                                  #设置允许使用xinetd服务的机器，如:All:210.38即允许所有来自210.38.x.x的请求
 /etc/hosts.deny                                   #设置不允许使用xinetd服务的机器
 /etc/rsyslog.conf                                 #rsyslog v5 configuration file
 /etc/logrotate.conf                               #日志轮替配置文件
@@ -28,13 +34,16 @@
 /etc/vimrc                                        #vim编辑器参数配置文件
 /etc/selinux/config                               #系统策略配置文件
 /etc/security/limits.conf                         #系统运行时参数配置文件
-/etc/init.d
+/etc/rc.d/init.d/functions                        #定义功能的配置文件
+/etc/init.d                                       #描述如下，原因是inode相同
 /etc/rc.d/init.d                                  #程序启动脚本存放位置(两者类似mount --bind olddir newdir命令)
 /etc/rc.d/rc.local                                #系统启动后自启动脚本的配置文件
+/etc/rc.d/rc.sysinit                              #系统启动设置配置文件
 /etc/issue                                        #系统版本信息
 /etc/system-release                               #系统版本信息
 /etc/udev/rule.d/70-persistent-net.rules          #网络mac配置文件
 
+/etc/inputrc                                      #输入设备配置文件
 /etc/shells                                       #有效的登录shell的路径名称
 /etc/dumpdates                                    #dump命令备份事件文件
 /etc/hosts                                        #修改和添加主机信息
@@ -58,7 +67,17 @@
 /proc/cpuinfo                           #cpu信息
 /proc/meminfo                           #memory信息
 /proc/version                           #系统版本信息
-/proc/mounts                            #文件系统挂载关系文件
+/proc/mounts                            #文件系统挂载关系
+/proc/dma                               #显示当前使用的 DMA 通道
+/proc/filesystems                       #linux系统核心支持的文件系统
+/proc/interrupts                        #显示使用的中断，and how many of each there have been.
+/proc/ioports                           #当前使用的 I/O 端口
+/proc/loadavg                           #系统"平均负载"
+/proc/modules                           #当前系统加载了哪些核心模块
+/proc/net/*                             #网络协议状态信息
+/proc/mdstat                            #RAID设备的信息
+/proc/cmdline                           #grub信息,eg: ro root=/dev/vol0/root ...
+/proc/sys/kernel/hostname               #主机名的设定	
 /proc/partitions                        #所有已经分区的信息，如下图
 
 [root@dwj opt]# cat /proc/partitions

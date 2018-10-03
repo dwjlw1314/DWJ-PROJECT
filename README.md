@@ -51,6 +51,8 @@
     19. linux更新java版本
     20. linux系统svn部署文档
     21. rabbitmq集群搭建
+    22. oracle数据库基本命令
+    23. oracle数据库运行和错误码详解
 
 四. linux常用指令
     1. linux基本命令

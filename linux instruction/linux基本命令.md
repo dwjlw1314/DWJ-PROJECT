@@ -2,6 +2,11 @@
 
 常用基本命令
 ```
+source /home/oracle/.bash_profile                                    #设置oracle用户环境变量
+source /etc/profile                                                  #使修改后的环境变量生效
+sysctl -p                                                            #使修改后的内核参数生效
+whoami / who am i                                                    #显示当前登录系统用户
+who 和 w                                                             #显示当前登录用户详细信息
 cat > gjsy.txt << end                                                #使用end作为文件结束输入标记
 su - root -c "useradd  test"                                         #不切换root用户，一次执行root权限命令
 touch {1..5}.txt                                                     #批量创建文件
@@ -60,6 +65,7 @@ dmesg                                                                #查看系�
 time 命令                                                            #显示命令执行的时间             
 partprobe                                                            #重新读取分区表信息
 pstree -p                                                            #查看进程树结构
+parted -l                                                            #输出文件系统类型
 lsblk / lscpu / lsscsi / lspci / lsusb                               #查看磁盘分区树状结构
 blkid [-kU]                                                          #locate/print block device attributes
 lsof                                                                 #列出系统或进程调用打开和使用了哪些文件和动态库
@@ -68,6 +74,7 @@ lsmod |grep ftp                                                      #显示linu
 modprobe -l|grep ftp                                                 #查看系统内核模块名字*.ko文件
 modprobe  nf_conntrack_ftp                                           #加载内核模块ftp
 getconf LONG_BIT                                                     #查看CPU位数
+uuidgen                                                              #随机生成UUID值
 uname -r / -s / -a                                                   #查看内核版本信息(内核版本，内核名称，所有)
 cat /etc/centos-release                                              #查看linux系统版本
 whereis  nicstat                                                     #查找程序所在目录，更大的系统目录
@@ -92,21 +99,42 @@ wall helloword                                                       #给所有�
 logrotate -v /etc/logrotate.conf                                     #查看配置文件中需要日志轮替的文件
 logrotate -f /etc/logrotate.conf                                     #强制运行配置文件中的日志轮替文件
 
-[root@dwj ~/Desktop]#zcat ntfs-3g.tgz                                #查看压缩包文件的内容
-[root@dwj ~/Desktop]#tar -tvf ntfs-3g.tgz                            #不解压查看压缩包中的文件
+[root@dwj ~/Desktop]# zcat ntfs-3g.tgz                               #查看压缩包文件的内容
+[root@dwj ~/Desktop]# tar -tvf ntfs-3g.tgz                           #不解压查看压缩包中的文件
 
-[root@dwj /usr/sbin]#sendmail diwenjie@gsafety.com                   #发送邮件命令
-[root@dwj ~/Desktop]#jobs                                            #查看后台运行程序，fg和bg把程序调到前台和后台执行
+[root@dwj /usr/sbin]# sendmail diwenjie@gsafety.com                  #发送邮件命令
+[root@dwj ~/Desktop]# jobs                                           #查看后台运行程序，fg和bg把程序调到前台和后台执行
+-l：显示进程号
+-p：仅任务对应的显示进程号
+-n：显示任务状态的变化
+-r：仅输出运行状态（running）的任务
+-s：仅输出停止状态（stoped）的任务
 ```
 时间转换
 ```
 把日期换算为时间戳
-[root@dwj /opt]#echo $(($(date -d "2008/05/01" +%s)/86400+1))
+[root@dwj /opt]# echo $(($(date -d "2008/05/01" +%s)/86400+1))
 把时间戳换算为日期
-[root@dwj /opt]#date -d "1970/01/01 14000 days"
+[root@dwj /opt]# date -d "1970/01/01 14000 days"
 把秒数换算成日期
-[root@dwj /opt]#date --date='@1199116800'
-[root@dwj /opt]#date -d @1199116800
+[root@dwj /opt]# date --date='@1199116800'
+[root@dwj /opt]# date -d @1199116800
+Linux下查看系统启动时间和运行时间
+[root@dwj /opt]# date -d "164224 second ago"    #获取164224秒之前的日期
+[root@dwj /opt]# date -d "$(awk -F. '{print $1}' /proc/uptime) second ago" +"%Y-%m-%d %H:%M:%S"
+[root@dwj /opt]# cat /proc/uptime| awk -F. '{run_days=$1 / 86400;run_hour=($1 % 86400)/3600;run_minute=($1 % 3600)/60;run_second=$1 % 60;printf("runtime: %d:%d:%d:%d",run_days,run_hour,run_minute,run_second)}'
+[root@dwj /opt]# last reboot
+[root@dwj /opt]# who -b
+[root@dwj /opt]# w
+Linux下查看进程相关信息
+[root@dwj /opt]# pidof name                   #显示name进程pid
+[root@dwj /opt]# ps -p pid -o parameter       #pid是进程号，parameter是一下内容之一
+pid：进程ID
+tty：终端
+user：用户
+comm：进程名
+lstart：开始时间
+etime：运行时间
 ```
 terminal终端常用组合键含义
 ```
@@ -118,6 +146,7 @@ terminal终端常用组合键含义
 [root@dwj /opt]# ctrl + t                                #互换输入命令末尾两个单词
 [root@dwj /opt]# ctrl + p                                #向上逐条调出history历史命令
 [root@dwj /opt]# ctrl + n                                #向下逐条调出history历史命令
+[root@dwj /opt]# ctrl + o                                #执行终端已输入的命令
 [root@dwj /opt]# ctrl + shift + =                        #放大terminal终端
 [root@dwj /opt]# ctrl  + -                               #缩小terminal终端
 [root@dwj /opt]# ctrl  + 0                               #还原原始大小
@@ -196,14 +225,24 @@ ulimit -SHn 102400     #修改当前session有效文件描述符的限制  <br>
     * hard nofile 65535
     * soft nofile 65535
 
-保存退出后重新登录，其最大文件描述符就被永久更改了。
+保存退出后重新登录，其最大文件描述符就被永久更改了
 
-    source /home/oracle/.bash_profile          #设置oracle用户环境变量
-    source /etc/profile                        #使修改后的环境变量生效
-    sysctl -p                                  #使修改后的内核参数生效
-    service iptables status/stop/start         #查看系统防火墙状态,关闭,打开
-    whoami / who am i                          #显示当前登录系统用户
-    who 和 w                                   #显示当前登录用户详细信息
+参数名 | 参数含义
+--- | ---
+-a | 列出所有当前资源极限
+-c | 设置core文件的最大值.单位:blocks
+-d | 设置一个进程的数据段的最大值.单位:kbytes
+-f | Shell 创建文件的文件大小的最大值，单位：blocks
+-h | 指定设置某个给定资源的硬极限。如果用户拥有 root 用户权限，可以增大硬极限。任何用户均可减少硬极限
+-l | 可以锁住的物理内存的最大值
+-m | 可以使用的常驻内存的最大值,单位：kbytes
+-n | 每个进程可以同时打开的最大文件数
+-p | 设置管道的最大值，单位为block，1block=512bytes
+-s | 指定堆栈的最大值：单位：kbytes
+-S | 指定为给定的资源设置软极限。软极限可增大到硬极限的值。如果 -H 和 -S 标志均未指定，极限适用于以上二者
+-t | 指定每个进程所使用的秒数,单位：seconds
+-u | 可以运行的最大并发进程数
+-v | Shell可使用的最大的虚拟内存，单位：kbytes
 
 <font color=#FF0000 size=5> <p align="center">系统时间</p></font>
 ```
@@ -221,7 +260,7 @@ date -s "2012-05-18 04:53:00"              #同时修改日期和时间
 
 /usr/share/zoneinfo目录下基本涵盖了大部分的国家和城市的时区
 
-我们查看每个timezone当前的时间我们可以用zdump命令
+查看每个 timezone 当前的时间可以用zdump命令
 
     [root@dwj zoneinfo]# zdump Hongkong     #结果：Hongkong  Thu Mar 30 16:47:31 2017 HKT
     [root@dwj zoneinfo]# zdump /etc/localtime
@@ -378,6 +417,7 @@ ctrl+g   #显示当前编辑的文件名
 d+G      #删除光标到末尾全部行
 :noh     #取消高亮显示
 :e!      #还原编辑文件到最初状态
+set ls=2 #总是显示状态栏 ls : laststatus
 ~/.viminfo   #vim操作日志
 vim -O /etc/passwd /opt/gjsy.txt    #左右分屏显示,使用ctrl+w两次进行左右光标切换
 ```

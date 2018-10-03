@@ -112,7 +112,7 @@ Qt 可视化组件的继承关系图
 当使用函数指针取其地址的时候，默认参数是不可见的，我们不能在函数指针中使用函数参数的默认值
 ```
 
- exec() 函数在执行后是开始 Qt 的事件循环。当事件发生时，Qt 将创建一个事件对象。所有事件类都继承于 QEvent。在事件对象创建完毕后，将这个事件对象传递给 QObject 的 event() 函数，该函数并不直接处理事件，而是按照事件对象的类型分派给特定的事件处理函数event handler
+ exec() 函数是开始 Qt 的事件循环。当事件发生时，Qt 将创建一个事件对象。所有事件类都继承于 QEvent。事件对象创建完后，将这个事件对象传递给 QObject 的 event() 函数，该函数并不直接处理事件，而是按照事件对象的类型分派给特定的事件处理函数event handler
 
 在Qt5中，QObject::connect() 有五个重载,返回值都是 QMetaObject::Connection：
 ```c++
@@ -133,11 +133,27 @@ QMetaObject::Connection connect(const QObject *, PointerToMemberFunction, Functo
 最常用的形式: connect(sender, signal, receiver, slot); <br>
 >第一个是发出信号的对象，第二个是发送对象发出的信号，第三个是接收信号的对象，第四个是接收对象在接收到信号之后所需要调用的函数。也就是说，当 sender 发出了 signal 信号之后，会自动调用 receiver 的 slot 函数
 
-1. 自定义类只有继承了 QObject 类，才具有信号槽的能力。凡是继承 QObject 类，都应该在第一行代码写上 Q_OBJECT宏。这个宏的展开将为我们的类提供信号槽机制、国际化机制以及 Qt 提供的不基于 C++ RTTI 的反射能力，这个宏将由 moc（可以将其理解为一种预处理器，比 C++ 预处理器更早执行）做特殊处理，moc 只会读取标记了 Q_OBJECT 的<头文件内容>，生成以 moc_ 为前缀的文件
+1. 声明一个信号要使用 signals 关键字，在 signals 前面不能使用权限限定符，因为只有定义该信号的类及子类才可以发射该信号。而且信号只用声明，不能进行定义实现，同时信号没有返回值，只能是void。自定义类只有继承了 QObject 类，才具有信号槽的能力。凡是继承 QObject 类，都应该在第一行代码写上 Q_OBJECT 宏。这个宏的展开将为我们的类提供信号槽机制、国际化机制以及 Qt 提供的不基于 C++ RTTI 的反射能力，这个宏将由 moc（可以将其理解为一种预处理器，比 C++ 预处理器更早执行）做特殊处理，moc 只会读取标记了 Q_OBJECT 的<头文件内容>，生成以 moc_ 为前缀的文件
 
-2. 类中 signals 块所列出的一个个的函数名就是该类的信号，返回值是 void（因为无法获得信号的返回值，所以也就无需返回任何值），参数是传递到slot的数据。信号作为函数名，不需要在 cpp 函数中添加任何实现（Qt 程序能够使用普通的 make 进行编译。没有实现的函数名怎么会通过编译？这里 moc 会帮我们实现信号函数所需要的函数体。emit 是 Qt 对 C++ 的扩展，是一个关键字（其实也是一个宏）
+2. 类中 signals 块所列出的一个个的函数名就是该类的信号，返回值是 void（因为无法获得信号的返回值，所以也就无需返回任何值），参数是传递到slot的数据。信号作为函数名，不需要在 cpp 函数中添加任何实现（Qt 程序能够使用普通的 make 进行编译。没有实现的函数名怎么会通过编译？这里 moc 会帮我们实现信号函数所需要的函数体。发射信号使用 emit 关键字（其实也是一个宏），emit 是对 C++ 的扩展
 
 3. 自定义信号槽需要注意的5个事项：1.发送者和接收者都需要是 QObject 的子类（当然，槽函数是全局函数、Lambda 表达式等无需接收者的时候除外）; 2.使用 signals 标记信号函数，信号是一个函数声明，返回 void，不需要实现函数代码; 3.槽函数是普通的成员函数，作为成员函数，会受到访问控制符的影响; 4.使用 QObject::connect() 函数连接信号和槽; 5.emit 在恰当的位置发送信号
+
+4. 声明一个槽函数要使用 slots 关键字。一个槽可以是private、public或者是protected类型，槽函数也可以声明为虚函数，与普通函数一样，也可以像调用普通函数一样调用槽函数
+
+connect 函数最后的参数 ConnectionType 常用值：
+
+常量 | 描述
+---|---
+Qt::AutoConnection | 如果信号和槽在不同的线程中，同Qt::QueuedConnection；如果信号和槽在同一个线程中，同Qt::DirectConnection
+Qt::DirectConnection | 发射完信号后立即执行槽，只有槽执行完成返回后，发射信号处后面的代码才可以执行
+Qt::QueuedConnection | 接收部件所在线程的事件循环返回后再执行槽，无论槽执行与否，发射信号处后面的代码都会立即执行
+Qt::BlockingQueuedConnection | 类似Qt::QueuedConnection，只能用在信号和槽在不同的线程情况下
+Qt::UniqueConnection | 类似Qt::AutoConnection,但是两个对象间的相同的信号和槽只能有唯一的关联
+Qt::AutoCompatconnection | 类似Qt::AutoConnection,它是Qt3中的默认类型
+
+还有一种是信号和槽自动关联方式，eg：on_pushButton_clicked()由on，部件的objectName和信号3部分组成，中间用下划线隔开
+需要在部件定义之后调用 QMetaObject::connectSlotsByName(this); 这样才能正确使用自动关联
 
 <font color=#FF0000 size=5> <p align="center">Qt调试关联工具</p></font>
 qt内存泄露检查：
@@ -179,6 +195,19 @@ Qt 的事件处理，实际上是有五个层次：
 QObjects 是以对象树的形式组织起来的。当创建一个 QObject 对象时，会看到它的构造函数接收一个 QObject 指针作为参数，这个参数就是 parent，也就是父对象指针。这相当于，在创建 QObject 对象时，可以提供一个其父对象，创建的这个 QObject 对象会自动添加到其父对象的 children() 列表。当父对象析构的时候，这个列表中的所有对象也会被析构
 ```
 标准 C++ （ISO/IEC 14882:2003）要求，局部对象的析构顺序应该按照其创建顺序的相反过程
+```
+
+<font color=#FF0000 size=5> <p align="center">Qt元对象系统</p></font>
+```
+1. QObject::metaObject()函数可以返回一个类的元对象，它是 QMetaObject 类的对象
+2. QMetaObject::className()可以在运行时以字符串形式返回类名，而不是需要C++编辑器原生的运行时类型信息(RTTI)的支持
+3. QObject::inherits()函数返回一个对象是否是 QObject 继承树上一个类的实例信息
+4. QObject::tr()和QObject::trUtf8() 进行字符串翻译来实现国际化
+5. QObject::setProperty()和QObject::property()通过名字来动态设置或者获取对象属性
+6. QMetaObject::newInstance()构造该类的一个新实例
+7. qobject_cast()函数对QObject类进行动态类型转换,正确返回一个非零的指针,例如：
+      QObject *obj = new MyWidget；
+      QWidget *widget = qobject_cast< QWidget* >(obj);
 ```
 
 <font color=#FF0000 size=5> <p align="center">Qt对话框分类</p></font>
@@ -231,9 +260,21 @@ Qt 提供了四种坐标变换：平移 translate，旋转 rotate，缩放 scale
 
 Graphics View Framework 有三个主要部分：
 ```
-QGraphicsScene：能够管理元素的非 GUI 容器
-QGraphicsItem：能够被添加到场景的元素
-QGraphicsView：能够观察场景的可视化组件视图,它可以分成三个部分：元素 item、场景 scene 和视图 view
+QGraphicsScene：提供了图形视图框架中的场景,是图形项 QGraphicsItem 对象的容器,一个场景分3层,
+  图形项层、前景层、背景层,场景的绘制顺序是背景层-图形项层-前景层。拥有以下功能：
+ --提供了用于管理大量图形项的快速接口
+ --传播事件给每一个图形项
+ --管理图形项的状态,例如选择和焦点处理
+ --提供无变换的渲染功能,主要用于打印
+QGraphicsItem：能够被添加到场景的图形项,拥有以下功能：
+ --鼠标按下、移动、释放、双击、悬停、滚轮和右键菜单事件
+ --键盘输入焦点和键盘事件
+ --拖放事件
+ --分组,使用 QGraphicsItemGroup 通过 parent-child 关系来实现
+ --碰撞检测
+QGraphicsView：提供了视图部件,使场景中的内容可视化,是一个可以滚动的区域,提供一个滚动条浏览大的场景。
+  默认提供了一个 QWidget 作为视口部件,可以调用 QGraphicsView::setViewport() 来进行 OpenGL 渲染
+  并设置 QGLWidget 作为视口
 ```
 
 <font color=#FF0000 size=5> <p align="center">Qt文件读写与IO系统</p></font>
@@ -376,6 +417,47 @@ QSet<T> | QSet<T>::const_iterator | QSet<T>::iterator
 QMap<Key, T>, QMultiMap<Key, T> | QMap<Key, T>::const_iterator | QMap<Key, T>::iterator
 QHash<Key, T>, QMultiHash<Key, T> | QHash<Key, T>::const_iterator | QHash<Key, T>::iterator
 
+<font color=#FF0000 size=5> <p align="center">Qt Linguist</p></font>
+
+Qt 翻译应用程序整个过程：
+```
+1.在 Qt 中编写代码时需要显示的字符串调用 tr() 函数
+2.更改项目 *.pro 文件,在文件中指定生成的 .ts 文件. eg: 添加代码 TRANSLATIONS += myI8N_zh_CN.ts
+3.在项目文件列表中 *.pro 文件右击,在弹出的菜单选择 “在此弹出命令提示” 在命令行中输入 lupdate *.pro
+工具从 C++ 源代码中提取要翻译的文本，这时会生成一个 .ts 文件,它是 XML 格式,记录了字符串位置和是否已经被翻译等信息
+4.启动 Qt Linguist 程序,单击界面左上角 open 图标,然后打开对应 .ts 文件,界面会自动显示源语言和目标语言，直到完成翻译工作
+5.使用 lrelease 生成 .qm 文件.在命令行中输入 lrelease *.pro 即可完成; 也可以在 Linguist 程序中使用 文件->发布 功能
+6.使用 .qm 文件，在 main.cpp 添加头文件 #include<QTranslator>; 然后在 QApplication a(argc,argv) 下添加代码
+  QTranslator translator;
+  translator.load("../*.qm");
+  a.installTranslator(&translate);
+```
+
+<font color=#FF0000 size=5> <p align="center">定制Qt Assistant</p></font>
+```
+1.创建 HTML 格式的帮助文档
+2.创建 Qt 帮助项目(Qt help project).qhp文件,该文件是 XML 格式,用来组织 HTML 文档,使其可以在 Qt Assistant 中使用
+3.生成 Qt 压缩帮助(Qt compressed help).qch文件,由 *.qhp 文件生成的二进制格式文件
+4.创建 Qt 帮助集合项目(Qt help collection project).qhcp文件,该文件是 XML 格式,用来生成二进制 *.qhc 文件
+5.生成 Qt 帮助集合(Qt help collection).qhc文件,可以使 Qt Assistant 只显示一个应用程序帮助文档,也可以定制外观和功能
+6.启动程序中的 Qt Assistant
+```
+
+<font color=#FF0000 size=5> <p align="center">创建应用程序插件过程</p></font>
+```
+@@创建一个插件步骤如下：
+1.定义一个插件类,需要同时继承自 QObject 类和该插件所提供的功能对应的接口类
+2.Q_PLUGIN_METADATA(IID "string") 宏在 Qt 的元对象系统中注册该接口类 (QT_VERSION >= 0x050000)
+3.使用 Q_INTERFACES() 宏在 Qt 的元对象系统中注册该接口类
+4.使用 Q_EXPORT_PLUGIN2() 宏导出该插件 (QT_VERSION < 0x050000)
+5.使用合适的 .pro 文件构建该插件
+@@一个应用程序通过插件进行扩展步骤:
+1.定义一组接口(只有纯虚函数的抽象类)
+2.使用 Q_DECLARE_INTERFACE() 宏在 Qt 的元对象系统中注册该接口类
+3.在应用程序中使用 QPluginLoader 来加载插件
+4.使用 qobject_cast() 来测试插件是否实现了给定的接口
+```
+
 <font color=#FF0000 size=5> <p align="center">Qt函数</p></font>
 ```
 QString("[%1, %2]").arg(x, y); 语句将会使用 x 替换 %1，y 替换 %2，最终生成的 QString 为 [x, y];
@@ -385,4 +467,6 @@ QVector<T>、QHash<Key, T>、QSet<T>、QString 和 QByteArray 3个成员函数�
 capacity()：返回实际已经分配内存的元素数目(对于 QHash 和 QSet，则是散列表中桶的个数);
 reserve(size)：为指定数目的元素显式地预分配内存，通过调用来减少内存占用;
 squeeze()：释放那些不需要真实存储数据的内存空间,释放所有未使用的预分配空间;
+QStyleFactory::keys(); 获取当前系统所支持的样式风格;
+QLocale::system().name(); 获取本地系统的语言环境,返回QString类型的"语言_国家"格式,语言用小写字母,国家用大写字母
 ```
