@@ -18,12 +18,13 @@
 
 #/etc/profile 中设定的变量(全局)的可以作用于任何用户,而~/.bashrc等中设定的变量(局部)只能继承/etc/profile中的变量,他们是"父子"关系
 
-~/.bash_profile 是交互式login方式进入bash运行的; ~/.bashrc 是交互式non-login方式进入bash运行的;  <br>
-通常二者设置大致相同，所以通常前者会调用后者
+~/.bash_profile 是交互式login方式进入bash运行的; ~/.bashrc 是交互式non-login方式进入bash运行的;所以通常前者会调用后者
 
-设置生效：可以重启生效，也可以使用命令：[root@dwj etc]# source /etc/profile
+设置生效：可以重启生效，也可以使用命令：
+>[root@dwj etc]# source /etc/profile
 
-<font color=#FF0000 size=5>用户环境配</font>  <br>
+<font color=#FF0000 size=5>用户环境配</font>
+
 .bash_profile、.bashrc、和.bash_logout
 
 * 上面这三个文件是bash shell的用户环境配置文件，位于用户的主目录下。其中.bash_profile是最重要的一个配置文件，它在用户每次登录系统时被读取，里面的所有命令都会被bash执行。.profile(由Bourne Shell和Korn Shell使用)和.login(由C Shell使用)两个文件是.bash_profile的同义词，目的是为了兼其他Shell。在Debian中使用.profile文件代 替.bash_profile文件
@@ -34,7 +35,8 @@
 
 在/etc目录的bashrc和profile是系统级（全局）的配置文件，当在用户主目录下找不到.bash_profile 和.bashrc时，就会读取这两个文件
 
-<font color=#FF0000 size=5>选项</font>  <br>
+<font color=#FF0000 size=5>选项</font>
+
 bash shell中的选项可控制shell的行为和功能，我们可以通过shopt命令来设置。使用set命令也可以，但它已被shopt替代，但为了向下兼容，set命令还是可以使用的。使用不带参数的shopt命令可以列出当前shell中只能由shopt设置的选项，用shopt -o可列出可由set命令设置的选项
 
 下面是部分可由set命令基本的选项，默认是关闭的

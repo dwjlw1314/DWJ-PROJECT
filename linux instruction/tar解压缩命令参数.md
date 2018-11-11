@@ -1,4 +1,5 @@
-用法: tar [选项...] [FILE]...    <br>
+用法: tar [选项...] [FILE]...
+
 GNU 'tar' saves many files together into a single tape or disk archive, and can  
 restore individual files from the archive
 ```

@@ -38,6 +38,7 @@ table th:first-of-type {
 -w seconds   | 设置运行的时间。单位为秒
 
 Blkparse用于将块设备的事件流解析成有格式的输出
+
 <p align="center">Blkparse主要选项</p>
 
 选项|使用说明
@@ -69,11 +70,11 @@ I/Q  |  若当前有一个payload，则输出payload的字节数目，并跟着p
 
 1.Blktrace安装
 
-[root@dwj ~]# yum -y install blktrace                        //安装
+>[root@dwj ~]# yum -y install blktrace    #安装
 
 blktrace工作原理需要借助内核经由debugfs文件系统（debugfs文件系统在内存中）来输出信息，首先挂载debugfs文件系统
 
-[root@dwj ~]# mount -t debugfs debugfs /sys/kernel/debug           //设定debug文件系统
+>[root@dwj ~]# mount -t debugfs debugfs /sys/kernel/debug           #设定debug文件系统
 
 或者在/etc/fstab中添加下面一行以便在开机启动的时候自动挂载
 
@@ -81,21 +82,23 @@ debug   /sys/kernel/debug   debugfs   default    0    0
 
 2.Blktrace常用命令
 
-[root@dwj ~]# blktrace -d /dev/sda -o - |blkparse -i -             //blktrace和blkparse的”-“代表终端，截图部分显示
+>[root@dwj ~]# blktrace -d /dev/sda -o - |blkparse -i -      #blktrace和blkparse的”-“代表终端，截图部分显示
 
-说明：追踪设备/dev/sda的I/O信息，将结果输出到屏幕，并将输出的信息重定向为blkparse的输入。经过blkparse解析之后，将结果输出到屏幕
+说明：追踪设备/dev/sda的I/O信息，将结果输出到屏幕，并将输出的信息重定向为blkparse的输入。经过blkparse解析，将结果输出到屏幕
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.13.2.png)
 
-[root@dwj opt]# blktrace -d /dev/sda -o trace | blkparse -i -
+>[root@dwj opt]# blktrace -d /dev/sda -o trace | blkparse -i -
 
 说明：blktrace的结果输出到指定的文件trace中，运行后会产生新的文件名为trace. blktrace.[0-cpu数]
 
-[root@dwj opt]# blkparse -i trace
+>[root@dwj opt]# blkparse -i trace
 
 说明：blkparse将trace文件作为blkparse的输入，blkparse的结果依然输出到屏幕
 
-[root@dwj opt]# blkparse -i trace -o ./trace.txt      //将分析结果输出到文件trace.txt   <br>
+>[root@dwj opt]# blkparse -i trace -o ./trace.txt      #将分析结果输出到文件trace.txt
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.13.3.png)
+
 <p align="center">上图blkparse输出结果分析</p>
 
 数值  | 解释说明
@@ -111,9 +114,11 @@ WS对应%3d     |  RWBS，3字节的区域。其中：R：读；W：写；D：�
 
 3.Blktrace示例
 
-终端1：[root@dwj opt]# blktrace -d /dev/sda -o - |blkparse -i -
+终端1
+>[root@dwj opt]# blktrace -d /dev/sda -o - |blkparse -i -
 
-终端2：[root@dwj ~]# dd if=/dev/zero of=/root/a1 bs=4k count=2000
+终端2
+>[root@dwj ~]# dd if=/dev/zero of=/root/a1 bs=4k count=2000
 
 终端1显示：默认输出格式 –f "%D %2c %8s %5T.%9t %5p %2a %3d" 其中数字代表占几个字符
 
@@ -129,11 +134,9 @@ WS对应%3d     |  RWBS，3字节的区域。其中：R：读；W：写；D：�
 
 8,0    0        6     0.000019095   495  I  WS 26696576 + 8 [jbd2/dm-0-8]
 
-Action[0]='Q',后面的 26696576 是（8，0即sda）相对8:0的扇区起始号，+8，为后面连续的8个扇区（默认一个扇区512byte，所以8个扇区就是4K）,
-后面的[jbd2/dm-0-8]是程序的名字。
-Action[0]='A',  后面的 25670528 是相对8:0（即sda）的起始扇区号，（8,2）是相对/dev/sda2分区的扇区号为25668480
+Action[0]='Q',后面的 26696576 是（8，0即sda）相对8:0的扇区起始号，+8，为后面连续的8个扇区（默认一个扇区512byte，所以8个扇区就是4K）,后面的[jbd2/dm-0-8]是程序的名字。Action[0]='A',  后面的 25670528 是相对8:0（即sda）的起始扇区号，（8,2）是相对/dev/sda2分区的扇区号为25668480
 
-(由于/dev/sda2分区时sda磁盘上面的一个分区，故sda2上面的起始位置要先映射到sda磁盘上面去)。
+(由于/dev/sda2分区时sda磁盘上面的一个分区，故sda2上面的起始位置要先映射到sda磁盘上面去)
 
 由于扇区号在磁盘上面是连续的，磁盘又被格式化成很多块，一个块里包含多个扇区，所以，扇区号/块大小=块号
 
@@ -144,9 +147,13 @@ Action[0]='A',  后面的 25670528 是相对8:0（即sda）的起始扇区号，
 根据inode你就可以找到对应的文件是什么了 （ find / -inum your_inode）
 
 <font color=#FF0000 size=5> <p align="center">附录：action含义</p></font>
+
 附录：action含义
+
 C - 完成以前发出的请求已经完成。输出请求的扇区和大小详细说明，以及是否成功
+
 D - 确保先前驻留在块层队列中的请求已发送，io调度程序已经发送到驱动程序
+
 I – inserted A request is being sent to the io scheduler for addition to the
 internal queue and later service by the driver. The request is fully formed
 at this time.

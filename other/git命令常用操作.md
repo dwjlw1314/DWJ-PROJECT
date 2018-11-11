@@ -161,6 +161,7 @@ s commitver '注释*********'
 
 可以通过git config来轻松地为每一个完整的git命令设置一个别名
 >[root@dwj /]# git config --global alias.last 'log -1 HEAD'
+
 #这样，可以用last轻松地看到最后一次提交
 >[root@dwj /]# git last
 
@@ -215,7 +216,8 @@ M lib/simplegit.rb
 从服务器上删除 lgl_branch 分支
 >[root@dwj /]# git push origin --delete lgl_branch
 
-<font color=#FF0000 size=5><p align="center">git tag 标签的使用</p></font> <br>
+<font color=#FF0000 size=5><p align="center">git tag 标签的使用</p></font>
+
 Git主要有两种类型的标签：轻量标签 lightweight 与附注标签 annotated，默认push不会将标签上传到远程仓库服务器上
 
 基本和特定模式查找标签
@@ -246,7 +248,8 @@ Git主要有两种类型的标签：轻量标签 lightweight 与附注标签 ann
 tagname 标签就不同了，需要注意
 >[root@dwj /]# git checkout -b [branchname] [tagname]
 
-<font color=#FF0000 size=5><p align="center">git branch/git checkout 分支操作</p></font> <br>
+<font color=#FF0000 size=5><p align="center">git branch/git checkout 分支操作</p></font>
+
 获取当前所有分支的一个列表，注意 master 分支前的 * 字符：表示现在检出的那一个分支，既当前 HEAD 指针所指向的分支
 >[root@dwj /]# git branch
 

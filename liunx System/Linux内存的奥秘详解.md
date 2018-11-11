@@ -9,7 +9,7 @@
 上面的情况下我们总的内存有1863M，用掉了1234M。 其中buffer+cache总共159+635=794M, 由于这种类型的内存是可以回收的，虽然我们用掉了1234M，但是实际上我们如果实在需要的话，这部分buffer/cache内存是可以放出来的
 
 可以做如下演示：
->[root@dwj ~]# sysctl vm.drop_caches=3
+>[root@dwj ~]# sysctl vm.drop_caches=3  <br>
 >[root@dwj ~]# free -m
 
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/1.9.3.png)
@@ -38,16 +38,16 @@ used的空间(457M)到底用到哪里去了？
 >[root@dwj Desktop]# vim RSS.sh                 #添加如下内容，添加执行权限
 
 ```bash
-	#/bin/bash
-	for PROC in `ls /proc/|grep "^[0-9]"`
-	do
-	if [ -f /proc/$PROC/statm ]; then
-	TEP=`cat /proc/$PROC/statm | awk '{print ($2)}'`
-	RSS=`expr $RSS + $TEP`
-	fi
-	done
-	RSS=`expr $RSS \* 4`
-	echo $RSS"KB"
+#/bin/bash
+for PROC in `ls /proc/|grep "^[0-9]"`
+do
+if [ -f /proc/$PROC/statm ]; then
+TEP=`cat /proc/$PROC/statm | awk '{print ($2)}'`
+RSS=`expr $RSS + $TEP`
+fi
+done
+RSS=`expr $RSS \* 4`
+echo $RSS"KB"
 ```
 >[root@dwj Desktop]# ./RSS.sh                     #显示如下内容
 
@@ -74,26 +74,27 @@ used的空间(457M)到底用到哪里去了？
 >[root@dwj Desktop]# vim cm.sh                     #添加如下内容，添加执行权限
 
 ```bash
-	#/bin/bash
-	for PROC in `ls /proc/|grep "^[0-9]"`
-	do
-	if [ -f /proc/$PROC/statm ]; then
-	TEP=`cat /proc/$PROC/statm | awk '{print ($2)}'`
-	RSS=`expr $RSS + $TEP`
-	fi
-	done
-	RSS=`expr $RSS \* 4`
-	PageTable=`grep PageTables /proc/meminfo | awk '{print $2}'`
-	SlabInfo=`cat /proc/slabinfo |awk 'BEGIN{sum=0;}{sum=sum+$3*$4;}END{print sum/1024/1024}'`
-	echo $RSS"KB", $PageTable"KB", $SlabInfo"MB"
-	printf "rss+pagetable+slabinfo=%sMB\n" `echo $RSS/1024 + $PageTable/1024 + $SlabInfo|bc`
-	free -m
+#/bin/bash
+for PROC in `ls /proc/|grep "^[0-9]"`
+do
+if [ -f /proc/$PROC/statm ]; then
+TEP=`cat /proc/$PROC/statm | awk '{print ($2)}'`
+RSS=`expr $RSS + $TEP`
+fi
+done
+RSS=`expr $RSS \* 4`
+PageTable=`grep PageTables /proc/meminfo | awk '{print $2}'`
+SlabInfo=`cat /proc/slabinfo |awk 'BEGIN{sum=0;}{sum=sum+$3*$4;}END{print sum/1024/1024}'`
+echo $RSS"KB", $PageTable"KB", $SlabInfo"MB"
+printf "rss+pagetable+slabinfo=%sMB\n" `echo $RSS/1024 + $PageTable/1024 + $SlabInfo|bc`
+free -m
 ```
 >[root@dwj Desktop]# ./cm.sh                   #显示如下内容
 
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/1.9.8.png)
 
-free报告说379M， CM脚本报告说676.5M， CM多报了297M，是什么原因？<br>
+free报告说379M， CM脚本报告说676.5M， CM多报了297M，是什么原因？
+
 重新校对后和nmon来比对下，slab和pagetable的值是吻合的。 那最大的问题可能在进程的消耗计算上
 resident resident set size 包括使用的各种库和so等共享的模块，在前面的计算中重复计算了
 

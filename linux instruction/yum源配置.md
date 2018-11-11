@@ -1,7 +1,8 @@
-全局配置文件 /etc/yum.conf; <br>
-yum日志文件 /var/log/yum.log； <br>
+```
+全局配置文件 /etc/yum.conf
+yum日志文件 /var/log/yum.log
 repository部分定义了每个源/服务器的具体配置
-
+```
 yum.conf 字段详细内容：
 ```
 [main]

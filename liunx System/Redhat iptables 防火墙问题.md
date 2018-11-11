@@ -13,31 +13,42 @@ RHEL 7.0默认使用的是firewall作为防火墙，这里改为iptables防火�
 iptables只是Linux防火墙的管理工具而已，位于/sbin/iptables，由5表5链构成
 真正实现防火墙功能的是netfilter，它是Linux内核中实现包过滤的内部结构
 
-1.iptables传输数据包的过程<br>
-* 当一个数据包进入网卡时，它首先进入PREROUTING链，内核根据数据包目的IP判断是否需要转送出去。<br>
-* 如果数据包就是进入本机的，它就会沿着图向下移动，到达INPUT链。数据包到了INPUT链后，任何进程都会收到它。<br>
-* 本机上运行的程序可以发送数据包，这些数据包会经过OUTPUT链，然后到达POSTROUTING链输出。<br>
-* 如果数据包是要转发出去的，且内核允许转发，数据包就会如图所示向右移动，经过FORWARD链，然后到达POSTROUTING链输出。<br>
+1.iptables传输数据包的过程
+```
+* 当一个数据包进入网卡时，它首先进入PREROUTING链，内核根据数据包目的IP判断是否需要转送出去
+* 如果数据包就是进入本机的，它就会沿着图向下移动，到达INPUT链。数据包到了INPUT链后，任何进程都会收到它
+* 本机上运行的程序可以发送数据包，这些数据包会经过OUTPUT链，然后到达POSTROUTING链输出
+* 如果数据包是要转发出去的，且内核允许转发，数据包就会如图所示向右移动，经过FORWARD链，然后到达POSTROUTING链输出
+```
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/1.4.1.png)
 
-2.iptables的规则表和链<br>
-表（tables）提供特定功能，内置了4个表，即filter表、nat表、mangle表和raw表，分别用于实现包过滤，网络地址转换、包重构(修改)和数据跟踪处理。
-链（chains）是数据包传播的路径，每一条链其实就是众多规则中的一个检查清单，每一条链中可以有一条或数条规则。当一个数据包到达一个链时，
-iptables就会从链中第一条规则开始检查，看该数据包是否满足规则所定义的条件。如果满足，系统就会根据该条规则所定义的方法处理该数据包；
-否则iptables将继续检查下一条规则，如果该数据包不符合链中任一条规则，iptables就会根据该链预先定 义的默认策略来处理数据包。<br>
+2.iptables的规则表和链
+```
+表（tables）提供特定功能，内置了4个表，即filter表、nat表、mangle表和raw表，分别用于实现包过滤，网络地址转换、包重构(修改)和数据跟踪处理
+链（chains）是数据包传播的路径，每一条链其实就是众多规则中的一个检查清单，每一条链中可以有一条或数条规则。当一个数据包到达一个链时，iptables就会从链中第一条规则开始检查，看该数据包是否满足规则所定义的条件。如果满足，系统就会根据该条规则所定义的方法处理该数据包；否则iptables将继续检查下一条规则，如果该数据包不符合链中任一条规则，iptables就会根据该链预先定 义的默认策略来处理数据包
+```
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/1.4.2.png)
 
 规则表：
 
-1.filter表——三个链：INPUT、FORWARD、OUTPUT<br>
-作用：过滤数据包；内核模块：iptables_filter.<br>
-2.Nat表——三个链：PREROUTING、POSTROUTING、OUTPUT<br>
-作用：用于网络地址转换（IP、端口）；内核模块：iptable_nat<br>
-3.Mangle表——五个链：PREROUTING、POSTROUTING、INPUT、OUTPUT、FORWARD<br>
-作用：修改数据包的服务类型、TTL、并且可以配置路由实现QOS；内核模块：iptable_mangle<br>
-4.Raw表——两个链：OUTPUT、PREROUTING<br>
-作用：决定数据包是否被状态跟踪机制处理；内核模块：iptable_raw<br>
-5.security表——三个链：INPUT、FORWARD、OUTPUT<br>
+1.filter表——三个链：INPUT、FORWARD、OUTPUT
+
+作用：过滤数据包；内核模块：iptables_filter
+
+2.Nat表——三个链：PREROUTING、POSTROUTING、OUTPUT
+
+作用：用于网络地址转换（IP、端口）；内核模块：iptable_nat
+
+3.Mangle表——五个链：PREROUTING、POSTROUTING、INPUT、OUTPUT、FORWARD
+
+作用：修改数据包的服务类型、TTL、并且可以配置路由实现QOS；内核模块：iptable_mangle
+
+4.Raw表——两个链：OUTPUT、PREROUTING
+
+作用：决定数据包是否被状态跟踪机制处理；内核模块：iptable_raw
+
+5.security表——三个链：INPUT、FORWARD、OUTPUT
+
 作用：主要用于强制网络访问的网络，如SElinux
 
 规则链：
@@ -48,26 +59,32 @@ iptables就会从链中第一条规则开始检查，看该数据包是否满足
 4.PREROUTING -------------对数据包作路由选择前应用此链中的规则（记住！所有的数据包进来的时侯都先由这个链处理
 5.POSTROUTING ------------对数据包作路由选择后应用此链中的规则（所有的数据包出来的时侯都先由这个链处理）
 ```
-3.规则表之间的优先顺序 <br>
-raw—mangle—nat—filter     
+
+3.规则表之间的优先顺序
+
+raw—mangle—nat—filter
 
 4.规则链之间的优先顺序(分三种)
+```
+第一种情况：入站数据流向
+    从外界到达防火墙的数据包，先被PREROUTING规则链处理（是否修改数据包地址等），之后会进行路由选择（判断该数据包应该发往何处），如果数据包 的目标主机是防火墙本机（比如说Internet用户访问防火墙主机中的web服务器的数据包），那么内核将其传给INPUT链进行处理（决定是否允许通过等），通过以后再交给系统上层的应用程序（比如Apache服务器）进行响应
+第二冲情况：转发数据流向
+    来自外界的数据包到达防火墙后，首先被PREROUTING规则链处理，之后会进行路由选择，如果数据包的目标地址是其它外部地址（比如局域网用户通过网 关访问QQ站点的数据包），则内核将其传递给FORWARD链进行处理（是否转发或拦截），然后再交给POSTROUTING规则链（是否修改数据包的地 址等）进行处理
+第三种情况：出站数据流向
+    防火墙本机向外部地址发送的数据包（比如在防火墙主机中测试公网DNS服务器时），首先被OUTPUT规则链处理，之后进行路由选择，然后传递给POSTROUTING规则链（是否修改数据包的地址等）进行处理
+```    
 
-第一种情况：入站数据流向 <br>
-    从外界到达防火墙的数据包，先被PREROUTING规则链处理（是否修改数据包地址等），之后会进行路由选择（判断该数据包应该发往何处），如果数据包 的目标主机是防火墙本机（比如说Internet用户访问防火墙主机中的web服务器的数据包），那么内核将其传给INPUT链进行处理（决定是否允许通过等），通过以后再交给系统上层的应用程序（比如Apache服务器）进行响应。 <br>
-第二冲情况：转发数据流向 <br>
-    来自外界的数据包到达防火墙后，首先被PREROUTING规则链处理，之后会进行路由选择，如果数据包的目标地址是其它外部地址（比如局域网用户通过网 关访问QQ站点的数据包），则内核将其传递给FORWARD链进行处理（是否转发或拦截），然后再交给POSTROUTING规则链（是否修改数据包的地 址等）进行处理。 <br>
-第三种情况：出站数据流向 <br>
-    防火墙本机向外部地址发送的数据包（比如在防火墙主机中测试公网DNS服务器时），首先被OUTPUT规则链处理，之后进行路由选择，然后传递给POSTROUTING规则链（是否修改数据包的地址等）进行处理。
+5.管理和设置iptables规则
 
-5.管理和设置iptables规则 <br>
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/1.4.3.jpg)
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/1.4.4.jpg)
 
 6.iptables的基本语法格式
 
-iptables [-t 表名] 命令选项 ［链名］ ［条件匹配］ ［-j 目标动作或跳转］<br>
-说明：表名、链名用于指定 iptables命令所操作的表和链，命令选项用于指定管理iptables规则的方式（比如：插入、增加、删除、查看等；条件匹配用于指定对符合什么样 条件的数据包进行处理；目标动作或跳转用于指定数据包的处理方式（比如允许通过、拒绝、丢弃、跳转（Jump）给其它链处理。
+iptables [-t 表名] 命令选项 ［链名］ ［条件匹配］ ［-j 目标动作或跳转］
+
+说明：表名、链名用于指定 iptables命令所操作的表和链，命令选项用于指定管理iptables规则的方式（比如：插入、增加、删除、查看等；条件匹配用于指定对符合什么样 条件的数据包进行处理；目标动作或跳转用于指定数据包的处理方式（比如允许通过、拒绝、丢弃、跳转（Jump）给其它链处理
 
 7.iptables命令的管理控制选项
 ```
@@ -98,8 +115,9 @@ LOG在/var/log/messages文件中记录日志信息，然后将数据包传递给
 
 iptables-save命令把规则保存到文件中，再由目录rc.d下的脚本（/etc/rc.d/init.d/iptables）自动装载
 
->[root@dwj ~]# iptables-save > /etc/sysconfig/iptables       #生成保存规则的文件 /etc/sysconfig/iptables <br>
-[root@dwj ~]# service iptables save                         #它能把规则自动保存在/etc/sysconfig/iptables中
+>[root@dwj ~]# iptables-save > /etc/sysconfig/iptables       #生成保存规则的文件 /etc/sysconfig/iptables
+
+>[root@dwj ~]# service iptables save                         #它能把规则自动保存在/etc/sysconfig/iptables中
 
 当计算机启动时，rc.d下的脚本将用命令iptables-restore调用这个文件，从而就自动恢复了规则
 
@@ -114,17 +132,14 @@ iptables-save命令把规则保存到文件中，再由目录rc.d下的脚本（
 10.基本范例
 
 删除INPUT链的第一条规则
-
 >[root@dwj ~]# iptables -D INPUT 1
 
 11.iptables防火墙常用的策略
 
 * 拒绝进入防火墙的所有ICMP协议数据包
-
 >[root@dwj ~]# iptables -I INPUT -p icmp -j REJECT
 
 * 允许防火墙转发除ICMP协议以外的所有数据包
-
 >[root@dwj ~]# iptables -A FORWARD -p ! icmp -j ACCEPT         #使用“！”可以将条件取反
 
 * 拒绝转发来自192.168.1.10主机的数据，允许转发来自192.168.0.0/24网段的数据

@@ -1,6 +1,7 @@
 性能相关的处理器硬件特性，硬件特性之 cache，内存读写是很快的，但还是无法和处理器的指令执行速度相比。为了从内存中读取指令和数据，处理器需要等待，用处理器的时间来衡量，这种等待非常漫长。Cache 是一种 SRAM，它的读写速率非常快，能和处理器处理速度相匹配。因此将常用的数据保存在 cache 中，处理器便无须等待，从而提高性能。Cache 的尺寸一般都很小，充分利用 cache 是软件调优非常重要的部分
 
-硬件特性之流水线，超标量体系结构，乱序执行，提高性能最有效的方式之一就是并行。处理器在硬件设计时也尽可能地并行，比如流水线，超标量体系结构以及乱序执行。处理器处理一条指令需要分多个步骤完成，比如先取指令，然后完成运算，最后将计算结果输出到总线上。在处理器内部，这可以看作一个三级流水线，处理器流水线如下图所示： <br>
+硬件特性之流水线，超标量体系结构，乱序执行，提高性能最有效的方式之一就是并行。处理器在硬件设计时也尽可能地并行，比如流水线，超标量体系结构以及乱序执行。处理器处理一条指令需要分多个步骤完成，比如先取指令，然后完成运算，最后将计算结果输出到总线上。在处理器内部，这可以看作一个三级流水线，处理器流水线如下图所示
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.16.1.jpg)
 
 指令从左边进入处理器，上图中的流水线有三级，一个时钟周期内可以同时处理三条指令，分别被流水线的不同部分处理
@@ -21,9 +22,11 @@ perf-top
 perf-record
 perf-report
 ```
+
 <font size=5>一、perf list 用来查看perf所支持的性能事件，有软件的也有硬件的</font>
 
-Description：List all symbolic event types    <br>
+Description：List all symbolic event types
+
 perf list [hw | sw | cache | tracepoint | event_glob]
 
 1.性能事件的分布
@@ -48,9 +51,11 @@ sw实际上是内核的计数器，与硬件无关；hw和cache是CPU架构相�
 [root@dwj ~]# perf top -e cycles:k                   #显示内核和模块中，消耗最多CPU周期的函数
 [root@dwj ~]# perf top -e kmem:kmem_cache_alloc      #显示分配高速缓存最多的函数
 ```
+
 <font size=5>二、perf top 性能事件(默认是CPU周期)，显示消耗最多的函数或指令</font>
 
-Description：System profiling tool. Generates and displays a performance counter profile in real time <br>
+Description：System profiling tool. Generates and displays a performance counter profile in real time
+
 perf top [-e <EVENT> | --event=EVENT] [<options>]
 
 主要用于实时分析各个函数在某个性能事件上的热度，能够快速的定位热点函数，包括应用程序函数、模块函数与内核函数，甚至能够定位到热点指令。默认的性能事件为cpu cycles
@@ -97,11 +102,15 @@ perf top -G graph | 路径概率为绝对值，加起来为该函数的热度
 [root@dwj ~]# perf top --comms nginx,top       #仅显示属于指定进程的符号
 [root@dwj ~]# perf top --symbols kfree         #仅显示指定的符号
 ```
+
 <font size=5>三、perf stat 用于分析指定程序的性能概况</font>
 
-Description：Run a command and gather performance counter statistics   <br>
-perf stat [-e <EVENT> | --event=EVENT] [-a] <command>     <br>
-perf stat [-e <EVENT> | --event=EVENT] [-a] - <command> [<options>]   <br>
+Description：Run a command and gather performance counter statistics
+
+perf stat [-e <EVENT> | --event=EVENT] [-a] <command>
+
+perf stat [-e <EVENT> | --event=EVENT] [-a] - <command> [<options>]
+
 有些程序慢是因为计算量太大，其多数时间都应该在使用CPU进行计算，这叫做CPU bound型；有些程序慢是因为过多的IO，
 这种时候其 CPU 利用率应该不高，这叫做 IO bound 型；对于 CPU bound 程序的调优和 IO bound 的调优是不同的
 
@@ -161,6 +170,7 @@ Cache-misses | cache 失效的次数
 [root@dwj ~]# perf stat -a -A ls > /dev/null         #单独给出每个CPU上的信息
 [root@dwj ~]# perf stat -e syscalls:sys_enter ls     #ls命令执行了多少次系统调用
 ```
+
 <font size=5>四、perf-record 收集采样信息，记录在数据文件中,用perf-report对文件进行分析</font>
 
 Description：Run a command and record its profile into perf.data.This command runs a command and gathers a performance counter profile from it, into perf.data,without displaying anything. This file can then be inspected later on, using perf report
@@ -179,25 +189,27 @@ Description：Run a command and record its profile into perf.data.This command r
 -C | Collect samples only on the list of CPUs provided.
 
 2.使用例子
+```
+[root@dwj ~]# perf record ls -g                        #记录执行ls时的性能数据
+[root@dwj ~]# perf record -p 'pgrep -d ',' nginx'      #记录nginx进程的性能数据
+[root@dwj ~]# perf record -e syscalls:sys_enter ls     #记录执行ls时的系统调用，可以知道哪些系统调用最频繁
+```
 
-    [root@dwj ~]# perf record ls -g                        #记录执行ls时的性能数据
-    [root@dwj ~]# perf record -p 'pgrep -d ',' nginx'      #记录nginx进程的性能数据
-    [root@dwj ~]# perf record -e syscalls:sys_enter ls     #记录执行ls时的系统调用，可以知道哪些系统调用最频繁
+<font size=5>五、perf-report 读取perf record创建的数据文件，并给出热点分析结果</font>
 
-<font size=5>五、perf-report 读取perf record创建的数据文件，并给出热点分析结果</font>   <br>
 Description：Read perf.data (created by perf record) and display the profile This command displays the performance counter profile information recorded via perf record.
 
 1.输出格式：
-
-    [root@dwj ~]# perf record -e cpu-clock ./a.out
-    [root@dwj ~]# perf report
-
+```
+[root@dwj ~]# perf record -e cpu-clock ./a.out
+[root@dwj ~]# perf report
+```
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.16.3.png)
 高的热点代码片段是longa( )函数，如果需要按照调用关系进行显示的统计信息，使用perf的-g选项便可以得到需要的信息：
-
-    [root@dwj ~]# perf record -e cpu-clock -g ./a.out
-    [root@dwj ~]# perf report
-
+```
+[root@dwj ~]# perf record -e cpu-clock -g ./a.out
+[root@dwj ~]# perf report
+```
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.16.4.png)
 有'+'号可以按Enter键展开查看详情，按键'a'查看汇编信息
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.16.5.png)
@@ -210,26 +222,28 @@ Description：Read perf.data (created by perf record) and display the profile Th
 
 除了以上5个常用工具外，还有一些用于特殊场景， 比如perf-lock内核锁、perf-kmem(slab性能分配器)、probe-sched调度器
 
-perf-lock 内核锁的性能分析  <br>
-Description：Analyze lock events  <br>
+perf-lock 内核锁的性能分析
+
+Description：Analyze lock events
+
 perf lock {record | report | script | info}
 
 需要编译选项的支持：
-
-    CONFIG_LOCKDEP、CONFIG_LOCK_STAT
-    CONFIG_LOCKDEP defines acquired and release events
-    CONFIG_LOCK_STAT defines contended and acquired lock events
-
+```
+CONFIG_LOCKDEP、CONFIG_LOCK_STAT
+CONFIG_LOCKDEP defines acquired and release events
+CONFIG_LOCK_STAT defines contended and acquired lock events
+```
 1.常用选项
-
-    -i <file>：输入文件
-    -k <value>：sorting key，默认为acquired，还可以按contended、wait_total、wait_max和wait_min来排序。
-
+```
+-i <file>：输入文件
+-k <value>：sorting key，默认为acquired，还可以按contended、wait_total、wait_max和wait_min来排序。
+```
 2.使用例子
-
-    [root@dwj ~]# perf lock record ls
-    [root@dwj ~]# perf lock report
-
+```
+[root@dwj ~]# perf lock record ls
+[root@dwj ~]# perf lock report
+```
 3.输出样式
 ```
       Name           acquired  contended total   wait (ns)   max wait (ns)   min wait (ns)   

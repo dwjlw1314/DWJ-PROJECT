@@ -1,11 +1,12 @@
 制作iso镜像的方法：把/dev/cdrom目录制作为镜像，名字为/root/dwj.iso
+```
+方法1：[root@dwj ~]# dd if=/dev/cdrom of=/root/dwj.iso
+方法2：[root@dwj ~]# cat /dev/cdrom > /root/dwj.iso
+方法3：[root@dwj ~]# mkisofs -r -o dwj.iso /dev/cdrom
+方法4：[root@dwj ~]# cp -r /home/user dwj.iso
+```
+>[root@dwj ~]# mkisofs  -r -J -V library32 -0 /opt/library32.iso /opt/library32
 
-    方法1：dd if=/dev/cdrom of=/root/dwj.iso
-    方法2：cat /dev/cdrom > /root/dwj.iso
-    方法3：mkisofs -r -o dwj.iso /dev/cdrom
-    方法4：cp -r /home/user dwj.iso
-
-mkisofs  -r -J -V library32 -0 /opt/library32.iso /opt/library32  <br>
 该命令是将/opt/library32目录下的所有文件和文件夹制作成光盘镜像文件library32.iso，光盘卷标是library32
 
 参数名 | 描述

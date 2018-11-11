@@ -1,10 +1,10 @@
 把已经安装了的服务添加为系统服务，可以执行以下命令：
-
-    chkconfig --add 服务名称                        #添加系统服务
-    chkconfig --del 服务名称                        #删除系统服务
-    chkconfig --level 启动级别 服务名 on             #表示开启自启动
-    chkconfig --level 启动级别 服务名 off            #表示关闭自启动
-
+```
+chkconfig --add 服务名称                        #添加系统服务
+chkconfig --del 服务名称                        #删除系统服务
+chkconfig --level 启动级别 服务名 on            #表示开启自启动
+chkconfig --level 启动级别 服务名 off           #表示关闭自启动
+```
 >[root@dwj Desktop]# chkconfig --level 3 mysql on    #让mysql服务在命令行模式，随系统启动
 
 如果要查看哪些服务被添加为系统服务可以使用命令:

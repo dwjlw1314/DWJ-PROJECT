@@ -8,8 +8,10 @@ strace是Linux系统下的一个用来跟踪进程执行时系统调用和所接
 
 1.strace PROG，PROG是要执行的程序。strace命令执行的结果就是按照调用顺序打印出所有的系统调用，包括函数名、参数列表以及返回值
 
-2.使用strace跟踪一个进程的系统调用的基本流程如图 <br>
+2.使用strace跟踪一个进程的系统调用的基本流程如图
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.18.1.png)
+
 <p align="center">图1 strace实现流程</p>
 
 从图中可以看出strace做了以下几件事情：
@@ -24,6 +26,7 @@ strace是Linux系统下的一个用来跟踪进程执行时系统调用和所接
 在系统调用的入口和结束时子进程停止运行时，这时父进程认为子进程是因为收到SIGTRAP信号而停止的。所以父进程在wait()后可以通过SIGTRAP来与其他信号区分开，上面已经提到，子进程会在系统调用前后各停止一次，所以打印系统调用信息时分为两个阶段：在系统调用开始时可以获取系统调用号和参数，在系统调用结束时可以获取系统调用的返回结果。通过给tcb结构的flags字段清除和添加TCB_INSYSCALL标志位来区分系统调用的开始和结束
 
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.18.2.png)
+
 <p align="center">图2 strace中打印系统调用的实现流程</p>
 
 跟踪一个正在运行的进程，使用-p选项加上进程的pid

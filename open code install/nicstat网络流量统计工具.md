@@ -1,4 +1,7 @@
-一. 需要在系统中安装nicstat程序，测试版本---nicstat-1.95.tar.gz
+一. 需要在系统中安装nicstat程序，测试版本 nicstat-1.95.tar.gz
+
+因为nicstat是在32位系统上编译的，所以要安装32位的libc文件
+>[root@dwj nicstat-1.95]# yum -y install glibc.i686
 
 二. 在解压包目录nicstat-1.95内,有个nicstat.sh脚本
 
@@ -33,9 +36,9 @@ Sat   | 网卡每秒的错误数.网卡是否接近饱满的一个指标
 
 字段名 | 含义
 ---|---
-InKB  | 表示每秒接收到的千字节
-OutKB | 表示每秒传输的千字节
-InSeg | 表示每秒接收到的TCP数据段(TCP Segments)
+InKB   | 表示每秒接收到的千字节
+OutKB  | 表示每秒传输的千字节
+InSeg  | 表示每秒接收到的TCP数据段(TCP Segments)
 OutSeg | 表示每秒传输的TCP数据段(TCP Segments)
 Reset  | 表示TCP连接从ESTABLISHED或CLOSE-WAIT状态直接转变为CLOSED状态的次数
 AttF   | 表示TCP连接从SYN-SENT或SYN-RCVD状态直接转变为CLOSED状态的次数,再加上TCP连接从SYN-RCVD状态直接转变为LISTEN状态的次数
@@ -43,3 +46,14 @@ AttF   | 表示TCP连接从SYN-SENT或SYN-RCVD状态直接转变为CLOSED状态�
 InConn | 表示TCP连接从LISTEN状态直接转变为SYN-RCVD状态的次数
 OutCon | 表示TCP连接从CLOSED状态直接转变为SYN-SENT状态的次数
 Drops  | 表示从完成连接(completed connection)的队列和未完成连接(incomplete connection)的队列中丢弃的连接次数
+
+5.查看udp相关信息(-u):
+
+![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.15.5.jpg)
+
+字段名 | 含义
+---|---
+InDG   | 每秒接收到的UDP数据报(UDP Datagrams)
+OutDG  | 每秒传输的UDP数据报(UDP Datagrams)
+InErr  | 接收到的因包含错误而不能被处理的数据包
+OutErr | 因错误而不能成功传输的数据包.

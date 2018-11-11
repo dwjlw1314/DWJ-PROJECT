@@ -23,7 +23,9 @@ sar 命令常用选项如下：
 -y：终端设备活动情况
 -w：输出系统交换活动信息
 ```
-<font size=5>1.CPU资源监控</font>   <br>
+
+<font size=5>1.CPU资源监控</font>
+
 采样3次，每10秒一次，观察CPU的使用情况，将结果以binary存入当前目录下文件test中，使用：sar -u -o test 10 3
 ```
 屏幕显示如下：
@@ -49,7 +51,8 @@ CPU：all 表示统计信息为所有 CPU 的平均值
 ```
 如果要查看二进制文件test中的内容，键入如下sar命令：sar -u -f test
 
-<font size=5>2.inode、文件和其他内核表监控</font>   <br>
+<font size=5>2.inode、文件和其他内核表监控</font>
+
 采样每10秒一次，连续3次，观察核心表的状态，键入如下命令：sar -v 10 3
 ```
 屏幕显示如下：
@@ -65,7 +68,9 @@ file-nr：  文件句柄（file handle）的使用数量
 inode-nr： 索引节点句柄（inode handle）的使用数量
 pty-nr：   使用的pty数量
 ```
-<font size=5>3.内存和交换空间监控</font>   <br>
+
+<font size=5>3.内存和交换空间监控</font>
+
 每10秒采样一次，连续采样3次，监控内存分页状态，键入如下命令：sar -r 10 3
 
 屏幕显示如下：
@@ -80,7 +85,9 @@ kbbuffers和kbcached：这两个值就是free命令中的buffer和cache.
 kbcommit：  保证当前系统所需要的内存,即为了确保不溢出而需要的内存(RAM+swap).
 %commit：   这个值是kbcommit与内存总量(包括swap)的一个百分比.
 ```
-<font size=5>4.内存分页监控</font>   <br>
+
+<font size=5>4.内存分页监控</font>
+
 每10秒采样一次，连续采样3次，监控内存分页，键入如下命令：sar -B 10 3
 
 屏幕显示如下：
@@ -99,7 +106,8 @@ pgsteal/s：每秒钟从cache中被清除来满足内存需要的页个数
 %vmeff：   每秒清除的页(pgsteal)占总扫描页(pgscank+pgscand)的百分比
 ```
 
-<font size=5>5.I/O和传送速率监控</font>   <br>
+<font size=5>5.I/O和传送速率监控</font>
+
 每10秒采样一次，连续采样3次，报告缓冲区的使用情况，键入如下命令：sar -b 10 3
 ```
 屏幕显示如下：
@@ -116,7 +124,9 @@ wtps：每秒钟向物理设备写入的数据总量
 bread/s：每秒钟从物理设备读入的数据量，单位为 块/s
 bwrtn/s：每秒钟向物理设备写入的数据量，单位为 块/s
 ```
-<font size=5>6.进程队列长度和平均负载状态监控</font>   <br>
+
+<font size=5>6.进程队列长度和平均负载状态监控</font>
+
 每10秒采样一次，连续采样3次，监控进程队列长度和平均负载状态，键入如下命令: sar -q 10 3
 ```
 屏幕显示如下：
@@ -134,7 +144,8 @@ ldavg-5：过去5分钟的系统平均负载
 ldavg-15：过去15分钟的系统平均负载
 ```
 
-<font size=5>7.系统交换活动信息监控</font>   <br>
+<font size=5>7.系统交换活动信息监控</font>
+
 例如，每10秒采样一次，连续采样3次，监控系统交换活动信息，键入如下命令: sar -W 10 3
 ```
 屏幕显示如下：
@@ -148,7 +159,9 @@ Average: 0.00 0.00
 pswpin/s：每秒系统换入的交换页面（swap page）数量
 pswpout/s：每秒系统换出的交换页面（swap page）数量
 ```
-<font size=5>8.设备使用情况监控</font>   <br>
+
+<font size=5>8.设备使用情况监控</font>
+
 每10秒采样一次，连续采样3次，报告设备使用情况，键入如下命令：sar -d 10 3 –p
 ```
 屏幕显示如下：

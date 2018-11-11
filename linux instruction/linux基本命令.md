@@ -1,7 +1,11 @@
-<font color=#FF0000 size=5>http://man.linuxde.net/ &nbsp;&nbsp;&nbsp; #linux系统命令大全</font>
+<font color=#FF0000 size=5>linux基本用法</font>
+
+linux系统命令大全
+>http://man.linuxde.net/
 
 常用基本命令
 ```
+strace -p 9586 -o strace.log                                         #对9586进程进行跟踪,结果写入strace.log
 source /home/oracle/.bash_profile                                    #设置oracle用户环境变量
 source /etc/profile                                                  #使修改后的环境变量生效
 sysctl -p                                                            #使修改后的内核参数生效
@@ -32,6 +36,7 @@ brctl show                                                           #查看网�
 ip link set dev docker0 down                                         #关闭网桥docker0
 brctl delbr docker0                                                  #删除网桥docker0
 ifcfg eth0 add/del ip/mask                                           #eth0网卡添加删除ip
+ifcfg eth0 up/down                                                   #eth0网卡启用和关闭
 getenforce                                                           #查看SElinux状态
 setenforce                                                           #设置SElinux状态
 setfacl/getfacl                                                      #设置和获取文件的ACL权限
@@ -89,9 +94,9 @@ tune2fs -l /dev/sdb5   || dumpe2fs -h /dev/sdb5                      #查看分�
 e2label /dev/sdb5 mydisk                                             #设置分区卷标信息,默认是查看
 mkfs -t ext4 /dev/sdb1 或者 mkfs.ext4 /dev/sdb1                      #新建分区后格式化普通文件系统
 mkswap /dev/sdb6                                                     #新建swap分区后格式化交换文件系统
-swapon /dev/sdb6
-swapoff /dev/sdb6                                                    #加入和取消新扩容的swap交换分区
-mount a                                                              #重新读取</etc/fstab>文件进行挂载文件系统
+swapon/swapoff /dev/sdb6                                             #加入和取消新扩容的swap交换分区
+swapon -a / swapon -s                                                #激活交换空间和查看交换空间命令
+mount -a                                                             #重新读取</etc/fstab>文件进行挂载文件系统
 
 write gjsy                                                           #给gjsy在线用户发送消息
 wall helloword                                                       #给所有在线用户发送消息
@@ -99,10 +104,17 @@ wall helloword                                                       #给所有�
 logrotate -v /etc/logrotate.conf                                     #查看配置文件中需要日志轮替的文件
 logrotate -f /etc/logrotate.conf                                     #强制运行配置文件中的日志轮替文件
 
+[root@dwj ~]# echo '- - -' >/sys/class/scsi_host/host2/scan          #让系统识别新增加的磁盘
+
 [root@dwj ~/Desktop]# zcat ntfs-3g.tgz                               #查看压缩包文件的内容
 [root@dwj ~/Desktop]# tar -tvf ntfs-3g.tgz                           #不解压查看压缩包中的文件
 
+[root@dwj ~/Desktop]# alias aliasname='command'                      #创建命令别名,如果是修改文件需要source生效
+
 [root@dwj /usr/sbin]# sendmail diwenjie@gsafety.com                  #发送邮件命令
+[root@dwj /usr/sbin]# mail                                           #该命令可以查看邮件发送状态，直接回车查看应答内容
+[root@dwj /usr/sbin]# mailq                                          #该命令检测邮件发送Queue(/var/spool/mqueue)
+
 [root@dwj ~/Desktop]# jobs                                           #查看后台运行程序，fg和bg把程序调到前台和后台执行
 -l：显示进程号
 -p：仅任务对应的显示进程号
@@ -155,6 +167,7 @@ terminal终端变量
 
 变量	| 含义
 :--|---
+!!  |  执行上一条shell命令
 !$  |  上一条命令的最后一个参数
 $0	|  当前脚本的文件名
 $n	|  传递给脚本或函数的参数。n 是一个数字，表示第几个参数。例如，第一个参数是$1，第二个参数是$2
@@ -167,44 +180,88 @@ $$	|  当前Shell进程ID。对于 Shell 脚本，就是这些脚本所在的进
 释放缓存区内存的方法
 ```
 清理pagecache（页面缓存）
-# echo 1 > /proc/sys/vm/drop_caches 或者 # sysctl -w vm.drop_caches=1
+[root@dwj ~]# echo 1 > /proc/sys/vm/drop_caches 或者 # sysctl -w vm.drop_caches=1
 清理dentries（目录缓存）和inodes
-# echo 2 > /proc/sys/vm/drop_caches 或者 # sysctl -w vm.drop_caches=2
+[root@dwj ~]# echo 2 > /proc/sys/vm/drop_caches 或者 # sysctl -w vm.drop_caches=2
 清理所有缓存
-# echo 3 > /proc/sys/vm/drop_caches 或者 # sysctl -w vm.drop_caches=3
+[root@dwj ~]# echo 3 > /proc/sys/vm/drop_caches 或者 # sysctl -w vm.drop_caches=3
 
-上面三种方式都是临时释放缓存的方法，要想永久释放缓存，需要在/etc/sysctl.conf文件中配置：
-vm.drop_caches=1/2/3 使用 [root@dwj /opt]# sysctl -p 生效设置
+要想永久释放缓存，需要在/etc/sysctl.conf文件中配置：vm.drop_caches=1/2/3
+[root@dwj /opt]# sysctl -p  #该命令使设置生效
 另外，可以使用sync命令来清理文件系统缓存，还会清理僵尸(zombie)对象和它们占用的内存
 [root@dwj /opt]# sync
 ```
+
+<font color=#FF0000 size=5> <p align="center">用文件动态增加swap分区大小</p></font>
+
+首先查看磁盘分区使用情况,从空闲空间大的磁盘抽离部分作为swap分区
+>[root@node1 ~]# df -h
+
+例如抽取/目录下的磁盘空间，在该目录下创建swapimage文件夹
+>[root@node1 ~]# mkdir /swapimage
+
+进入swapimage文件夹
+>[root@node1 ~]# cd /swapimage/
+
+添加交换文件并设置大小为1G bs表示每次读写1M，count定义读写次数为1024
+>[root@node1 swapimage]# dd if=/dev/zero of=/swapimage/swap bs=1M count=1024
+
+查看磁盘空间可以发现根目录下少了1G,使用mkswap将/swapimage/swap文件格式化为虚拟内存文件格式
+>[root@node1 swapimage]# mkswap /swapimage/swap
+
+使用swapon命令，启用新增的1G交换空间
+>[root@node1 swapimage]# swapon /swapimage/swap
+
+查看内存情况，确认新增swap大小,如果成功执行设置系统自动加载
+>[root@node1 swapimage]# free -m
+
+修改/etc/rc.local文件，添加以下内容，使新增1G交换空间在系统启动生效
+>[root@node1 swapimage]# vim /etc/rc.local  <br>
+swapon /swapimage/swap
+
+或者修改/etc/fstab文件，实现交换分区随系统启动生效
+>[root@node1 swapimage]# vim /etc/fstab  <br>
+/swapimage/swap swap  swap defaults 0 0
+
+<font color=#FF0000 size=5> <p align="center">Linux 命令提示符显示全路径设置</p></font>
+
+>[root@dwj ~]# vim etc/bashrc  #或者  <br>
+>[root@dwj ~]# vim ~/.bash_profile
+```
+在最后加上下面语句，其中\w 是小写
+export PS1='[\u@\h \w]\$'
+```
+最后执行
+>[root@dwj ~]# source ~/.bash_profile
+
 <font color=#FF0000 size=5> <p align="center">chmod</p></font>
+
 一个文件都有一个所有者, 表示该文件是谁创建的. 同时, 该文件还有一个组编号, 表示该文件所属的组, 一般为文件所有者所属的组
 如果是一个可执行文件, 那么在执行时, 一般该文件只拥有调用该文件的用户具有的权限. 而setuid, setgid可以来改变这种设置
-
-* setuid: 设置使文件在执行阶段具有文件所有者的权限，/usr/bin/passwd是典型，一般用户执行该文件, 执行过程中可以获得root权
-* setgid: 该权限只对目录有效，目录被设置该位后, 任何用户在此目录下创建的文件都具有和该目录相同的所属组
-* sticky bit: 该位是文件粘滞位，一个文件是否可以被某用户删除, 主要取决于该文件所属的组是否对该用户具有写权限
-
+```
+setuid: 设置使文件在执行阶段具有文件所有者的权限，/usr/bin/passwd是典型，一般用户执行该文件, 执行过程中可以获得root权
+setgid: 该权限只对目录有效，目录被设置该位后, 任何用户在此目录下创建的文件都具有和该目录相同的所属组
+sticky bit: 该位是文件粘滞位，一个文件是否可以被某用户删除, 主要取决于该文件所属的组是否对该用户具有写权限
+```
 如果没有写权限, 则这个目录下的所有文件都不能被删除, 同时也不能添加新的文件。如果希望用户能够添加文件，但同时不能删除文件
 则可以对文件使用sticky bit位，设置该位后，就算用户对目录具有写权限，也不能删除该文件
 
 操作标志命令与操作文件权限的命令是一样的，都是chmod，第一种操作方法
-
-    chmod u+s temp           为temp文件加上setuid标志. (setuid 只对文件有效)
-    chmod g+s tempdir        为tempdir目录加上setgid标志 (setgid 只对目录有效)
-    chmod o+t temp           为temp文件加上sticky标志 (sticky只对文件有效)
-
+```
+chmod u+s temp           为temp文件加上setuid标志. (setuid 只对文件有效)
+chmod g+s tempdir        为tempdir目录加上setgid标志 (setgid 只对目录有效)
+chmod o+t temp           为temp文件加上sticky标志 (sticky只对文件有效)
+```
 第二种是采用八进制方式，对一般文件通过三组八进制数字来置标志，如666等，如果设置这些特殊标志
 则在这组数字之外外加一组八进制数字，如4666等，如果有这些标志,，则会在原来的执行标志位置上显示
-
-    setuid位, 如果该位为1, 则表示设置setuid
-    setgid位, 如果该位为1, 则表示设置setgid
-    sticky位, 如果该位为1, 则表示设置sticky
-    rwsrw-r–      表示有setuid标志
-    rwxrwsrw-     表示有setgid标志
-    rwxrw-rwt     表示有sticky标志
-
+```
+setuid位, 如果该位为1, 则表示设置setuid
+setgid位, 如果该位为1, 则表示设置setgid
+sticky位, 如果该位为1, 则表示设置sticky
+rwsrw-r–      表示有setuid标志
+rwxrwsrw-     表示有setgid标志
+rwxrw-rwt     表示有sticky标志
+```
 那么原来的执行标志x到哪里去了呢? 系统是这样规定的, 如果本来在该位上有x, 则这些特殊标志显示为小写字母，否则, 显示为大写字母
 
 常用操作：找出所有危险的目录（设置目录所有人可读写却没有设置sticky位的目录）
@@ -217,14 +274,16 @@ vm.drop_caches=1/2/3 使用 [root@dwj /opt]# sysctl -p 生效设置
 >[root@dwj opt]# chmod +t  filename
 
 <font color=#FF0000 size=5> <p align="center">内核参数和环境变量修改</p></font>
-ulimit -a              #显示系统部分内核参数配置信息  <br>
-ulimit -SHn 102400     #修改当前session有效文件描述符的限制  <br>
+
+>[root@dwj ~]# ulimit -a              #显示系统部分内核参数配置信息  <br>
+>[root@dwj ~]# ulimit -SHn 102400     #修改当前session有效文件描述符的限制
+
 永久变更需要修改/etc/security/limits.conf 文件，如下：
-
-    vi /etc/security/limits.conf
-    * hard nofile 65535
-    * soft nofile 65535
-
+```
+vi /etc/security/limits.conf
+* hard nofile 65535
+* soft nofile 65535
+```
 保存退出后重新登录，其最大文件描述符就被永久更改了
 
 参数名 | 参数含义
@@ -245,6 +304,7 @@ ulimit -SHn 102400     #修改当前session有效文件描述符的限制  <br>
 -v | Shell可使用的最大的虚拟内存，单位：kbytes
 
 <font color=#FF0000 size=5> <p align="center">系统时间</p></font>
+
 ```
 date -R                                    #查看时区信息
 date -s 时间字符串                          #修改操作系统时间
@@ -261,12 +321,14 @@ date -s "2012-05-18 04:53:00"              #同时修改日期和时间
 /usr/share/zoneinfo目录下基本涵盖了大部分的国家和城市的时区
 
 查看每个 timezone 当前的时间可以用zdump命令
+```
+[root@dwj zoneinfo]# zdump Hongkong
+结果：Hongkong  Thu Mar 30 16:47:31 2017 HKT
+[root@dwj zoneinfo]# zdump /etc/localtime
+[root@dwj zoneinfo]# zdump /etc/timezone
+```
+修改当前系统的时区方法，修改后的值保存在“/etc/sysconfig/clock”文件中
 
-    [root@dwj zoneinfo]# zdump Hongkong     #结果：Hongkong  Thu Mar 30 16:47:31 2017 HKT
-    [root@dwj zoneinfo]# zdump /etc/localtime
-    [root@dwj zoneinfo]# zdump /etc/timezone
-
-修改当前系统的时区方法，修改后的值保存在“/etc/sysconfig/clock”文件中  <br>
 1.修改/etc/localtime文件
 >[root@dwj zoneinfo]# vim /etc/localtime
 
@@ -277,65 +339,58 @@ date -s "2012-05-18 04:53:00"              #同时修改日期和时间
 >[root@dwj zoneinfo]# tzselect
 
 Real Time Clock(RTC) and System Clock（硬件时间时钟和系统时钟）
-
-    [root@dwj zoneinfo]# hwclock --show              #查看机器上的硬件时间
-    [root@dwj zoneinfo]# hwclock --hctosys           #硬件时间设置成系统时间
-    [root@dwj zoneinfo]# hwclock --systohc           #系统时间设置成硬件时间
-    [root@dwj zoneinfo]# hwclock -w                  #同步硬件时间
-    [root@dwj zoneinfo]# cat /etc/adjtime            #hwclock -w命令后秒数存放的文件
-
-<font color=#FF0000 size=5> <p align="center">NTP安装</p></font>
-NTP是网络时间协议(Network Time Protocol)，它是用来同步网络中各个计算机的时间的协议
-
-1.检查是否安装了NTP的rpm包，本次已经安装
-
-    [root@dwj ~]# rpm -qa|grep ntp
-    ntpdate-4.2.4p8-3.e16.x86_64
-    fontpackages-filesystem-1.41-1.1.e16.noarch
-    ntp-4.2.4p8-3.e16.x86_64
-
-2.在NTP的官方网站http://www.pool.ntp.org查找最近的2个NTP Server, 格式都是：number.country.pool.ntp.org
-![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.1.1.png)
-
-3.打开NTP服务器之前先和这些服务器做一个同步，用ntpdate命令手动更新时间
->[root@dwj ~]# ntpdate 202.120.2.101
-
-那么为什么在打开NTP服务之前先要手动运行同步呢?
->因为根据NTP的设置,如果你的系统时间比正确时间要快的话那么NTP是不会帮你调整的,所以要么你把时间设置回去,要么先做一个手动同步
- 当你的时间设置和NTP服务器的时间相差很大的时候,NTP会花上较长一段时间进行调整.所以手动同步可以减少这段时间
-
-4.配置和运行NTP Server
-
-    [root@dwj ~]# vim /etc/ntp.conf    #加入NTP Server和fudge就可以了
-    driftfile /opt/drift
-    server 202.120.2.101 perfer        #perfer是优先级
-    server 120.25.108.11
-    fudge  127.127.1.0   stratum 10    
-    fudge一行表示时间服务器的层次,stratum设为0则为顶级，如果要向别的NTP服务器更新时间，请不要把它设为0
-
-driftfile字段后指定文件会被ntpd自动更新，所以他的权限是ntpd才行，ntpd的owner是ntp，可以查看/etc/sysconfig/ntpd
-该文件必须指定绝对路径，且该文档中记录的数值单位是百万分之一秒(ppm)，允许上层时间服务器主动修改本机时间
-
-restrict  202.120.2.101  nomodify notrap noquery  <br>
-restrict  120.25.108.11  nomodify notrap noquery
-
-允许内网其他机器同步时间(192.168.1.0是广播地址)  <br>
-restrict 192.168.1.0 mask 255.255.255.0 nomodify notrap
-
-5.启动NTP Server,并且设置其在开机后自动运行  <br>
-    [root@dwj ~]# /etc/init.d/ntpd start  <br>
-    [root@dwj ~]# chkconfig --level 35 ntpd on
-
-6.查看NTP服务的运行状况
->[root@dwj ~]# watch ntpq -p
+```
+[root@dwj zoneinfo]# hwclock --show              #查看机器上的硬件时间
+[root@dwj zoneinfo]# hwclock --hctosys           #硬件时间设置成系统时间
+[root@dwj zoneinfo]# hwclock --systohc           #系统时间设置成硬件时间
+[root@dwj zoneinfo]# hwclock -w                  #同步硬件时间
+[root@dwj zoneinfo]# cat /etc/adjtime            #hwclock -w命令后秒数存放的文件
+```
 
 <font color=#FF0000 size=5> <p align="center">邮箱默认端口</p></font>
-SMTP,  简单的邮件传输协议，TCP 25端口，加密时使用TCP 465端口  <br>
-POP3， 第三版邮局协议，TCP 110端口，加密时使用995端口  <br>
-IMAP4，第四版互联网消息访问协议，TCP 143端口，加密时使用993端口  <br>
+
+```
+SMTP,  简单的邮件传输协议，TCP 25端口，加密时使用TCP 465端口
+POP3， 第三版邮局协议，TCP 110端口，加密时使用995端口
+IMAP4，第四版互联网消息访问协议，TCP 143端口，加密时使用993端口
 MUA（邮件用户代理），MTA（邮件传输代理）， MDA（又见分发代理），MRA（邮件检索代理）
+```
+
+<font color=#FF0000 size=5> <p align="center">/etc/issue文件参数</p></font>
+
+当前系统启动后，登录前的提示信息为配置参数如下：
+
+参数名 | 含义
+---|---
+\d | 显示当前日期
+\l | 显示虚拟控制台号
+\m | 显示机器类型，即 CPU 架构，如 i386 或 x86_64 等(相当于 uname -m)
+\n | 显示主机的网络名(相当于 uname -n)
+\o | 显示域名
+\r | 显示 Kernel 内核版本号(相当于 uname -r)
+\t | 显示当前时间
+\s | 显示当前操作系统名称
+\u | 显示当前登录用户的编号
+\U | 显示当前登录用户的编号和用户
+\v | 显示当前操作系统的版本日期
+
+注意：只会在普通登录时才会显示，远程 ssh 连接的时候并不会显示此信息
+
+<font color=#FF0000 size=5> <p align="center">ssh登录欢迎信息设置</p></font>
+
+当输入用户后，在弹出输入密码提示之前显示欢迎信息
+>[root@dwj ~]# /etc/ssh/sshd_config     #在其中添加对应的Banner文件路径  <br>
+Banner /etc/ssh/banner
+
+然后再创建 /etc/ssh/banner 文件，文件内容即为输入用户名后的欢迎信息
+
+修改完后，执行如下命令重新加载,再次登录即可显示欢迎信息
+>[root@dwj ~]# service sshd reload
+
+注意：此信息只在 ssh 输入用户名后显示，在普通登录输入用户名后不显示
 
 <font color=#FF0000 size=5> <p align="center">NFS参数</p></font>
+
 ```
 exportfs #命令用来管理当前NFS共享的文件系统列表
 -a 打开或取消所有目录共享
@@ -348,8 +403,9 @@ exportfs #命令用来管理当前NFS共享的文件系统列表
 ```
 
 <font color=#FF0000 size=5> <p align="center">用户添加-删除</p></font>
+
+>[root@dwj ~]# useradd -d /usr/dwj -m dwj
 ```
-[root@dwj ~]# useradd -d /usr/dwj -m dwj
 -d 　指定用户根目录
 -s 　指定用户登陆shell
 -u　 指定用户uid
@@ -357,6 +413,7 @@ exportfs #命令用来管理当前NFS共享的文件系统列表
 -G 　指定用户所属附属组
 -m   创建指定用户的根目录
 ```
+
 命令usermod修改一个用户的各项信息；格式：usermod <参数> <用户名>
 ```
 -l 　 修改用户名，对应的是/etc/passwd的第一栏
@@ -372,25 +429,26 @@ exportfs #命令用来管理当前NFS共享的文件系统列表
 -d    更改/etc/passwd第6栏用户的home目录部分，如果再加上-m参数（只与-d配合）
       则会将现有home目录的地址重命名为新的地址，如原来没有指定，则为账号新建一个指定的home目录地址
 ```
-[root@dwj ~]# userdel dwj        #删除用户  <br>
-[root@dwj ~]# passwd dwj         #修改用户密码
+>[root@dwj ~]# userdel dwj        #删除用户  <br>
+>[root@dwj ~]# passwd dwj         #修改用户密码
 
 <font color=#FF0000 size=5> <p align="center">vim注释和删除注释</p></font>
+
 1.多行注释：
-
-    a. 按下Ctrl + v，进入列模式;
-    b. 在行首选择需要注释的行;
-    c. 按下shift+i进入插入模式；
-    d. 然后输入注释符#或者//
-    e. 按下Esc键
-
+```
+a. 按下Ctrl + v，进入列模式;
+b. 在行首选择需要注释的行;
+c. 按下shift+i进入插入模式；
+d. 然后输入注释符#或者//
+e. 按下Esc键
+```
 2.删除多行注释：
-
-    a. 按下Ctrl + v, 进入列模式;
-    b. 选定要取消的注释符;
-    c. 按下x或者d
-    d. 按下Esc键
-
+```
+a. 按下Ctrl + v, 进入列模式;
+b. 选定要取消的注释符;
+c. 按下x或者d
+d. 按下Esc键
+```
 3.在命令管理行下注释
 ```
 添加注释 :起始行号,结束行号s/^/注释符/g
@@ -423,22 +481,25 @@ vim -O /etc/passwd /opt/gjsy.txt    #左右分屏显示,使用ctrl+w两次进行
 ```
 
 <font color=#FF0000 size=5> <p align="center">SELinux设置</p></font>
-查看SELinux状态：
->[root@dwj ~]# /usr/sbin/sestatus -v    #SELinux status: enabled即为开启状态
 
+查看SELinux状态：
+>[root@dwj ~]# /usr/sbin/sestatus -v    #SELinux status: enabled即为开启状态  <br>
 >[root@dwj ~]# getenforce               #也可以用这个命令检查
 
-关闭SELinux： <br>
-* 临时关闭（不用重启机器）： <br>
-[root@dwj ~]# setenforce 0                #设置SELinux 成为permissive模式 <br>
-[root@dwj ~]# setenforce 1                #设置SELinux 成为enforcing模式
+关闭SELinux：
+```
+--临时关闭(不用重启机器)
+[root@dwj ~]# setenforce 0   #设置SELinux 成为permissive模式
+[root@dwj ~]# setenforce 1   #设置SELinux 成为enforcing模式
 
-* 修改配置文件需要重启机器：  <br>
-修改/etc/selinux/config 文件   <br>
-将SELINUX=enforcing改为SELINUX=disabled  <br>
+--修改配置文件需要重启机器
+修改/etc/selinux/config 文件
+将SELINUX=enforcing改为SELINUX=disabled
 重启机器即可
+```
 
 <font color=#FF0000 size=5> <p align="center">/usr/share/man手册页</p></font>
+
 ```
 /usr/share/<mandir>/<locale> 细述整个系统中手册页的组织：
 Man1：用户程序手册。本节中包含了描述公共访问的命令的手册页面。用户需要使用的绝大多数程序文档位于这里
@@ -450,11 +511,15 @@ Man6：游戏。这一节是游戏、演示和通常很琐碎的程序的文档
 Man7：各种难以归类的手册页，Troff和其他文本处理宏包（的手册）放在这里
 Man8：系统管理员用来进行系统操作和维护的系统管理程序的文档放在这里。有些程序有时也对普通用户有用
 ```
+
 <font color=#FF0000 size=5> <p align="center">Top</p></font>
+
 >[root@dwj ~]# top   #运行命令
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.1.2.png)
 
-<font color=#FF0000>一. top前五行统计信息</font>  <br>
+<font color=#FF0000>一. top前五行统计信息</font>
+
 第1行是任务队列信息，同 uptime 命令的执行结果一样，其内容如下:
 
 12:38:33 | 当前时间
@@ -490,7 +555,7 @@ Swap: 1927k total   | 交换区总量
 192772k free        | 空闲交换区总量
 123988k cached      | 缓冲的交换区总量。 内存中的内容被换出到交换区，而后又被换入到内存，但使用过的交换区尚未被覆盖， <br>该数值即为这些内容已存在于内存中的交换区的大小。相应的内存再次被换出时可不必再对交换区写入
 
-<font color=#FF0000>二. 进程信息</font>  <br>
+<font color=#FF0000>二. 进程信息</font>
 
 列名|含义
 :--|:--
@@ -521,9 +586,9 @@ COMMAND  | 命令名/命令行
 WCHAN    | 若该进程在睡眠，则显示睡眠中的系统函数名
 Flags    | 任务标志，参考 sched.h
 
-<font color=#FF0000>三. 快捷键更改显示内容</font>   <br>
-1.更改显示内容通过f键可以选择显示的内容  <br>
-按f键之后会显示列的列表，按a-z即可显示或隐藏对应的列，最后按回车键确定
+<font color=#FF0000>三. 快捷键更改显示内容</font>
+
+1.更改显示内容通过f键可以选择显示的内容,按a-z即可显示或隐藏对应的列，最后按回车键确定
 
 2.按o键可以改变列的显示顺序   <br>
 按小写的a-z可以将相应的列向右移动，而大写的A-Z可以将相应的列向左移动。最后按回车键确定  <br>
@@ -559,7 +624,9 @@ P：根据CPU使用百分比大小进行排序
 T：根据时间/累计时间进行排序
 W：将当前设置写入~/.toprc文件中。这是写top配置文件的推荐方法
 ```
+
 <font color=#FF0000 size=5> <p align="center">vmstat</p></font>
+
 vmstat命令是Linux监控工具，可以展现给定时间间隔的服务器的状态值,包括服务器的CPU使用率，内存使用，虚拟内存交换，IO读写情况
 相比top，可以看到整个机器的CPU,内存,IO的使用情况，而不是单单看到各个进程的CPU使用率和内存使用率(使用场景不一样)
 一般vmstat工具的使用是通过两个数字参数来完成的，第一个参数是采样的时间间隔数，单位是秒，第二个参数是采样的次数
@@ -587,7 +654,9 @@ sy 系统CPU时间，如果太高，表示系统调用时间长，例如是IO操
 id 空闲CPU时间，一般来说，id + us + sy = 100,一般我认为id是空闲CPU使用率，us是用户CPU使用率，sy是系统CPU使用率
 wt 等待IO CPU时间
 ```
+
 <font color=#FF0000 size=5> <p align="center">mpstat</p></font>
+
 mpstat是Multiprocessor Statistics的缩写，是实时系统监控工具。其报告与CPU的一些统计信息，这些信息存放在/proc/stat文件中。在多CPUs系统里，其不但能查看所有CPU的平均状况信息，而且能够查看特定CPU的信息。mpstat最大的特点是：可以查看多核心cpu中每个计算核心的统计数据；而类似工具vmstat只能查看系统整体cpu情况
 
 mpstat [-P {|ALL}] [internal [count]]      #参数解释
@@ -609,7 +678,9 @@ count 采样的次数，count只能和delay一起使用
 %soft       在internal时间段里，软中断时间(%)     (softirq/total)*100
 %idle       在internal时间段里，CPU除去等待磁盘IO操作外的因为任何原因而空闲的时间闲置时间(%) (idle/total)*100
 ```
+
 <font color=#FF0000 size=5> <p align="center">pidstat</p></font>
+
 pidstat主要用于监控全部或指定进程占用系统资源的情况，如CPU，内存、设备IO、任务切换、线程等。
 执行pidstat，将输出系统启动后所有活动进程的cpu统计信息
 
@@ -632,7 +703,9 @@ kB_rd/s: 每秒进程从磁盘读取的数据量(以kB为单位)
 kB_wr/s: 每秒进程向磁盘写的数据量(以kB为单位)
 Command: 拉起进程对应的命令
 ```
+
 <font color=#FF0000 size=5> <p align="center">iostat</p></font>
+
 iostat命令查看IO请求下发情况、系统IO处理能力，以及命令执行结果中各字段的含义详解
 
 1.不加选项执行iostat，我们先来看直接执行iostat的输出结果
@@ -650,12 +723,11 @@ Device: 各磁盘设备的IO统计信息，各列含义如下：
 可以使用-c选项单独显示avg-cpu部分的结果，使用-d选项单独显示Device部分的信息
 ```
 
-2.指定采样时间间隔与采样次数  <br>
-iostat interval [count] 形式指定iostat命令的采样间隔和采样次数  <br>
-[root@dwj nicstat-1.95]# iostat -d 1 3
+2.指定采样时间间隔与采样次数,iostat interval [count] 形式指定iostat命令的采样间隔和采样次数
+>[root@dwj nicstat-1.95]# iostat -d 1 3
 
-3.更详细的io统计信息(-x选项)  <br>
-显示更详细的io设备统计信息，我们可以使用-x选项，在分析io瓶颈时，一般都会开启-x选项  <br>
+3.更详细的io统计信息可以使用-x选项，在分析io瓶颈时，一般都会开启-x选项
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.1.7.png)
 ```
 以上各列的含义如下：
@@ -671,7 +743,9 @@ await: 平均每次IO请求等待时间(包括等待时间和处理时间，毫�
 svctm: 平均每次IO请求的处理时间(毫秒为单位)
 %util: 采用周期内用于IO操作的时间比率，即IO队列非空的时间比率
 ```
+
 <font color=#FF0000 size=5> <p align="center">ifstat</p></font>
+
 ifstat命令是一个统计网络接口活动状态的工具，选项含义如下：
 ```
 [root@dwj ~]# ifstat -tT
@@ -692,8 +766,10 @@ ifstat命令是一个统计网络接口活动状态的工具，选项含义如�
 -v 显示版本信息
 -d 指定一个驱动来收集状态信息
 ```
+
 <font color=#FF0000 size=5> <p align="center">dstat</p></font>
-dstat是一个可以取代vmstat，iostat，netstat，ifstat的多功能产品,可以实时的监控cpu、磁盘、网络、IO、内存等使用情况，功能描述：
+
+dstat可以取代vmstat、iostat、netstat、ifstat的程序,可以实时的监控cpu、磁盘、网络、IO、内存等使用情况，功能描述：
 ```
 1.结合了vmstat，iostat，ifstat，netstat以及更多的信息
 2.实时显示统计情况
@@ -734,15 +810,16 @@ dstat是一个可以取代vmstat，iostat，netstat，ifstat的多功能产品,�
   -t：显示时间信息
 	--output 文件：此选项也比较有用，可以把状态信息以csv的格式重定向到指定的文件中，例：dstat --output /root/dstat.csv & 此时让程序默默的在后台运行并把结果输出到/root/dstat.csv文件中
 ```
-[root@dwj ~]# dstat -tsp --socket --fs   #监控swap，process，sockets，filesystem并显示监控的时间  <br>
-若要将结果输出到文件可以加 --output filename
+监控swap，process，sockets，filesystem并显示监控的时间,若要将结果输出到文件可以加 --output filename
+>[root@dwj ~]# dstat -tsp --socket --fs
 
-[root@dwj ~]# dstat -tsp --socket --fs --output /opt/ds.csv  <br>
 这样生成的csv文件可以用excel打开，然后生成图表
+>[root@dwj ~]# dstat -tsp --socket --fs --output /opt/ds.csv
 
-通过dstat --list可以查看dstat能使用的所有参数，/usr/share/dstat中是dstat的插件目录，这些插件可以监控电源、mysql等相关系统数据
+通过dstat --list可以查看能使用的所有参数，/usr/share/dstat是插件目录，这些插件可以监控电源、mysql等相关系统数据
 
 <font color=#FF0000 size=5> <p align="center">traceroute</p></font>
+
 traceroute 是用来发出数据包从主机到目标主机之间所经过的网关的工具。traceroute 的原理是试图以最小的TTL发出探测包来跟踪数据包到达目标主机所经过的网关，然后监听一个来自网关ICMP的应答。发送数据包的大小默认为38个字节
 
 使用格式：traceroute [参数选项] 域名、 hostname、IP地址
@@ -760,17 +837,20 @@ traceroute 是用来发出数据包从主机到目标主机之间所经过的网
 ```
 序列号从1开始，每个纪录就是一跳，每跳表示一个网关，我们看到每行有三个时间，单位是ms，其实就是-q的默认参数。探测数据包向每个网关发送三个数据包后，网关响应后返回的时间
 
-常用的一些参数的用法示例；  <br>
-[root@localhost ~]# traceroute -m 10 linuxsir.org         #把跳数设置为10次  <br>
-[root@localhost ~]# traceroute -n linuxsir.org            #显示IP地址，不查主机名  <br>
-[root@localhost ~]# traceroute -p 6888 linuxsir.org       #探测包使用的基本UDP端口设置6888  <br>
-[root@localhost ~]# traceroute -q 4 linuxsir.org          #把探测包的个数设置为值4  <br>
-[root@localhost ~]# traceroute -r linuxsir.org            #绕过正常的路由表，直接发送到网络相连的主机  <br>
-[root@localhost ~]# traceroute -w 3 linuxsir.org          #把对外发探测包的等待响应时间设置为5秒  <br>
+常用的一些参数的用法示例
+```
+[root@localhost ~]# traceroute -m 10 linuxsir.org         #把跳数设置为10次
+[root@localhost ~]# traceroute -n linuxsir.org            #显示IP地址，不查主机名
+[root@localhost ~]# traceroute -p 6888 linuxsir.org       #探测包使用的基本UDP端口设置6888
+[root@localhost ~]# traceroute -q 4 linuxsir.org          #把探测包的个数设置为值4
+[root@localhost ~]# traceroute -r linuxsir.org            #绕过正常的路由表，直接发送到网络相连的主机
+[root@localhost ~]# traceroute -w 3 linuxsir.org          #把对外发探测包的等待响应时间设置为5秒
 在windows系统中，用tracert来跟踪路由
+```
 
 <font color=#FF0000 size=5> <p align="center">iotop</p></font>
-iotop命令是一个用来监视磁盘I/O使用状况的top类工具。iotop具有与top相似的UI，其中包括PID、用户、I/O、进程等相关信息。Linux下的IO统计工具如iostat，nmon等大多数是只能统计到per设备的读写情况，如果你想知道每个进程是如何使用IO的就比较麻烦，使用iotop命令可以很方便的查看
+
+iotop命令是一个用来监视磁盘I/O使用状况的top类工具。具有与top相似的UI，其中包括PID、用户、I/O、进程等相关信息。Linux下的IO统计工具如iostat，nmon等大多数是只能统计到per设备的读写情况，如果想知道每个进程是如何使用IO的就可以使用iotop命令
 
 ```
 [root@dwj ~]# iotop
@@ -791,9 +871,10 @@ p：进程/线程的显示方式的切换
 a：显示累积使用量
 q：退出
 ```
+
 <font color=#FF0000 size=5> <p align="center">slabtop</p></font>
-Linux slabtop命令显示内核片缓存信息，Linux内核需要为临时对象如任务或者设备结构和节点分配内存，缓存分配器管理着这些类型对象的缓存。
-现代Linux内核部署了该缓存分配器以持有缓存，称之为片。不同类型的片缓存由片分配器维护，linux系统透过/proc/slabinfo来向用户暴露slab的信息
+
+Linux slabtop命令显示内核片缓存信息，Linux内核需要为临时对象如任务或者设备结构和节点分配内存，缓存分配器管理着这些类型对象的缓存。现代Linux内核部署了该缓存分配器以持有缓存，称之为片。不同类型的片缓存由片分配器维护，linux系统透过/proc/slabinfo来向用户暴露slab的信息
 
 参数使用详解：
 1.显示间隔----默认情况下，slabtop每隔3秒刷新一次。可以使用-d或者--delay=N选项来调整刷新间隔，以秒为单位
@@ -802,16 +883,17 @@ Linux slabtop命令显示内核片缓存信息，Linux内核需要为临时对�
 2.输出一次----使用-o或--once选项不会刷新输出，它仅仅将一次输出结果丢给STDOUT，然后退出
 >[root@dwj ~]# slabtop --once  或者  [root@dwj ~]# slabtop -o
 
-3.排序标准----在slabtop输出中有很多字段，-s或--sort=S选项可以根据指定的排序标准对这些字段排序，确定哪个片缓存显示在顶部
+3.排序标准----参数-s或--sort=S选项可以根据指定的排序标准对这些字段排序，确定哪个片缓存显示在顶部
+```
 The following are valid sort criteria:
-
-    a: 对活跃对象编号进行排序
-    b: 每分片对象数
-    c: 缓存大小
-    l: 分片数量
-    v: 活跃分片数量（注意：这不同于上面讲得活跃对象数量）
-    n: 缓存名称
-    o: 对象数量
-    p: 每分片页面数
-    s: 对象大小
-    u: 缓存使用量排序
+a: 对活跃对象编号进行排序
+b: 每分片对象数
+c: 缓存大小
+l: 分片数量
+v: 活跃分片数量（注意：这不同于上面讲得活跃对象数量）
+n: 缓存名称
+o: 对象数量
+p: 每分片页面数
+s: 对象大小
+u: 缓存使用量排序
+```

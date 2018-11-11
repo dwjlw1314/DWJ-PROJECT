@@ -126,8 +126,7 @@ Linux源码安装nmap
 4.可以通过简单的使用IP地址的最后8字节，执行扫描多个IP地址
 >[root@dwj nmap-7.70]# nmap 192.168.8.54,55,56
 
-5.扫描来自文件的主机列表 <br>
-创建一个文本文件叫“nmaptest.txt”并且规定所有需要做扫描的IP地址和服务器的主机名
+5.扫描来自文件的主机列表,创建一个文本文件叫“nmaptest.txt”并且规定所有需要做扫描的IP地址和服务器的主机名
 >[root@dwj nmap-7.70]# cat > nmaptest.txt << end
 
     > www.baidu.com

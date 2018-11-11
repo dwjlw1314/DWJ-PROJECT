@@ -66,8 +66,7 @@ mysql数据库安装步骤:  <br>
     [root@dwj software]# rpm -ivh MySQL-shared-compat-5.6.19-1.linux_glibc2.5.x86_64.rpm
 
 4.将MySQL的配置文件拷贝到/etc目录下
-
-    [root@dwj software]# cp /usr/share/mysql/my-default.cnf /etc/my.cnf
+>[root@dwj software]# cp /usr/share/mysql/my-default.cnf /etc/my.cnf
 
 5.初始化MySQL及设置密码
 
@@ -108,8 +107,7 @@ mysql数据库安装步骤:  <br>
    # pid-file =/var/lib/mysql/data/mysqld.pid       #自定义目录，可以不修改
 ```
 10.重新启动数据库
-
-    [root@dwj mysql]# service mysql restart
+>[root@dwj mysql]# service mysql restart
 
 11.登录mysql，查看修改后的字符集
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.10.1.png)
@@ -129,16 +127,14 @@ Apache服务器安装步骤:   <br>
     ServerName dwj      #dwj 是linux系统主机名，或者是ip地址
 
 3.启动apached服务器
-
-    [root@dwj ~]# /usr/local/apache2/bin/apachectl start
+>[root@dwj ~]# /usr/local/apache2/bin/apachectl start
 
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.10.2.png)
 
 4.验证是否成功  <br>
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.10.3.png)
 
-PHP服务器安装步骤:   <br>
-需要安装相关依赖包： freetype，libmcrypt，curl，jpegsrc
+PHP服务器安装步骤:需要安装相关依赖包： freetype，libmcrypt，curl，jpegsrc
 
 1.源码包解压，编译并安装 PHP
 
@@ -178,13 +174,13 @@ PHP服务器安装步骤:   <br>
     ===============================================
 
 >[root@dwj php]# vim /usr/local/apache2/conf/extra/httpd-vhosts.conf    #打开并修改一下内容
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.10.4.png)
 
 4.在apache根文件中增加一个test.php文件，<?php phpinfo(); ?>;然后访问http://localhost/test.php,查看结果
 
 5.重新启动apache服务器
-
-    [root@dwj php]# /usr/local/apache2/bin/apachectl restart
+>[root@dwj php]# /usr/local/apache2/bin/apachectl restart
 
 6.验证是否正确
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.10.5.png)
@@ -195,8 +191,7 @@ PHP服务器安装步骤:   <br>
     [root@dwj gettext]# ./configure --with-php-config=/usr/local/php/bin/php-config
     [root@dwj gettext]# make & make install
 
-zabbix服务器安装步骤:  <br>
-安装相关依赖包 ： libcurl，net-snmp
+zabbix服务器安装步骤:安装相关依赖包 ： libcurl，net-snmp
 
 1.zabbix 数据库设置，登录数据库，创建帐号和设置权限
 
@@ -217,13 +212,11 @@ zabbix服务器安装步骤:  <br>
     #mysql -uroot -p123456 zabbix<data.sql
 
 3.创建安装目录
-
-    [root@dwj database]# mkdir /usr/local/zabbix
+>[root@dwj database]# mkdir /usr/local/zabbix
 
 4.编译安装zabbix
 
-    [root@dwj zabbix-3.2.4]# ./configure --prefix=/usr/local/zabbix --with-mysql --with-net-snmp --with-libcurl
-                              --enable-server --enable-agent --enable-proxy
+    [root@dwj zabbix-3.2.4]# ./configure --prefix=/usr/local/zabbix --with-mysql --with-net-snmp --with-libcurl --enable-server --enable-agent --enable-proxy
     [root@dwj zabbix-3.2.4]# make & make install
 
 5.添加服务端口，如果已经存在，可以跳过
@@ -308,8 +301,7 @@ zabbix服务器安装步骤:  <br>
     post_max_size = 16M
 
 2.重新启动apache服务器
-
-    [root@dwj ~]# /usr/local/apache2/bin/apachectl restart
+>[root@dwj ~]# /usr/local/apache2/bin/apachectl restart
 
 3.选择数据库参数
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.10.7.png)

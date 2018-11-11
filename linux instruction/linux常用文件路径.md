@@ -1,4 +1,5 @@
 <font color=#FF0000 size=5>可以参考linux文件系统层次结构一书</font>
+
 ```
 /etc/sysctl.conf                                  #系统内核配置文件
 
@@ -10,14 +11,15 @@
 /etc/crontab                                      #系统定义的任务计划
 /etc/anacrontab                                   #实现检查过期和未完成的crontab的任务的配置文件
 /etc/securetty                                    #确认某个安全终端允许root登录,一般只列出虚拟控制台
-/etc/resolv.conf                                  #DNS配置文件
+/etc/resolv.conf                                  #DNS配置文件，eg：nameserver 8.8.8.8
 /etc/nsswitch.conf                                #地址服务器配置文件
-/etc/motd                                         #成功登录后自动输出，内容由系统管理员确定，经常用于通告信息
+/etc/motd                                         #ssh成功登录后自动输出自定义内容，经常用于通告信息
 /etc/X11/*                                        #XFree86窗口配置文件
 /etc/skel                                         #创建用户时自动创建文件的模版目录
 /etc/inittab                                      #系统默认启动级别的配置文件
 /etc/default/useradd                              #添加用户的默认信息的文件                                         
 /etc/login.defs                                   #用户密码信息的默认属性文件
+/etc/pam.d/su                                     #su切换用户的认证配置，注释有效的第一行，可实现所有用户切换需要输入密码
 
 /etc/host.conf                                    #指定主机名查找方法，通常指先查找文件/etc/hosts,找不到时再向DNS服务器请求
 /etc/xinetd.conf                                  #xinetd服务配置文件
@@ -62,7 +64,9 @@
 /etc/timezone                                     #时间和时区文件
 /etc/services                                     #网络服务系统中对应端口关系表库
 ```
+
 <font color=#FF0000 size=5> <p align="center">porc(系统内存文件，开机自动生成)</p></font>
+
 ```
 /proc/cpuinfo                           #cpu信息
 /proc/meminfo                           #memory信息
@@ -77,7 +81,7 @@
 /proc/net/*                             #网络协议状态信息
 /proc/mdstat                            #RAID设备的信息
 /proc/cmdline                           #grub信息,eg: ro root=/dev/vol0/root ...
-/proc/sys/kernel/hostname               #主机名的设定	
+/proc/sys/kernel/hostname               #主机名的设定
 /proc/partitions                        #所有已经分区的信息，如下图
 
 [root@dwj opt]# cat /proc/partitions
@@ -95,6 +99,7 @@ major   minor   #blocks    name
 ```
 
 <font color=#FF0000 size=5> <p align="center">其他</p></font>
+
 ```
 /usr/src/kernels/3.10.0-327.el7.x86_64/fs           #centos系统支持的文件系统目录
 /usr/share/vim/vim72/tutor/tutor.zh.utf-8           #vim基础学习文档
@@ -104,7 +109,8 @@ major   minor   #blocks    name
 /usr/share/info                                     #GNU info系统的主文件夹
 /usr/share/man                                      #系统手册页目录
 /var/lib/xfsdump/inventory                          #xfsdump命令处理记录文件
-/var/log/yum.log                                    # yum的日志文件
+/var/log/yum.log                                    #yum的日志文件
+/var/spool/mqueue                                   #已发送邮件内容
 /var/                                               #详细目录信息如下图
 ```
 文件夹  | 描述

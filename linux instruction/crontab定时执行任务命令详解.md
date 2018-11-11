@@ -1,13 +1,15 @@
-一、cron服务 -- anacron命令可以解决cron错过时间后，不执行cron计划任务的问题  <br>
+一、cron服务 -- anacron命令可以解决cron错过时间后，不执行cron计划任务的问题
+
 cron是一个linux下 的定时执行工具，可以在无需人工干预的情况下运行作业
+```
+[root@dwj ~]# service crond start      #启动服务
+[root@dwj ~]# service crond stop       #关闭服务
+[root@dwj ~]# service crond restart    #重启服务
+[root@dwj ~]# service crond reload     #重新载入配置
+[root@dwj ~]# service crond status     #查看服务状态
+```
+二、cron在3个地方查找配置文件
 
-    service crond start    #启动服务
-    service crond stop     #关闭服务
-    service crond restart  #重启服务
-    service crond reload   #重新载入配置
-    service crond status   #查看服务状态
-
-二、cron在3个地方查找配置文件  <br>
 /var/spool/cron/ 这个目录下存放的是每个用户的crontab任务，每个任务以创建者的名字命名，比如root建的crontab任务对应的文件就是/var/spool/cron/root。一般一个用户最多只有一个crontab文件
 
 三、/etc/crontab 这个文件负责安排由系统管理员制定的维护系统以及其他任务的crontab
@@ -39,10 +41,11 @@ MAILTO=root
 第三步："crontab -l" 查看定时任务是否成功或者检测/var/spool/cron下是否生成对应cron脚本
 注意：这操作是直接替换该用户下的crontab，而不是新增
 ```
-六、crontab用法  <br>
+六、crontab用法
+
 crontab命令用于安装、删除或者列出用于驱动cron后台进程的表格。用户把需要执行的命令序列放到crontab文件中以获得执行
 每个用户都可以有自己的crontab文件。/var/spool/cron下的crontab文件不可以直接创建或者直接修改
->[root@dwj /var/spool/cron]#crontab -e      #创建/var/spool/cron下的crontab文件
+>[root@dwj /var/spool/cron]# crontab -e      #创建/var/spool/cron下的crontab文件
 
 在crontab文件中每行都包括六个域，其中前五个是指定被执行的时间，最后一个是要被执行的命令,格式如下：
 ```
@@ -82,6 +85,7 @@ minute hour day-of-month month-of-year day-of-week commands
 注意: "run-parts"这个参数了，如果去掉这个参数的话，后面就可以写要运行的某个脚本名，而不是文件夹名　
 
 <font color=#FF0000 size=5> <p align="center">at用法</p></font>
+
 at命令的使用顺序如下：先用at命令后接想要程序执行的确定时刻,再输入你想要在以上指定时刻执行的命令
 
 例如：

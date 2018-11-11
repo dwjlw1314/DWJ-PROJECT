@@ -85,57 +85,63 @@ Client 安装了NRPE等客户端，根据监控机的请求执行监控，然后
 
 1.安装相关依赖包
 
-    查找相关依赖包是否安装
-    [root@dwj ~]# rpm -q gcc glibc glibc-common gd gd-devel xinetd openssl-devel
+查找相关依赖包是否安装
+>[root@dwj ~]# rpm -q gcc glibc glibc-common gd gd-devel xinetd openssl-devel
 
-    如果系统中没有，使用yum进行安装，gd-devel需要单独进行安装
-    [root@dwj ~]# yum -y install gd xinetd xinetd
+如果系统中没有，使用yum进行安装，gd-devel需要单独进行安装
+>[root@dwj ~]# yum -y install gd xinetd xinetd
 
 2.创建nagios用户和用户组，已经程序存放的目录
-
-    [root@dwj ~]# useradd -s /sbin/nologin nagios
-    [root@dwj ~]# mkdir /usr/local/nagios
-    [root@dwj ~]# chown -R nagios.nagios /usr/local/nagios/
-    查看nagios目录的权限是否正确
-    [root@dwj Desktop]# ll -d /usr/local/nagios/
-    drwxr-xr-x. 2 nagios nagios 4096 Mar 17 02:16 /usr/local/nagios
-
+```
+[root@dwj ~]# useradd -s /sbin/nologin nagios
+[root@dwj ~]# mkdir /usr/local/nagios
+[root@dwj ~]# chown -R nagios.nagios /usr/local/nagios/
+查看nagios目录的权限是否正确
+[root@dwj Desktop]# ll -d /usr/local/nagios/
+drwxr-xr-x. 2 nagios nagios 4096 Mar 17 02:16 /usr/local/nagios
+```
 3.编译安装nagios
-
-    解压软件包后进入相应目录
-    [root@dwj Desktop]# tar -zxvf nagios-4.2.4.tar.gz
-    [root@dwj Desktop]# cd nagios-4.2.4
-    [root@dwj nagios-4.2.4]# ./configure --prefix=/usr/local/nagios/ --with-command-group=nagios
+```
+解压软件包后进入相应目录
+[root@dwj Desktop]# tar -zxvf nagios-4.2.4.tar.gz
+[root@dwj Desktop]# cd nagios-4.2.4
+[root@dwj nagios-4.2.4]# ./configure --prefix=/usr/local/nagios/ --with-command-group=nagios
+```
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.11.4.png)
 
-    [root@dwj nagios-4.2.4]# make all
+>[root@dwj nagios-4.2.4]# make all
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.11.5.png)
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.11.6.png)
 
-    [root@dwj nagios-4.2.4]# make install
+>[root@dwj nagios-4.2.4]# make install
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.11.7.png)
 
-    [root@dwj nagios-4.2.4]# make install-init
+>[root@dwj nagios-4.2.4]# make install-init
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.11.8.png)
 
-    [root@dwj nagios-4.2.4]# make install-commandmode
+>[root@dwj nagios-4.2.4]# make install-commandmode
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.11.9.png)
 
-    [root@dwj nagios-4.2.4]# make install-config
+>[root@dwj nagios-4.2.4]# make install-config
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.11.10.png)
 
-    [root@dwj nagios-4.2.4]# make install-webconf
+>[root@dwj nagios-4.2.4]# make install-webconf
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.11.11.png)
 
 4.设置系统自启动
-
-    [root@dwj nagios-4.2.4]# chkconfig --add nagios
-    [root@dwj nagios-4.2.4]# chkconfig --level 35 nagios on
-    [root@dwj nagios-4.2.4]# chkconfig --list nagios
-    nagios  0:off  1:off   2:on   3:on   4:on   5:on   6 off
-
-5.验证程序是否被正确安装   <br>
-    切换目录到安装路径/usr/local/nagios，看是否存在以下目录，如果存在则表明程序安装成功
+```
+[root@dwj nagios-4.2.4]# chkconfig --add nagios
+[root@dwj nagios-4.2.4]# chkconfig --level 35 nagios on
+[root@dwj nagios-4.2.4]# chkconfig --list nagios
+nagios  0:off  1:off   2:on   3:on   4:on   5:on   6 off
+```
+5.验证程序是否被正确安装,切换到安装路径/usr/local/nagios，如果有以下目录存在则表明程序安装成功
 
 Directory | meaning
 :--|-:-
@@ -149,92 +155,86 @@ var/archives | Nagios 日志自动归档目录
 var/rw | 用来存放外部命令文件的目录
 
 6.安装nagios插件
-
-    解压软件包后进入相应目录
-    [root@dwj Desktop]# tar -zxvf nagios-plugins-2.1.4.tar.gz
-    [root@dwj Desktop]# cd nagios-plugins-2.1.4
-    [root@dwj nagios-plugins-2.1.4]# ./configure --prefix=/usr/local/nagios/
-    [root@dwj nagios-plugins-2.1.4]# make && make install
-
-7.安装Apache和Php
-
-    参照zabbix监控软件安装部署的安装方式即可
+```
+解压软件包后进入相应目录
+[root@dwj Desktop]# tar -zxvf nagios-plugins-2.1.4.tar.gz
+[root@dwj Desktop]# cd nagios-plugins-2.1.4
+[root@dwj nagios-plugins-2.1.4]# ./configure --prefix=/usr/local/nagios/
+[root@dwj nagios-plugins-2.1.4]# make && make install
+```
+7.安装Apache和Php,参照zabbix监控软件安装部署的安装方式即可
 
 8.配置apache，打开的配置文件/usr/local/apache2/conf/httpd.conf 修改如下内容：
+```
+User nagios
+Group nagios
+ServerName dwj            #主机名
+<IfModule dir_module>
+　　    DirectoryIndex index.html index.php
+</IfModule>
 
-    User nagios
-    Group nagios
-    ServerName dwj            #主机名
-    <IfModule dir_module>
-    　　    DirectoryIndex index.html index.php
-    </IfModule>
+#添加如下内容：
+AddType application/x-httpd-php .php
 
-    #添加如下内容：
-    AddType application/x-httpd-php .php
+#为了安全起见，让nagios 的web 监控页面经过授权才能访问，在httpd.conf 文件最后添加如下信息：
 
-    #为了安全起见，让nagios 的web 监控页面经过授权才能访问，在httpd.conf 文件最后添加如下信息：
+#setting for nagios
 
-    #setting for nagios
+ScriptAlias /nagios/cgi-bin "/usr/local/nagios/sbin"
 
-    ScriptAlias /nagios/cgi-bin "/usr/local/nagios/sbin"
+<Directory "/usr/local/nagios/sbin">
 
-    <Directory "/usr/local/nagios/sbin">
+     AuthType Basic
 
-         AuthType Basic
+     Options ExecCGI
 
-         Options ExecCGI
+     AllowOverride None
 
-         AllowOverride None
+     Order allow,deny
 
-         Order allow,deny
+     Allow from all
 
-         Allow from all
+     AuthName "Nagios Access"
 
-         AuthName "Nagios Access"
+     AuthUserFile /usr/local/nagios/etc/htpasswd
 
-         AuthUserFile /usr/local/nagios/etc/htpasswd
+     Require valid-user
 
-         Require valid-user
+</Directory>
 
-    </Directory>
+Alias /nagios "/usr/local/nagios/share"
 
-    Alias /nagios "/usr/local/nagios/share"
+<Directory "/usr/local/nagios/share">
 
-    <Directory "/usr/local/nagios/share">
+     AuthType Basic
 
-         AuthType Basic
+     Options None
 
-         Options None
+     AllowOverride None
 
-         AllowOverride None
+     Order allow,deny
 
-         Order allow,deny
+     Allow from all
 
-         Allow from all
+     AuthName "nagios Access"
 
-         AuthName "nagios Access"
+     AuthUserFile /usr/local/nagios/etc/htpasswd
 
-         AuthUserFile /usr/local/nagios/etc/htpasswd
+     Require valid-user
 
-         Require valid-user
-
-    </Directory>
-
+</Directory>
+```
 创建Apache的目录验证文件
-
-[root@dwj apache2]# /usr/local/apache2/bin/htpasswd -c /usr/local/nagios/etc/htpasswd dwj
+>[root@dwj apache2]# /usr/local/apache2/bin/htpasswd -c /usr/local/nagios/etc/htpasswd dwj
 
 通过http://localhost/nagios/ 访问时就需要输入用户名和密码了
 
 查看认证文件内容
-
-[root@dwj apache2]# cat /usr/local/nagios/etc/htpasswd
-
-    david: $apr1$XKC9h8iu$xHOXsJrDQwqlLhsFuthIu/
+>[root@dwj apache2]# cat /usr/local/nagios/etc/htpasswd  <br>
+david: $apr1$XKC9h8iu$xHOXsJrDQwqlLhsFuthIu/
 
 启动Apache服务
-
-[root@dwj apache2]# /usr/local/apache2/bin/apachectl start
+>[root@dwj apache2]# /usr/local/apache2/bin/apachectl start
 
 到这里nagios 的安装也就基本完成了，你可以通过web来访问了
 

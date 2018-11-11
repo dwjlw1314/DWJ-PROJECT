@@ -2,7 +2,7 @@
 >[root@dwj ~]# /etc/init.d/mysqld start/stop  || 简化启动命令 service mysqld start/stop
 
 #启动mySQL服务器
->[root@dwj ~]# /usr/bin/mysqld_safe &                                                       
+>[root@dwj ~]# /usr/bin/mysqld_safe &
 
 #停止mySQL服务器
 >[root@dwj ~]# /usr/bin/mysqladmin shutdown
@@ -28,16 +28,16 @@
 >mysql> UPDATE user SET authentication_string=PASSWORD('newpassword') where USER='root';
 
 #显示数据库列表，缺省有两个数据库：mysql和test
->mysql> show databases;                                                                 
+>mysql> show databases;
 
 #删除用户
->mysql> delete from user where user='test' and Host='localhost';                        
+>mysql> delete from user where user='test' and Host='localhost';
 
 #刷新权限
->mysql> flush privileges;                                                               
+>mysql> flush privileges;
 
 #删除用户数据库
->mysql> drop database zabbix;                                                           
+>mysql> drop database zabbix;
 
 <font color=#FF0000 size=5> <p align="center">ERROR CODE</p></font>
 

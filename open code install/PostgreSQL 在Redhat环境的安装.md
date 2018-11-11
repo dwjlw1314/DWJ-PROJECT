@@ -70,7 +70,6 @@ PostgreSQL是以加州大学伯克利分校计算机系开发的 POSTGRES 版本
 如果没有指定数据目录, 将使用环境变量 PGDATA
 
 6.配置运行环境变量（方便管理） 切换到root用户
-
 >[root@dwj contrib]# vim /etc/profile
 
 添加以下代码：
@@ -111,14 +110,10 @@ PostgreSQL是以加州大学伯克利分校计算机系开发的 POSTGRES 版本
 8.设置自启动
 
 复制PostgreSQL执行脚本
-
 >[root@dwj contrib]# cp start-scripts/linux /etc/init.d/postgresql   <br>
 [root@dwj contrib]# chmod +x /etc/init.d/postgresql
 
-修改/etc/init.d/postgresql  
-
-    把PGDATA改成PGDATA=/data/pg/data
-
+修改/etc/init.d/postgresql,把PGDATA改成PGDATA=/data/pg/data
 >[root@dwj contrib]# chkconfig postgresql on
 
 管理PG服务时也可以直接用下面启动脚本
@@ -162,5 +157,5 @@ PostgreSQL是以加州大学伯克利分校计算机系开发的 POSTGRES 版本
 
 解决方案：
 
-一、在postgresql用户下，打开 .bash_profile文件，在最后添加：export PS1='[\u@\h \W]\$' 保存文件退出
+在postgresql用户下，打开 .bash_profile文件，在最后添加：export PS1='[\u@\h \W]\$' 保存文件退出
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.5.2.png)
