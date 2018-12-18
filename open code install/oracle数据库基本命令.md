@@ -38,6 +38,70 @@ select owner, count (owner) number_of_objects
     group by owner
     order by number_of_objects desc;
 ```
+查询数据库sql命令相关内容以及SQL_TEXT
+```sql
+select sess.SID,sess.SERIAL#,sqls.SQL_ID,sort.SEGTYPE,sort.BLOCKS * 8 / 1000 "MB",sqls.SQL_TEXT
+    from v$sort_usage sort, v$session sess, v$sql sqls
+    where sort.SESSION_ADDR = sess.SADDR
+    and sqls.ADDRESS = sess.SQL_ADDRESS
+    order by sort.BLOCKS desc;
+```
+查看数据表空间使用情况(undo)
+```sql
+select a.tablespace_name,
+    to_char(b.total/1024/1024,999999.99) as Total,
+    to_char((b.total-a.free)/1024/1024,999999.99) as Used,
+    to_char(a.free/1024/1024,999999.99) as Free,
+    to_char(round((total-free)/total,4)*100,999.99) as Used_Rate
+    from (select tablespace_name, sum(bytes) free from DBA_FREE_SPACE group by  tablespace_name) a,
+        (select tablespace_name, sum(bytes) total from DBA_DATA_FILES group by tablespace_name ) b
+    where a.tablespace_name=b.tablespace_name
+    order by a.tablespace_name;
+```
+查看临时表空间使用情况(temp)
+```sql
+select round((f.bytes_free  + f.bytes_used)/1024/1024/1024, 2) as "total(gb)",
+    round(((f.bytes_free  + f.bytes_used) - nvl(p.bytes_used, 0))/1024/1024/1024,2) as "free(gb)",
+    d.file_name as "temp_file",
+    round(nvl(p.bytes_used, 0)/1024/1024/1024, 2) as "used(gb)" ,
+    round((f.bytes_used + f.bytes_free)/1024/1024/1024, 2) as "total(gb)",
+    round(((f.bytes_used + f.bytes_free) - nvl(p.bytes_used, 0))/1024/1024/1024, 2) as "free(gb)" ,
+    round(nvl(p.bytes_used, 0)/1024/1024/1024, 2) as "used(gb)"
+    from sys.v_$temp_space_header f ,dba_temp_files d ,sys.v_$temp_extent_pool p
+    where f.tablespace_name(+) = d.tablespace_name
+    and f.file_id(+) = d.file_id
+    and p.file_id(+) = d.file_id;
+```
+查询数据表空间剩余字节大小
+```sql
+select TABLESPACE_NAME, SUM(BYTES)/1024/1024 as "FREE SPACE(M)"
+    from DBA_FREE_SPACE
+    where TABLESPACE_NAME = '&tablespace_name'
+    group by TABLESPACE_NAME;
+```
+查询临时表空间剩余字节大小
+```sql
+select TABLESPACE_NAME, FREE_SPACE/1024/1024 as "FREE SPACE(M)"
+    from DBA_TEMP_FREE_SPACE
+    where TABLESPACE_NAME = '&tablespace_name';
+```
+查找消耗临时表空间资源比较多的SQL语句
+```sql
+select se.USERNAME, se.SID, se.SERIAL#, s.SQL_ID, s.MODULE, su.EXTENTS,
+    su.BLOCKS * to_number(rtrim(p.VALUE)) as space, tablespace, segtype, sql_text
+    from v$sort_usage su, v$parameter p, v$session se, v$sql s
+    where p.name = 'db_block_size'
+    and su.session_addr = se.saddr
+    and s.hash_value = su.sqlhash
+    and s.address = su.sqladdr
+    order by se.username, se.sid;
+```
+查看回滚段状态和名字
+```sql
+select t.segment_name, t.tablespace_name, t.segment_id, t.status
+    from dba_rollback_segs t
+    where t.tablespace_name like 'UN%'
+```
 
 <font color=#FF0000 size=5> <p align="center">Oracle dbstart和dbshut</p></font>
 
@@ -73,18 +137,33 @@ su - oracle -c "dbstart"
 
 Oracle sqlplus登陆方式
 ```
-//以 sys 用户登陆的话 必须要加上 as sysdba 子句
-[oracle@dwj ~]$ sqlplus / as sysdba          #以操作系统权限认证的sys管理员登陆
-[oracle@dwj ~]$ sqlplus / as sysbackup       #以操作系统权限认证的sysbackup管理员登陆
-[oracle@dwj ~]$ sqlplus /nolog               #不在terminal当中暴露密码的登陆方式
+以 sys 用户登陆的话 必须要加上 as sysdba 子句
+
+#以操作系统权限认证的sys管理员登陆
+[oracle@dwj ~]$ sqlplus / as sysdba
+
+#以操作系统权限认证的sysbackup管理员登陆
+[oracle@dwj ~]$ sqlplus / as sysbackup
+
+#不在terminal当中暴露密码的登陆方式
+[oracle@dwj ~]$ sqlplus /nolog
 SQL> conn / as sysdba   
 SQL> conn sys/password as sysdba
-[oracle@dwj ~]$ sqlplus scott/tiger          #非管理员用户登陆
-[oracle@dwj ~]$ sqlplus                      #不显露密码的登陆方式
+
+#非管理员用户登陆
+[oracle@dwj ~]$ sqlplus scott/tiger
+
+#不显露密码的登陆方式
+[oracle@dwj ~]$ sqlplus
 Enter user-name: system
 Enter password:
-[oracle@dwj ~]$ sqlplus scott/tiger@orcl     #非管理员用户使用tns别名登陆
-[oracle@dwj ~]$ sqlplus system/pwd@orcl      #管理员用户使用tns别名登陆
+
+#非管理员用户使用tns别名登陆
+[oracle@dwj ~]$ sqlplus scott/tiger@orcl
+
+#管理员用户使用tns别名登陆
+[oracle@dwj ~]$ sqlplus system/pwd@orcl
+
 通过网络连接，这是需要数据库服务器的 listener 处于监听状态。此时建立一个连接的大致步骤如下:
 a. 查询sqlnet.ora，看看名称的解析方式，默认是TNSNAME
 b. 查询 tnsnames.ora 文件，从里边找 orcl 的记录，并且找到数据库服务器的主机名或者IP，端口和service_name
@@ -100,19 +179,19 @@ SQL> select count(*) from v$parameter;
 SQL> select status from v$instance;                #查看oracle启动状态
 SQL> select * from dba_tablespaces;                #查看数据库表空间信息
 SQL> select * from nls_database_parameters;        #查看数据库服务器字符集
-SQL> select * from user_tab_partitions             #查看数据库表分区信息
+SQL> select * from user_tab_partitions;            #查看数据库表分区信息
 SQL> select object_name,created from user_objects  #查看数据表名和创建时间
 SQL> select name from v$tempfile;                  #查看当前用户临时表空间位置
 SQL> select count(*) from v$process;               #查询数据库当前进程的连接数
 SQL> select count(*) from v$session;               #查看数据库当前会话的连接数
 SQL> select name from v$controlfile;               #查看控制文件
 SQL> select member from v$logfile;                 #查看redo日志文件详情
-SQL> select name from v$archived_log               #查看归档日志记录
+SQL> select name from v$archived_log;              #查看归档日志记录
 SQL> select flashback_on from v$database;          #查看闪回是否开启
 SQL> select flashback_on from v$database;          #查看数据库service_names
 SQL> select created,log_mode from v$database;      #查看数据库的创建日期和归档方式
-SQL> select SQL_TEXT,SQL_ID,SERVICE from v$sql;    #查看数据库执行语句文本内容
-SQL> select * from v$pdbs                          #12C查看容器详情
+SQL> select SQL_TEXT,SQL_ID,MODULE from v$sql;     #查看数据库执行语句文本内容
+SQL> select * from v$pdbs;                         #12C查看容器详情
 SQL> select MESSAGE from v$session_longops;        #捕捉运行很久的SQL
 SQL> select * from v$locked_object;                #查看未提交的事务
 SQL> select * from v$transaction;                  #查看未提交的事务,一般关联v$session
@@ -134,6 +213,9 @@ sqlplus模式下查看、修改、删除列格式
 
 查看所有环境设置：
 > SQL> show all
+
+查看数据库归档设置详情
+>SQL> archive log list
 
 检查数据库全部或者部分参数(parameter_name可选模糊匹配)
 > SQL> show parameter [parameter_name]        #eg:show parameter service_names
@@ -160,8 +242,8 @@ sqlplus模式下查看、修改、删除列格式
 >SQL> select file_type,PERCENT_SPACE_USED,NUMBER_OF_FILES from v$flash_recovery_area_usage;
 
 Oracle的物理结构主要有 1.dbf数据文件 2.log重做日志文件 3.ctl控制文件 4.ora参数文件
->SQL> select file_name,tablespace_name,BYTES from dba_data_files;  <br>
->SQL> select file_name,tablespace_name,BYTES from dba_temp_files;
+>SQL> select file_name,tablespace_name,BYTES/1048576 MB maxbytes/1048576 Max_MB from dba_data_files;  <br>
+>SQL> select file_name,tablespace_name,BYTES/1048576 MB maxbytes/1048576 Max_MB from dba_temp_files;
 
 关闭数据库，有四种不同的关闭选项
 ```
@@ -353,6 +435,9 @@ orclpdb.com     3     ORCLPDB
 查看当前使用容器
 >SQL> select sys_context('USERENV','CON_NAME') FROM dual;
 
+查看默认的临时表空间名称
+>SQL> select * from database_properties where property_name='DEFAULT_TEMP_TABLESPACE';
+
 查看数据表空间和临时表空间名称
 >SQL> select tablespace_name from dba_tablespaces;
 
@@ -365,10 +450,20 @@ orclpdb.com     3     ORCLPDB
 >SQL> alter database tempfile '/opt/oracle/oradata/orcl/gjsy_temp.dbf' resize 100M;
 
 给数据表空间和临时表空间增加和删除数据文件
->SQL> alter tablespace GJSY_DATA add datafile '/opt/oracle/oradata/orcl/add.dbf' size 30M;  <br>
+>SQL> alter tablespace GJSY_DATA add datafile 'add.dbf' size 30M autoextend on next 8M maxsize 32G; <br>
 >SQL> alter tablespace GJSY_DATA drop datafile '/opt/oracle/oradata/orcl/add.dbf';    <br>
 >SQL> alter tablespace GJSY_TEMP add tempfile '/opt/oracle/oradata/orcl/adt.dbf' size 30M;  <br>
 >SQL> alter tablespace GJSY_TEMP drop tempfile '/opt/oracle/oradata/orcl/adt.dbf';
+
+临时表空间文件脱机联机
+>SQL> alter database tempfile /opt/oracle/oradata/orcl/gjsy_temp.dbf' offline/online;
+
+默认临时表空间并不能脱机,否则会报错
+>SQL> alter tablespace GJSY_TEMP offline;  <br>
+#ERROR at line 1: ORA-03217: invalid option for alter of TEMPORARY TABLESPACE
+
+临时表空间移动重命名文件，分三步：1.脱机 2.rename 3.联机
+>SQL> alter database rename file '/orcl/temp.dbf' to '/orcl/dwj.dbf';
 
 更改用户的默认临时表空间
 >SQL> alter user c##antman temporary tablespace tempdefault;
@@ -376,9 +471,16 @@ orclpdb.com     3     ORCLPDB
 设置 tempdefault 为数据库默认临时表空间
 >SQL> alter database default temporary tablespace tempdefault;
 
-删除表空间 gjsy_tmp 及其包含的数据对象以及数据文件
->SQL> alter tablespace gjsy_tmp offline;  （可选） <br>
->SQL> drop tablespace gjsy_tmp including contents and datafiles cascade constraints;
+收缩临时表空间
+>SQL> alter tablespace GJSY_TEMP shrink space keep 20G;  <br>
+>SQL> alter tablespace GJSY_TEMP shrink tempfile '/opt/oracle/oradata/orcl/adt.dbf';
+
+删除临时表空间 GJSY_TEMP 不能删除当前用户的默认临时表空间，否则会报ORA-12906
+>SQL> drop tablespace GJSY_TEMP including contents and datafiles cascade constraints;
+
+删除数据表空间 gjsy_data 及其包含的数据对象以及数据文件
+>SQL> alter tablespace GJSY_DATA offline;  （可选,临时表空间不用该操作） <br>
+>SQL> drop tablespace GJSY_DATA including contents and datafiles cascade constraints;
 
 删除用户(指定关键字 cascade ,可删除用户拥有的所有对象)
 >SQL> drop user c##antman cascade;
@@ -389,6 +491,79 @@ SQL> create directory dwj as '/root/dwj';
 SQL> grant read,write on directory dwj to system;
 SQL> select * from dba_directories where directory_name = 'DWJ';
 SQL> drop directory dwj;
+```
+
+<font color=#FF0000 size=5> <p align="center">UNDO表空间</p></font>
+
+```sql
+检查undo的管理方式
+SQL> show parameter undo;
+
+检查UNDO Segment状态
+SQL> select usn,xacts,status,rssize/1048576,hwmsize/1048576,shrinks from v$rollstat order by rssize;
+
+查看当前用户回滚段信息
+SQL> select s.username, u.name from v$transaction t,v$rollstat r,v$rollname u,v$session s
+where s.taddr=t.addr and t.xidusn=r.usn and r.usn=u.usn order by s.username;
+
+查看所有用户回滚段信息
+SQL> select segment_name,owner,tablespace_name,status from dba_rollback_segs;
+
+创建UNDO表空间
+SQL> create undo tablespace UNDOTBS5 datafile '+RACDAT/santdb/datafile/undotbs.dwj'
+size 20G reuse autoextend on next 128m maxsize 30G;
+
+切换UNDO表空间为新的UNDO表空间，动态更改spfile配置文件；
+SQL> alter system set undo_tablespace=UNDOTBS5 scope=both;
+
+undo表空间在线离线
+SQL> alter tablespace UNDOTBS5 online/offline;
+
+删除undo表空间
+SQL> drop tablespace UNDOTBS5 including contents and datafiles;
+
+查看Undo表空间的数据文件
+SQL> select * from dba_data_files a where a.TABLESPACE_NAME like '%UNDOTBS%'
+
+增加和删除undo表空间文件
+SQL> alter tablespace UNDOTBS5 add datafile '+RACDAT/datafile/undotbs5.dwj' size 31G autoextend on;
+SQL> alter tablespace UNDOTBS5 drop datafile '+RACDAT/datafile/undotbs5.dwj';
+
+强制undo保存时间
+SQL> alter tablespace undotbs5 retention guarantee;
+
+关闭UNDO的自动调整功能，解决UNDO表空间会在很长时间都一直保持着使用率是接近100%的问题
+SQL> alter system set "_undo_autotune"= false;
+
+设置event让SMON不自动OFFLINE回滚段
+SQL> alter system set events '10511 trace name context forever, level 1';
+```
+
+<font color=#FF0000 size=5> <p align="center">临时表空间组</p></font>
+
+```
+临进表空间组是ORACLE 10g引入的一个新特性，它是一个逻辑概念，不需要显示的创建和删除。只要把一个临时表空间分配到一个组中，临时表空间组就自动创建，所有的临时表空间从临时表空间组中移除就自动删除
+
+一个临时表空间组必须由至少一个临时表空间组成，并且无明确的最大数量限制
+
+如果删除一个临时表空间组的所有成员，该组也自动被删除
+
+临时表空间的名字不能与临时表空间组的名字相同
+
+可以在创建临时表空间是指定表空间组，即隐式创建
+SQL> create temporary tablespace GJSY_TEMP2 tempfile '/opt/gjsy_temp2.dbf' size 20G tablespace group grp_temp;
+
+查看临时表空间组
+SQL> select * from dba_tablespace_groups;
+
+可以指定已经创建好的临时表空间的临时表空间组
+SQL> alter tablespace GJSY_TEMP tablespace group grp_temp;
+
+把临时表空间从临时表空间组中移除
+SQL> alter tablespace GJSY_TEMP tablespace group '';
+
+给数据库指定临时表空间或为用户指定临时表空间时，可以使用临时表空间组的名称
+>SQL> alter user c##antman temporary tablespace grp_temp;
 ```
 
 <font color=#FF0000 size=5> <p align="center">创建数据库表</p></font>
@@ -411,6 +586,24 @@ create table WORKING(
 alter table VEHICLE disable/enable all triggers;
 --创建降序表索引，在不读取整个表的情况下，可以使数据库应用程序可以更快地查找数据
 create unique index WORKING_INDEX on WORKING(vehicle_id desc);
+--命令使索引失效
+alter index WORKING_INDEX unusable;
+--删除表分区(末尾添加 update indexes 可以在删除分区表的时候直接进行索引的重建)
+alter table VEHICLE drop partition SYS_P120862;
+--重建索引,两种都可以
+alter index WORKING_INDEX rebuild (online);
+alter index WORKING_INDEX rebuild;
+--重建分区索引
+alter index WORKING_INDEX rebuild partition p1;
+--查询当前用户下有哪些分区表
+select table_name, partitioning_type,partition_count from user_part_tables;
+--查看非分区索引是否有效
+select index_name,status from user_indexes/dba_indexes;
+--查看分区索引是否有效
+select index_name,status from user_ind_partitions/dba_ind_partitions;
+--分区索引重建，只需要重建那个失效的分区
+alter index WORKING_INDEX rebuild partition partition_name (online);
+alter index WORKING_INDEX rebuild partition partition_name;
 --添加主键,只能有一个
 alter table VEHICLE add constraint VEHICLE_PK primary key(vehicle_id);
 --删除主键 (如果数据表中有其他外键关联，则无法删除)
@@ -531,6 +724,10 @@ select * from VEHICLE where vehicle_id in (select vehicle_id from WORKING) and v
 select vehicle_type,count(vehicle_type) from VEHICLE group by vehicle_type having count(vehicle_type) > 2;
 --删除所有数据，只留表结构
 delete * from WORKING;
+--查询表分区数据
+select * from WORKING partition(SYS_P104272);
+--删除指定的表分区数据
+delete from WORKING  partition(SYS_P104272) where rownum < 1000000;
 --按照拼接字符串的方式显示查询数据
 select 'vehicle=' || vehicle_id || 'vehicle_type=' || vehicle_type from VEHICLE;
 --删除数据，指定行号不包含在查找出来的数据被删除

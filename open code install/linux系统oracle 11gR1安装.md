@@ -239,7 +239,8 @@ oracle    24605  10528  0  20:31 pts/0  00:00:00  grep LISTENER
 查看该数据库OPatch版本
 >[oracle@dwj ~]$ $ORACLE_HOME/OPatch/opatch lsinventory -detail -oh $ORACLE_HOME
 
-================ 数据库基本术语概念 ================
+<font color=#FF0000 size=5><p align="center">数据库基本术语概念</p></font>
+
 ```
 SID：是建立一个数据库时系统自动赋予的一个初始ID,主要用于在一些DBA操作以及与操作系统交互，从操作系统的角度访问实例名，
      windows系统下是在注册表HKLM\SOFTWARE\ORACLE中ORACLE_SID变量中。linux系统查看方式：
@@ -287,3 +288,22 @@ DROP TABLE      - 删除表
 CREATE INDEX    - 创建索引(搜索键)
 DROP INDEX      - 删除索引
 ```
+
+<font color=#FF0000 size=5><p align="center">oracle的trace清理</p></font>
+
+1.清理adump目录，清理参数audit_file_dest指定的目录，清理的文件为*.aud
+```
+SQL> show parameter audit_file_dest  <br>
+[root@dwj ~]$ find $ORACLE_BASE/admin/santdb/adump -mtime +7 -name "*.aud" | xargs rm -rf
+```
+2.清理trace文件,清理参数background_dump_dest指定的目录，清理的文件为*.tr
+```
+SQL> show parameter background_dump_dest
+[root@dwj ~]$ find $ORACLE_BASE/diag/rdbms/santdb/santdb1/trace -mtime +7 -name "*.trc" | xargs rm -rf
+[root@dwj ~]$ find $ORACLE_BASE/diag/rdbms/santdb/santdb1/trace -mtime +7 -name "*.trm" | xargs rm -rf
+```
+3.清理xml日志,清理路径为：$ORACLE_BASE/diag/rdbms/$DB_UNIQUE_NAME/ORACLE_SID/alert，清理文件为log_*.xml
+>[root@dwj ~]$ find $ORACLE_BASE/admin/diag/rdbms/orcl/orcl/alert -mtime +7 -name "log_*.xml" | xargs rm -rf
+
+4.清理监听日志,清理路径为：$GRID_BASE/diag/tnslsnr/NODE_NAME/listener/alert，清理文件为log_*.xml
+>[root@dwj ~]$ find $ORACLE_BASE/admin/diag/rdbms/orcl/orcl/alert -mtime +7 -name "log_*.xml" | xargs rm -rf

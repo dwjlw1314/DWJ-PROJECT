@@ -166,3 +166,43 @@ Session altered.
 SQL> create user c##ogg identified by ogg default tablespace OGG temporary tablespace TEMP quota unlimited on OGG;
 User created.
 ```
+
+<font color=#FF0000 size=5> <p align="center">ORA-30036</p></font>
+
+```
+错误描述：ORA-30036: unable to extend segment by 8 in undo tablespace 'UNDOTBS3'
+
+解决方案：
+1.查询undo表空间的使用大小空间
+SQL> select a.tablespace_name,ROUND(a.total_size) "total_size(MB)",
+ROUND(a.total_size) - ROUND(b.free_size, 3) "used_size(MB)",
+ROUND(b.free_size, 3) "free_size(MB)",
+ROUND(b.free_size / total_size * 100, 2) || '%' free_rate
+from (select tablespace_name, SUM(bytes) / 1024 / 1024 total_size
+from dba_data_files group by tablespace_name) a,
+(select tablespace_name, SUM(bytes) / 1024 / 1024 free_size from dba_free_space
+group by tablespace_name) b where a.tablespace_name = b.tablespace_name(+);
+
+2.增加undo表空间大小
+SQL> alter database datafile 'D:\ORACLE\PRODUCT\10.2.0\ORADATA\SUREDD\UNTOTBS_NEW_01.DBF' resize 2048M;
+
+3.给undo表空间新增dbf文件，语句参考《oracle数据库基本命令》
+```
+
+<font color=#FF0000 size=5> <p align="center">ORA-31626</p></font>
+
+```
+[oracle@GuayaDB3 dir]$ expdp antman/ant parfile=gps_data20181101.par
+错误描述：expdp ORA-31626: job does not exist
+
+这种错误通常都是由于Oracle软件升级之后和库不一致产生的，需要重新执行SQL来配置后台数据字典
+
+解决方案：
+SQL> @?/rdbms/admin/catalog.sql
+SQL> @?/rdbms/admin/catproc.sql
+
+后续此库出现问题：EXP-00056: ORACLE error 932 encountered
+SQL> connect / as sysdba
+SQL> @?/rdbms/admin/catmetx.sql
+SQL> @?/rdbms/admin/utlrp.sql
+```

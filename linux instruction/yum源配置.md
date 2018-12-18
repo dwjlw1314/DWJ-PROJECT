@@ -18,7 +18,6 @@ timeout=120                    #改善网络慢问题，增加yum的超时时间
 retries=6                      #网络连接发生错误后的重试次数，如果设为0，则会无限重试。默认值为6
 obsoletes=1                    #这是一个update的参数，具体请参阅yum(8)，简单的说就是相当于upgrade，允许更新陈旧的RPM包
 plugins=1                      #是否启用插件，默认1为允许，0表示不允许。我们一般会用yum-fastestmirror这个插件
-bugtracker_url=http://bugs.centos.org/set_project.php?project_id=16&ref=http://bugs.centos.org/bug_report_page.php?category=yum
 
 # Note: yum-RHN-plugin doesn't honor this.
 metadata_expire=1h
@@ -43,9 +42,12 @@ gpgcheck=1          #有1和0两个选择，分别代表是否是否进行gpg(GN
  1.以本地ISO镜像为例，进行yum源配置：
  >[root@dwj /]# cd /etc/yum.repos.d/       #进入yum配置目录
 
-该目录下建立以".repo"结尾的文件，这里我建立的是rhel-media.repo。默认ISO镜像里有四类软件包，我这里建立的是常用的Server包,如果有类似文件，可以直接进行编辑，无须创建
+该目录下建立以".repo"结尾的文件，例如：rhel-media.repo。默认ISO镜像里有四类软件包
+
+编辑配置文件，添加以下内容
+>[root@dwj yum.repos.d]# vim  rhel-media.repo
+
 ```
-[root@dwj yum.repos.d]# vim  rhel-media.repo              #编辑配置文件，添加以下内容
 [rhel-media]
 name=Red Hat Enterprise Linux $releasever - $basearch - Source      #自定义名称
 baseurl=file:///mnt/Server                                          #本地光盘挂载路径
@@ -53,13 +55,12 @@ enabled=1                                                           #启用yum�
 gpgcheck=0                                                          #检查GPG-KEY，0为不检查，1为检查
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release           #GPG-KEY路径
 ```
-```
-[root@dwj yum.repos.d]# yum clean all                         #清除yum缓存
-[root@dwj yum.repos.d]# yum makecache                         #缓存本地yum源中的软件包信息
-[root@dwj yum.repos.d]# yum -y install *packet*               #可以安装软件包
-```
+
 常用命令如下：
 ```
+yum clean all                 #清除yum缓存
+yum makecache                 #缓存本地yum源中的软件包信息
+yum -y install *packet*       #可以安装软件包
 yum install package1          #安装指定的安装包package1
 yum groupinsall group1        #安装程序组group1
 yum provides "*/nmcli"        #查看nmcli特定文件属于哪个软件包
@@ -68,9 +69,14 @@ yum check-update              #检查可更新的程序
 yum upgrade package1          #升级指定程序包package1
 yum groupupdate group1        #升级程序组group1
 yum info package1             #示安装包信息package1
-yum list                      #显示所有已经安装和可以安装的程序包
 yum list package1             #显示指定程序包安装情况package1
-yum remove  package1          #删除程序包package1
-yum  earse  package1          #删除程序包package1
+yum remove package1           #删除程序包package1
+yum earse package1            #删除程序包package1
 yum groupremove group1        #删除程序组group1
+yum list                      #显示所有已经安装和可以安装的程序包
+yum history                   #查看命令历史使用详情
+```
+网络yum源地址(可添加)
+```
+baseurl=http://mirrors.163.com/centos/6/os/x86_64/
 ```

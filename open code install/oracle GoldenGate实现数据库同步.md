@@ -179,7 +179,7 @@ ORCLPDB =
 >SQL> alter session set container=orclpdb;
 
 创建目标端数据库表空间
->SQL> create tablespace OGG logging datafile '/opt/oracle/oradata/ogg.dbf'
+>SQL> create tablespace OGG logging datafile '/opt/oracle/oradata/orcl/orclpdb/ogg.dbf'
 size 20m autoextend on uniform size 2m;
 
 创建目标端数据库用户

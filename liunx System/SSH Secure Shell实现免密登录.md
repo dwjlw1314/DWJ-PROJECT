@@ -6,7 +6,7 @@ Linux服务器版本：
 >[root@node1 ~]# cat /etc/redhat-release  <br>
 Red Hat Enterprise Linux Server release 6.4 (Santiago)
 
-免密码登录的原理:SSH服务中有公钥和私钥的概念(ublic Key是指公钥，Private Key是指私钥)
+免密码登录的原理:SSH服务中有公钥和私钥的概念(public Key是指公钥，Private Key是指私钥)
 
 认证的过程如下：
 

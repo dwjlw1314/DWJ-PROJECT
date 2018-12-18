@@ -103,7 +103,7 @@ HOSTNAME=node2
 根据网络设置，规划IP地址如下
 
 ip分类 | 网卡名 | given-name | 主机node1 IP | given-name | 主机node2 IP
----|---|---|---
+---|---|---|---|---|---
 public  | eth0   | node1     | 192.168.0.111 | node2     | 192.168.0.112
 virtual | eth0:0 | rac-vip1  | 192.168.0.121 | rac-vip2  | 192.168.0.122
 scan    | eth0:1 | rac-scan  | 192.168.0.130 | rac-scan  | 192.168.0.130
@@ -741,6 +741,10 @@ ora.scan1.vip
 手动启动数据库
 >[grid@node1 ~]$ srvctl start database -d santdb
 
+关闭和启动指定数据库实例方法
+>[grid@node1 ~]$ srvctl stop instance –d santdb –i santdb1
+>[grid@node1 ~]$ srvctl start instance –d santdb –i santdb1
+
 获取数据库安装的详细参数，使用config选项
 >[grid@node1 ~]$ srvctl config database -d santdb -a
 
@@ -779,9 +783,6 @@ local_listener           string     (DESCRIPTION=(ADDRESS_LIST=(AD
 ```
 
 <font color=#FF0000 size=5><p align="center">oracle表空间创建</p></font>
-
-查询数据库ASM磁盘组信息
->SQL> select name,total_mb,free_mb,USABLE_FILE_MB from v$asm_diskgroup;
 
 查看当前数据库已有数据表空间信息,获取存储路径
 >SQL> select tablespace_name,file_name,bytes/1024/1024/1024 gb from dba_data_files;
@@ -849,3 +850,81 @@ ora.scan1.vip  ora....ip.type 0/0    0/0    ONLINE    ONLINE    node1
 启动数据库
 [oracle@node1 ~]$ srvctl start database -d santdb
 ```
+
+<font color=#FF0000 size=5><p align="center">Oracle AWR报告提取方法</p></font>
+
+当前连接实例的AWR报告提取，需要在数据库服务器上Oracle用户登陆
+>SQL> @?/rdbms/admin/awrrpt
+
+![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/oraclegR1/3.25.35.jpg)
+直接回车即可，默认就是html格式的
+
+![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/oraclegR1/3.25.36.jpg)
+根据实际需要选择几天的AWR报告，一般取最近的AWR报告选择1天即可
+
+![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/oraclegR1/3.25.37.jpg)
+begin_snap和end_snap都是根据实际Snap Id那一列决定的. 比如选14:00 - 16:00,那起始就应该是21677和21679
+
+![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/oraclegR1/3.25.38.jpg)
+使用默认值的，接下来会在/home/oracle生成相应的报告
+
+oracle默认是不会生成第一个快照的，没有第一个快照就不会按照时间间隔来生成快照记录，如果检测数据没有记录快照，
+可以创建一个快照，然后数据库就会自动根据设置的周期记录快照了。手动生成和删除快照的指令如下：
+
+创建和删除基线 xx表示snap id
+>SQL> exec dbms_workload_repository.create_baseline(start_snap_id=>xx,end_snap_id=>xx,baseline_name=>'dwj');
+
+查询基线
+>SQL> select baseline_name,start_snap_id,end_snap_id from dba_hist_baseline;
+
+删除基线
+>SQL> exec dbms_workload_repository.drop_baseline(baseline_name=>'dwj',cascade=>true);
+
+创建快照
+>SQL> exec dbms_workload_repository.create_snapshot();
+
+删除快照
+>SQL> exec dbms_workload_repository.drop_snapshot_range(low_snap_id=>xx,high_snap_id=>xx);
+
+<font color=#FF0000 size=5><p align="center">Oracle ASM命令模式</p></font>
+
+```
+ASM磁盘的根路径为 '+'
+ASMCMD> du     #显示指定的ASM目录下ASM文件占用的所有磁盘空间
+ASMCMD> ls -ls #列出ASM目录下的内容及其属性、磁盘空间占用
+ASMCMD> pwd    #查看当前路径
+ASMCMD> cd +   #切换目录
+ASMCMD> lsct   #列出当前ASM客户端的信息
+ASMCMD> lsdg   #列出所有磁盘组及其属性
+ASMCMD> lsof   #列出数据文件信息
+ASMCMD> lsdsk  #列出盘的信息
+```
+查看ASM磁盘占用情况
+>[grid@GuayaDB3 ~]$ asmcmd ls -ls
+
+查看磁盘I/O信息，datadg为磁盘组名
+>[grid@GuayaDB3 ~]$ asmcmd lsdsk --statistics -G RACDAT
+
+简要显示读写ASM磁盘列表
+>[grid@GuayaDB3 ~]$ asmcmd iostat -G RACDAT
+
+在Oracle RAC环境下，使用grid帐号登录
+>[grid@GuayaDB3 ~]$ asmcmd
+
+使用图形界面
+>[grid@GuayaDB3 ~]$ sqlplus / as sysasm
+
+查询数据库ASM磁盘组信息
+>SQL> select name,total_mb,free_mb,USABLE_FILE_MB from v$asm_diskgroup;
+
+查看磁盘信息
+>SQL> select group_number,path,state,total_mb,free_mb from v$asm_disk;
+
+增加ASM磁盘disk_dwj至ASM磁盘组RACDAT,磁盘路径为ORCL:DATA_TEST
+
+首先需要先在操作系统级别建立此磁盘名
+>[grid@GuayaDB3 ~]$ oracleasm createdisk DATA_TEST /dev/oracleasm/disks/disk_dwj   <br>
+>SQL> alter diskgroup RACDAT add disk 'ORCL:DATA_TEST' name disk_dwj;
+
+从ASM磁盘组RACDAT里删除ASM磁盘disk_dwj
+>SQL> alter diskgroup RACDAT drop disk disk_dwj;

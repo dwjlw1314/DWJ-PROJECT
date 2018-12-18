@@ -11,17 +11,17 @@ redis有三种模式：主从模式、sentinel(哨兵模式基于主从模式)�
 >[root@diwj /]# cd redis-2.8.13 && make --- 可以参考该目录下的readme文件
 
 创建编译后程序存放目录，为了将Redis相关的资源统一管理而建立相关目录
-
-    [root@diwj  redis-2.8.13]# mkdir /usr/local/redis
-    [root@diwj  redis-2.8.13]# mkdir -p /usr/local/redis/etc
-    [root@diwj  redis-2.8.13]# mkdir -p /usr/local/redis/var
-    [root@diwj  redis-2.8.13]# mkdir -p /usr/local/redis/logs
-
+```
+[root@diwj  redis-2.8.13]# mkdir /usr/local/redis
+[root@diwj  redis-2.8.13]# mkdir -p /usr/local/redis/etc
+[root@diwj  redis-2.8.13]# mkdir -p /usr/local/redis/var
+[root@diwj  redis-2.8.13]# mkdir -p /usr/local/redis/logs
+```
 生成可执行文件，同时拷贝主配置文件
-
-    [root@diwj  redis-2.8.13]# make PREFIX=/usr/local/redis/ install
-    [root@diwj  redis-2.8.13]# cp redis.conf /usr/local/redis/etc/
-
+```
+[root@diwj  redis-2.8.13]# make PREFIX=/usr/local/redis/ install
+[root@diwj  redis-2.8.13]# cp redis.conf /usr/local/redis/etc/
+```
 可选，修改内核参数,并生效
 >[root@diwj  redis-2.8.13]# vim /etc/sysctl.conf
 
@@ -36,26 +36,26 @@ vm.overcommit_memory=1
 保存完成后运行 sysctl -p 使配置生效
 
 编译后的可执行程序
-
-    redis-server       #redis服务器的daemon启动程序
-    redis-cli          #redis命令行操作工具
-    redis-benchmark    #redis性能测试工具，测试当前系统配置下读写性能
-    redis-stat         #redis状态检测工具，可检测redis当前状态参数及延迟情况
-
+```
+redis-server       #redis服务器的daemon启动程序
+redis-cli          #redis命令行操作工具
+redis-benchmark    #redis性能测试工具，测试当前系统配置下读写性能
+redis-stat         #redis状态检测工具，可检测redis当前状态参数及延迟情况
+```
 进入可执行程序目录
 >[root@diwj  redis-2.8.13]# cd /usr/local/redis/bin
 
 非daemon启动服务和检查是否成功,如果出现 PONG 表示成功
-
-    [root@diwj bin]# ./redis-server
-    [root@diwj bin]# ./redis-cli -p 6379 ping
-
+```
+[root@diwj bin]# ./redis-server
+[root@diwj bin]# ./redis-cli -p 6379 ping
+```
 使用内置的客户端连接Redis server测试
-
-    [root@diwj bin]# ./redis-cli -p 6379
-    127.0.0.1:6379> set gjsy diwj   ---  OK
-    127.0.0.1:6379> get gjsy  ---   "diwj"
-
+```
+[root@diwj bin]# ./redis-cli -p 6379
+127.0.0.1:6379> set gjsy diwj   ---  OK
+127.0.0.1:6379> get gjsy  ---   "diwj"
+```
 关闭指定端口的redis服务
 >[root@diwj bin]# ./redis-cli -p 6379 shutdown
 
@@ -82,23 +82,23 @@ masterauth：        #slave节点加入master节点的密码认证
 >[root@diwj bin]# ./redis-server ../etc/redis.conf
 
 Redis常用内存优化手段与参数---参考优化
-* 不要开启Redis的VM选项，即虚拟内存功能，这个本来是作为Redis存储超出物理内存数据的一种数据在内存与，磁盘换入换出的一个持久化策略，
+
+1.不要开启Redis的VM选项，即虚拟内存功能，是作为Redis存储超出物理内存数据的一种数据在内存与，磁盘换入换出的一个持久化策略，
 但是其内存管理成本也非常的高，并且我们后续会分析此种持久化策略并不成熟，所以要关闭VM功能，请检查你的redis.conf文件中 vm-enabled 为 no
-* 设置redis.conf中的maxmemory选项，该选项是告诉Redis当使用了多少物理内存后就开始拒绝后续的写入请求,
+
+2.设置redis.conf中的maxmemory选项，该选项是告诉Redis当使用了多少物理内存后就开始拒绝后续的写入请求,
 该参数能很好的保护好你的Redis不会因为使用了过多的物理内存而导致swap,最终严重影响性能甚至崩溃
-* Redis为不同数据类型分别提供了一组参数来控制内存使用，我们在前面详细分析过Redis Hash是value内部为一个HashMap,
+
+3.Redis为不同数据类型分别提供了一组参数来控制内存使用，我们在前面详细分析过Redis Hash是value内部为一个HashMap,
 如果该Map的成员数比较少，则会采用类似一维线性的紧凑格式来存储该Map, 即省去了大量指针的内存开销
 ```
 这个参数控制对应在redis.conf配置文件中下面2项：
 hash-max-zipmap-entries 64  
 hash-max-zipmap-value 512
 ```
-hash-max-zipmap-entries含义是当value这个Map内部不超过多少个成员时会采用线性紧凑格式存储，默认是64,即value内部有64个以下的成员
-就是使用线性紧凑存储，超过该值自动转成真正的HashMap，hash-max-zipmap-value 含义是当 value这个Map内部的
-每个成员值长度不超过多少字节就会采用线性紧凑存储来节省空间，以上2个条件任意一个条件超过设置值都会转换成真正的HashMap，
-也就不会再节省内存了，那么这个值是不是设置的越大越好呢，答案当然是否定的，HashMap的优势就是查找和操作的时间复杂度都是O(1)的，
-而放弃Hash采用一维存储则是O(n)的时间复杂度，如果成员数量很少，则影响不大，否则会严重影响性能，所以要权衡好这个值的设置，
-总体上还是最根本的时间成本和空间成本上的权衡,同样类似的参数有：
+hash-max-zipmap-entries含义是当value这个Map内部不超过多少个成员时会采用线性紧凑格式存储，默认是64
+就是使用线性紧凑存储，超过该值自动转成真正的HashMap
+hash-max-zipmap-value 含义是当 value这个Map内部的每个成员值长度不超过多少字节就会采用线性紧凑存储来节省空间，以上2个条件任意一个条件超过设置值都会转换成真正的HashMap，也就不会再节省内存了，那么这个值是不是设置的越大越好呢，答案当然是否定的，HashMap的优势就是查找和操作的时间复杂度都是O(1)的,而放弃Hash采用一维存储则是O(n)的时间复杂度，如果成员数量很少，则影响不大，否则会严重影响性能，所以要权衡好这个值的设置，总体上还是最根本的时间成本和空间成本上的权衡,同样类似的参数有：
 ```
 list-max-ziplist-entries 512 说明：list数据类型多少节点以下会采用去指针的紧凑存储格式
 list-max-ziplist-value 64    说明：list数据类型节点值大小小于多少字节会采用紧凑存储格式
@@ -106,7 +106,7 @@ set-max-intset-entries 512   说明：set数据类型内部数据如果全部是
 ```
 最后想说的是Redis内部实现没有对内存分配方面做过多的优化，在一定程度上会存在内存碎片，不过大多数情况下这个不会成为Redis的性能瓶颈，不过如果在Redis内部存储的大部分数据是数值型的话，Redis内部采用了一个shared integer的方式来省去分配内存的开销，即在系统启动时先分配一个从1~n 那么多个数值对象放在一个池子中，如果存储的数据恰好是这个数值范围内的数据，则直接从池子里取出该对象，并且通过引用计数的方式来共享，这样在系统存储了大量数值下，也能一定程度上节省内存并且提高性能，这个参数值n的设置需要修改源代码中的一行宏定义REDIS_SHARED_INTEGERS，该值默认是10000，可以根据自己的需要进行修改，修改后重新编译就可以了
 
-* Rredis的6种过期策略redis 中的默认的过期策略是volatile-lru 。设置方式：
+4.Rredis的6种过期策略redis 中的默认的过期策略是volatile-lru 。设置方式：
 ```
 config set maxmemory-policy volatile-lru
 maxmemory-policy 六种方式
@@ -118,6 +118,7 @@ volatile-ttl ：     删除即将过期的
 noeviction ：       永不过期，返回错误
 maxmemory-samples 3 是说每次进行淘汰的时候 会随机抽取3个key 从里面淘汰最不经常使用的（默认选项）
 ```
+
 <p align="center">双机热备配置过程</p>
 
 基本信息 : Master  172.16.10.210   Slave   172.16.10.211
@@ -152,8 +153,9 @@ $REDISPATH/bin/redis-server $REDISPATH/etc/redis_master.conf;
           fi
 fi
 ```
-创建redis关闭脚本，添加如下内容  <br>
-[root@diwj /]# vim /usr/local/redis/redis-stop.sh
+创建redis关闭脚本，添加如下内容
+>[root@diwj /]# vim /usr/local/redis/redis-stop.sh
+
 ```bash
 #!/bin/bash
 REDISPATH=/usr/local/redis
@@ -168,40 +170,41 @@ else
 fi
 ```
 更改脚本权限
-
-    [root@diwj /]# chmod 755 /usr/local/redis/redis-start.sh
-    [root@diwj /]# chmod 755 /usr/local/redis/redis-stop.sh
-
+```
+[root@diwj /]# chmod 755 /usr/local/redis/redis-start.sh
+[root@diwj /]# chmod 755 /usr/local/redis/redis-stop.sh
+```
 创建主从配置文件
-
-    [root@diwj /]# cp /usr/local/redis/etc/redis.conf /usr/local/redis/etc/redis_master.conf
-    [root@diwj /]# cp /usr/local/redis/etc/redis.conf /usr/local/redis/etc/redis_slave.conf
-
+```
+[root@diwj /]# cp /usr/local/redis/etc/redis.conf /usr/local/redis/etc/redis_master.conf
+[root@diwj /]# cp /usr/local/redis/etc/redis.conf /usr/local/redis/etc/redis_slave.conf
+```
 修改主配置文件 172.16.10.210/211服务器redis_master.conf对应配置项,以下为改动部分，其他的依据实际调整
-
-    daemonize yes
-    pidfile /usr/local/redis-2.8.13/var/redis.pid
-    timeout 300
-    loglevel debug        //后期发布版本修改
-    dir /usr/local/redis-2.8.13/var/
-    appendfsync always
-    logfile "/usr/local/redis-2.8.13/logs/redis.log"
-
+```
+daemonize yes
+pidfile /usr/local/redis-2.8.13/var/redis.pid
+timeout 300
+loglevel debug        //后期发布版本修改
+dir /usr/local/redis-2.8.13/var/
+appendfsync always
+logfile "/usr/local/redis-2.8.13/logs/redis.log"
+```
 修改从配置文件 172.16.10.210服务器redis_slave.conf对应配置项,以下为改动部分，其他配置依据实际修改
-
-    daemonize yes
-    logfile "/usr/local/redis-2.8.3/logs/redis.log"
-    slaveof 172.16.10.211 6379
-
+```
+daemonize yes
+logfile "/usr/local/redis-2.8.3/logs/redis.log"
+slaveof 172.16.10.211 6379
+```
 修改从配置文件 172.16.10.211服务器redis_slave.conf对应配置项,以下为改动部分，其他配置依据实际修改
-
-    daemonize yes
-    logfile "/usr/local/redis-2.8.3/logs/redis.log"
-    slaveof 172.16.10.210 6379
-
+```
+daemonize yes
+logfile "/usr/local/redis-2.8.3/logs/redis.log"
+slaveof 172.16.10.210 6379
+```
 上述主备conf文件的bind 选项注释掉，让redis监听所有本地网卡数据包
 
 <p align="center">高可用性配置</p>
+
 vip == 172.16.10.213
 
 编译安装keepalived，前提安装相关依赖包 openssl,popt,libnl-dev等，可缺失，暂时不影响
@@ -210,25 +213,28 @@ vip == 172.16.10.213
 >[root@diwj /]# mkdir /usr/local/keepalived
 
 执行keepalived的编译命令
-
-    [root@diwj keepalived]# ./configure --prefix=/usr/local/keepalived
-    [root@diwj keepalived]# make && make install
-
+```
+[root@diwj keepalived]# ./configure --prefix=/usr/local/keepalived
+[root@diwj keepalived]# make && make install
+```
 建立服务启动脚本，方便使用service控制启停
-
-    [root@diwj keepalived]# cp /usr/local/keepalived/etc/rc.d/init.d/keepalived /etc/init.d/keepalived
-    [root@diwj keepalived]# chmod +x /etc/init.d/keepalived
-
+```
+[root@diwj keepalived]# cp /usr/local/keepalived/etc/rc.d/init.d/keepalived /etc/init.d/keepalived
+[root@diwj keepalived]# chmod +x /etc/init.d/keepalived
+```
 如果我们使用非默认路径安装，则需要修改几处路径，保证keepalived正常启动
 >[root@diwj keepalived]# vim /etc/init.d/keepalived
 
-修改内容在15行左右 --- 把/etc/sysconfig/keepalived改成/usr/local/keepalived/etc/sysconfig/keepalived
-同时在此行下添加以下内容 （将keepavlied主程序所在路径导入到环境变量PATH中）
+修改内容在第15行左右
+```
+把/etc/sysconfig/keepalived改成/usr/local/keepalived/etc/sysconfig/keepalived
+同时在此行下添加以下内容(将keepavlied主程序所在路径导入到环境变量PATH中)
+PATH="$PATH:/usr/local/keepalived/sbin"
+export PATH
+```
 
-    PATH="$PATH:/usr/local/keepalived/sbin"
-    export PATH
+修改/usr/local/keepalived/etc/sysconfig/keepalived文件，设置正确的服务启动参数
 
-修改/usr/local/keepalived/etc/sysconfig/keepalived文件，设置正确的服务启动参数  <br>
 KEEPALIVED_OPTIONS="-D -f /usr/local/keepalived/etc/keepalived/keepalived.conf"
 
 keepalived基本安装完成，启动测试
@@ -463,7 +469,9 @@ fi
 #关闭方法
 #/etc/rc.d/init.d/keepalived stop
 ```
+
 <p align="center">keepalived相关问题</p>
+
 测试及验证：拔掉节点A的网线，就发现虚拟IP已经绑定到节点B上，再恢复A节点的网线，虚拟IP又绑定回节点A之上，但是这种方式存在恼裂的可能，即两个节点实际都处于正常工作状态，但是无法接收到彼此的组播通知，这时两个节点均强行绑定虚拟IP，导致不可预料的后果，这时就需要设置仲裁，即每个节点必须判断自身的状态（应用服务状态及自身网络状态），要实现这两点可使用自定义shell脚本实现，通过周期性地检查自身应用服务状态，并不断ping网关（或其它可靠的参考IP）均可。当自身服务异常、或无法ping通网关，则认为自身出现故障，就应该移除掉虚拟IP(停止keepalived服务即可）。主要借助keepalived提供的vrrp_script及track_script实现
 
 在keepalived的配置文件最前面加入以下代码，定义一个跟踪脚本：
@@ -490,7 +498,8 @@ track_script {
 
 但这里有个小问题，如果本机或是网关偶尔出现一次故障，那么我们不能认为是服务故障。更好的做法是如果连续N次检测本机服务不正常或连接N次无法ping通网关，才认为是故障产生，才需要进行故障转移。另一方面，如果脚本检测到故障产生，并停止掉了keepalived服务，那么当故障恢复后，keepalived是无法自动恢复的。我觉得利用独立的脚本以秒级的间隔检查自身服务及网关连接性，再根据故障情况控制keepalived的运行或是停止
 
-<p align="center">mastercluster模式</p>    <br>
+<p align="center">mastercluster模式</p>
+
 redis版本：redis-4.0.9.tar.gz
 
 1.单机模拟mastercluster模式，创建3组master-slave的服务；创建6个文件夹模拟6个redis服务

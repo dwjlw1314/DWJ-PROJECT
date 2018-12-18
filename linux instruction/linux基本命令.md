@@ -90,7 +90,8 @@ whiptail                                                             #在shell�
 locate stdio.h                                                       #从文件系统数据库索引中查找任何类型文件
 updatedb                                                             #定期更新locate数据库，命令由cron运行
 HISTTIMEFORMAT="%F %T "                                              #history历史查看显示时间格式环境变量设置
-tune2fs -l /dev/sdb5   || dumpe2fs -h /dev/sdb5                      #查看分区文件系统信息
+tune2fs -l /dev/sdb5 || dumpe2fs -h /dev/sdb5                        #查看分区文件系统信息
+tune2fs -l /dev/sda1 | grep create || passwd -S root                 #查看操作系统的安装时间
 e2label /dev/sdb5 mydisk                                             #设置分区卷标信息,默认是查看
 mkfs -t ext4 /dev/sdb1 或者 mkfs.ext4 /dev/sdb1                      #新建分区后格式化普通文件系统
 mkswap /dev/sdb6                                                     #新建swap分区后格式化交换文件系统
@@ -652,7 +653,7 @@ cs 每秒上下文切换次数，例如我们调用系统函数，就要进行�
 us 用户CPU时间，我曾经在一个做加密解密很频繁的服务器上，可以看到us接近100,r运行队列达到80
 sy 系统CPU时间，如果太高，表示系统调用时间长，例如是IO操作频繁
 id 空闲CPU时间，一般来说，id + us + sy = 100,一般我认为id是空闲CPU使用率，us是用户CPU使用率，sy是系统CPU使用率
-wt 等待IO CPU时间
+wa IO等待时间百分比 wa的值高时，说明IO等待比较严重，这可能由于磁盘大量作随机访问造成，也有可能磁盘出现瓶颈(块操作)
 ```
 
 <font color=#FF0000 size=5> <p align="center">mpstat</p></font>
