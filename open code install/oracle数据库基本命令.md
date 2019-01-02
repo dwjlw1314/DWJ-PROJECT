@@ -38,6 +38,18 @@ select owner, count (owner) number_of_objects
     group by owner
     order by number_of_objects desc;
 ```
+会话使用的临时表排序空间
+```sql
+select S.sid || ',' || S.serial# sid_serial, S.username, S.osuser, P.spid,
+      S.module, S.program, SUM(T.blocks) * TBS.block_size / 1024 / 1024 mb_used,
+      T.tablespace, COUNT(*) sort_ops
+    from v$sort_usage T, v$session S, dba_tablespaces TBS, v$process P
+    where T.session_addr = S.saddr
+    and S.paddr = P.addr and T.tablespace = TBS.tablespace_name
+    group by S.sid, S.serial#, S.username, S.osuser, P.spid, S.module,
+      S.program, TBS.block_size, T.tablespace
+ order by sid_serial;
+```
 查询数据库sql命令相关内容以及SQL_TEXT
 ```sql
 select sess.SID,sess.SERIAL#,sqls.SQL_ID,sort.SEGTYPE,sort.BLOCKS * 8 / 1000 "MB",sqls.SQL_TEXT
@@ -57,6 +69,17 @@ select a.tablespace_name,
         (select tablespace_name, sum(bytes) total from DBA_DATA_FILES group by tablespace_name ) b
     where a.tablespace_name=b.tablespace_name
     order by a.tablespace_name;
+```
+```sql
+select a.tablespace_name tablespace_name,
+total/1024/1024 total_size, free/1024/1024 free_size,
+(total - free)/1024/1024 used_size,
+Round(( total - free ) / total, 4) * 100 "usage%"
+from (select tablespace_name, Sum(bytes) free from DBA_FREE_SPACE
+group by tablespace_name) a,
+(select tablespace_name, Sum(bytes) total from DBA_DATA_FILES
+group by tablespace_name) b
+where a.tablespace_name = b.tablespace_name;
 ```
 查看临时表空间使用情况(temp)
 ```sql
@@ -87,7 +110,7 @@ select TABLESPACE_NAME, FREE_SPACE/1024/1024 as "FREE SPACE(M)"
 ```
 查找消耗临时表空间资源比较多的SQL语句
 ```sql
-select se.USERNAME, se.SID, se.SERIAL#, s.SQL_ID, s.MODULE, su.EXTENTS,
+select se.USERNAME, se.SID||','||se.SERIAL# "sid,serial", s.SQL_ID, s.MODULE, su.EXTENTS,
     su.BLOCKS * to_number(rtrim(p.VALUE)) as space, tablespace, segtype, sql_text
     from v$sort_usage su, v$parameter p, v$session se, v$sql s
     where p.name = 'db_block_size'
@@ -173,9 +196,6 @@ d. 根据不同的服务器模式如专用服务器模式或者共享服务器�
 检查系统当前视图相关参数(v$parameter视图中查询参数的时候其实都是通过x$ksppi和x$ksppcv这两个内部视图中得到的)
 ```sql
 SQL> select count(*) from v$instance;              #数据库实例所有参数字段
-SQL> select count(*) from v$system_parameter;      #数据库所有系统参数字段,3种方式
-SQL> select count(*) from v$spparameter;
-SQL> select count(*) from v$parameter;
 SQL> select status from v$instance;                #查看oracle启动状态
 SQL> select * from dba_tablespaces;                #查看数据库表空间信息
 SQL> select * from nls_database_parameters;        #查看数据库服务器字符集
@@ -196,6 +216,9 @@ SQL> select MESSAGE from v$session_longops;        #捕捉运行很久的SQL
 SQL> select * from v$locked_object;                #查看未提交的事务
 SQL> select * from v$transaction;                  #查看未提交的事务,一般关联v$session
 SQL> select * from v$version;                      #查看数据库的版本
+SQL> select * from dba_mviews;                     #查看物化视图刷新状态信息
+SQL> select * from dba_mview_logs                  #查询物化视图日志(快照)
+SQL> select * from dba_mview_refresh_times;        #查看物化视图刷新时间
 ```
 sqlplus的buffer会缓存最后一条sql语句，可以使用"/"来执行最后一条命令，也可以使用"edit"
 编辑最后一条sql语句。l(list) 可以显示buffer中最后一条命令
@@ -446,6 +469,7 @@ orclpdb.com     3     ORCLPDB
 >SQL> select tablespace_name,free_space/1024 from dba_temp_free_space;
 
 增加数据表空间和临时表空间原有数据文件大小
+>SQL> alter database datafile FILE_ID resize 31G;  #FILE_ID用实际值替换<br>
 >SQL> alter database datafile '/opt/oracle/oradata/orcl/gjsy_data.dbf' resize 100M;  <br>
 >SQL> alter database tempfile '/opt/oracle/oradata/orcl/gjsy_temp.dbf' resize 100M;
 
@@ -496,7 +520,7 @@ SQL> drop directory dwj;
 <font color=#FF0000 size=5> <p align="center">UNDO表空间</p></font>
 
 ```sql
-检查undo的管理方式
+检查undo的管理方式，有两种管理方式，通过参数undo_management来设置auto和manual
 SQL> show parameter undo;
 
 检查UNDO Segment状态
@@ -537,6 +561,9 @@ SQL> alter system set "_undo_autotune"= false;
 
 设置event让SMON不自动OFFLINE回滚段
 SQL> alter system set events '10511 trace name context forever, level 1';
+
+修复undo表空间转载
+https://blog.csdn.net/tianlesoftware/article/details/6261475
 ```
 
 <font color=#FF0000 size=5> <p align="center">临时表空间组</p></font>
@@ -585,7 +612,8 @@ create table WORKING(
 --启用和禁用触发器
 alter table VEHICLE disable/enable all triggers;
 --创建降序表索引，在不读取整个表的情况下，可以使数据库应用程序可以更快地查找数据
-create unique index WORKING_INDEX on WORKING(vehicle_id desc);
+create unique index WORKING_INDEX on WORKING(vehicle_id desc);  '可以使用下面的方式在指定表空间'
+create unique index WORKING_INDEX on WORKING(vehicle_id desc) local tablespace gps_tbs nologging;
 --命令使索引失效
 alter index WORKING_INDEX unusable;
 --删除表分区(末尾添加 update indexes 可以在删除分区表的时候直接进行索引的重建)
@@ -606,6 +634,8 @@ alter index WORKING_INDEX rebuild partition partition_name (online);
 alter index WORKING_INDEX rebuild partition partition_name;
 --添加主键,只能有一个
 alter table VEHICLE add constraint VEHICLE_PK primary key(vehicle_id);
+--删除指定表分区
+alter table VEHICLE drop partition SYS_P122602;
 --删除主键 (如果数据表中有其他外键关联，则无法删除)
 alter table VEHICLE drop constraint VEHICLE_PK;
 --添加外键
@@ -648,15 +678,15 @@ purge recyclebin;
 purge dba_recyclebin;
 ```
 
-drop和truncate及delete的区别
+drop和truncate及delete的区别，truncate不能用于参与了索引视图的表和有foreign key引用的表
 
 drop table | truncate table | delete from
 ---|---|---
-属于DDL | 属于DDL | 属于DML
+属于DDL(自动提交) | 属于DDL(自动提交) | 属于DML
 不可回滚 | 不可回滚 | 可回滚
 不可带where | 不可带where | 可带where
 表内容和表结构删除 | 表内容删除 | 表结构在，表内容要看where的执行情况
-删除速度慢 | 删除速度慢 | 删除速度慢，要逐行删除
+删除速度最快 | 删除速度块 | 删除速度最慢，要逐行删除
 
 <font color=#FF0000 size=5> <p align="center">数据库表操作语句</p></font>
 
@@ -689,6 +719,16 @@ insert into WORKING (id,vehicle_id) values('uuid','MAT0533');
 update VEHICLE set note = 'text' where vehicle_id = 'MAA3006';
 --建立一个快表将working表数据复制一份
 create table quici_table as select * from working;
+--Create database link
+create database link LAB_DB_LINK connect to antman identified by ant
+using '(DESCRIPTION =
+  (ADDRESS_LIST =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = 172.26.130.4)(PORT = 1521))
+  )
+  (CONNECT_DATA =
+    (SERVICE_NAME = antlab)
+  )
+)';
 --查询数据
 select avg(vehicle_type) as avg,sum(vehicle_type) as sum from VEHICLE where note is not null;
 select * from WORKING where switch_time >= to_date('2018-09-28 00:02:00','yyyy-mm-dd hh24:mi:ss');

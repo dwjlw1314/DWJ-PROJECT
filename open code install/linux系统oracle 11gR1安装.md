@@ -50,7 +50,7 @@
 
 把目录设置成具有读写和执行的权限，用户和组改为oracle.oinstall
 ```
-[root@gjsy /]# chmod –R 755 /home/oracle/database
+[root@gjsy /]# chmod -R 755 /home/oracle/database
 [root@gjsy /]# chown -R oracle /home/oracle/database
 [root@gjsy /]# chgrp -R oinstall /home/oracle/database
 ```
@@ -76,7 +76,7 @@ net.core.wmem_max = 1048576
 oracle soft nofile  1024
 oracle hard nofile  65536
 oracle soft nproc  2047
-oracle hard nproc 16384                                                                   
+oracle hard nproc 16384
 oracle soft stack  10240
 oracle hard stack  32768
 

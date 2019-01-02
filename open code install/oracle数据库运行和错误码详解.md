@@ -206,3 +206,118 @@ SQL> connect / as sysdba
 SQL> @?/rdbms/admin/catmetx.sql
 SQL> @?/rdbms/admin/utlrp.sql
 ```
+
+<font color=#FF0000 size=5> <p align="center">ORA-01502</p></font>
+
+```
+错误描述：ORA-01502: index or partition of such index is in usable state tips
+
+oracle的官方描述是：
+Cause: An attempt has been made to access an index or index partition that has been marked unusable by a direct load or by a DDL operation
+Action: DROP the specified index, or REBUILD the specified index, or REBUILD the unusable index partition
+
+说明：
+1.在session级别跳过无效索引作查询
+SQL> alter session set skip_unusable_indexes=true;
+
+2.分区索引应适用user_ind_partitions
+
+3.状态分4种：
+  N/A说明这个是分区索引需要查user_ind_partitions或者user_ind_subpartitions来确定每个分区是否可用
+  VAILD说明这个索引可用
+  UNUSABLE说明这个索引不可用
+  USABLE 说明这个索引的分区是可用的
+
+4.查询当前索引的状态
+SQL> select distinct status from user_indexes;
+
+5.查询那个索引无效
+SQL> select index_name from  user_indexes where status <> 'VALID';
+
+7.批量rebuild下
+SQL> select 'alter index '||index_name||' rebuild online;' from  user_indexes where status <> 'VALID' and index_name not like'%$$';
+
+解决方案：
+1.重建表索引
+SQL> alter index index_name rebuild (online);  或者
+SQL> alter index index_name rebuild;
+
+2.如果是分区索引只需要重建那个失效的分区
+SQL> alter index index_name rebuild partition SYS_P123322 (online);  或者
+SQL> alter index index_name rebuild partition SYS_P123322;
+
+3.或者改变当前索引的名字
+```
+
+<font color=#FF0000 size=5> <p align="center">ORA-31626</p></font>
+
+```
+错误描述：ORA-04030: out of process memory when trying to allocate 20504 bytes
+
+oracle的官方描述是：
+ORA-04030 out of process memory when trying to allocate string bytes (string,string)
+Cause: Operating system process private memory has been exhausted.
+Action: See the database administrator or operating system administrator to increase process memory quota. There may be a bug in the application that causes excessive allocations of process memory space.
+
+需要注意的是max_sga_size和sga_target的设置：
+sga_max_size指的是可动态分配的最大值﹐而sga_target是当前已分配的最大sga
+sga_max_size是不可以动态修改的﹐而sga_target是可动态修改﹐直到sga_max_size的值
+
+如果在实例启动时﹐sga_max_size < sga_target或sga_max_size没设定﹐则启动后sga_max_size的值会等于sga_target的值
+如果内存占用超过sga_target，也可能会出现ORA-04030的错误
+
+解决方案：
+查看数据库的内存分配图
+SQL> show parameter pool
+SQL> show parameter sga
+SQL> show parameter pga
+
+SQL查看结果：
+sga_target=30G
+sga_max_size=32G
+pga_aggregate_target=16G
+
+1.设置rman从SGA取内存
+SQL> alter system set dbwr_io_slaves=2 scope=spfile;
+SQL> alter system set backup_tape_io_slaves=true scope=spfile;
+
+2.调整SGA大小
+SQL> alter system set sga_target=30G;
+SQL> alter system set sga_max_size=32G scope=spfile;
+
+3.设置使用内存最大大小
+SQL> alter system set large_pool_size=1024M;
+
+4.重启oracle service
+
+5.查看sga,pga,pool的大小
+```
+
+<font color=#FF0000 size=5> <p align="center">ORA-00054</p></font>
+
+```
+SQL> truncate table vehicle_location;
+错误描述：ORA-00054: resource busy and acquire with NOWAIT specified
+
+解决方案：
+SQL> select * from v$session s,v$locked_object l where l.PROCESS = s.PROCESS
+and module = 'Storage.exe'
+
+通过上面得到的sid和serial#，然后对该进程进行终止
+SQL> alter system kill session 'sid,serial#';
+
+一些ORACLE中的进程被杀掉后，状态被置为"killed"，但是锁定的资源很长时间不释放
+1.重启数据库
+2.在OS一级对其kill
+
+首先执行下面的语句获得进程(线程)号：
+SQL> select spid, osuser, s.program from v$session s,v$process p where s.paddr=p.addr and s.sid=24
+
+在unix上，用root身份执行命令:
+[root@dwj ~]# kill -9 12345 (即上面查询出的spid)
+
+在windows(unix也适用)用oracle提供的一个可执行命令orakill杀死线程，语法为：orakill sid thread
+sid：表示要杀死的进程属于的实例名
+thread：是要杀掉的线程号，即上面查询出的spid
+eg: c:> orakill orcl 12345
+```
