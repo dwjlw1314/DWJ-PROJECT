@@ -93,5 +93,42 @@ spool off
 编辑脚本del.sql文件,删除文件开始和结束部分的SQL语句及注释说明文字,运行脚本删除分区数据
 >SQL> @del.sql;
 
-六、导入备份的数据
+六、非参数文件方式导入备份的数据
 >[oracle@dwj dir]$ impdp c##antman/ant directory=dir dumpfile=alertdata.dmp
+
+七、参数文件方式导入备份的数据
+>[oracle@dwj dir]$ impdp antman/ant parfile=imp_alertdata.par
+
+创建参数文件
+>[oracle@dwj dir]$ vim imp_alertdata.par
+
+```
+directory=dir
+dumpfile=alertdata.dmp
+logfile=alertdata.log
+schemas=antman,ant
+```
+
+<font color=#FF0000 size=5> <p align="center">终止imp/exp和expdp/impdp进程运行的方法</p></font>
+
+1.通过dba_datapump_jobs来查询数据泵进程
+>sql> select * from dba_datapump_jobs;
+
+2.进入到对应的job中
+>[oracle@dwj dir]$ expdp antman/ant attach=SYS_EXPORT_FULL_01
+
+```
+Export> stop_job=immediate
+Are you sure you wish to stop this job ([yes]/no): yes
+[oracle@dwj dir]$
+```
+
+3.交互模式
+```
+CONTINUE_CLIENT    返回到记录模式。假如处于空闲状态, 将重新启动作业
+START_JOB          启动恢复当前作业
+STATUS             在默认值(0)将显示可用时的新状态的情况下,要监视的频率 (以秒计) 作业状态
+STATUS=[interval]
+STOP_JOB           顺序关闭执行的作业并退出客户机
+STOP_JOB=IMMEDIATE 将立即关闭数据泵作业
+```

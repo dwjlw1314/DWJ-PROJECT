@@ -197,6 +197,7 @@ d. 根据不同的服务器模式如专用服务器模式或者共享服务器�
 ```sql
 SQL> select count(*) from v$instance;              #数据库实例所有参数字段
 SQL> select status from v$instance;                #查看oracle启动状态
+SQL> select * from dba_datapump_jobs               #查询EXP/IMP在后台执行的状态
 SQL> select * from dba_tablespaces;                #查看数据库表空间信息
 SQL> select * from nls_database_parameters;        #查看数据库服务器字符集
 SQL> select * from user_tab_partitions;            #查看数据库表分区信息
@@ -715,6 +716,8 @@ alter table WORKING disable/enable all triggers;
 insert into WORKING values('F08C1DDC-E828-11E4-89C7-9D9859F01C00','MAT0532',sysdate);
 --插入数据 (指定列)
 insert into WORKING (id,vehicle_id) values('uuid','MAT0533');
+--把VEHICLE表数据插入到WORKING中
+insert into WORKING select * from VEHICLE;
 --更新数据 (最后事务提交 commit;)
 update VEHICLE set note = 'text' where vehicle_id = 'MAA3006';
 --建立一个快表将working表数据复制一份
@@ -729,6 +732,8 @@ using '(DESCRIPTION =
     (SERVICE_NAME = antlab)
   )
 )';
+--通过database link查询数据
+select count(*) from VEHICLE@LAB_DB_LINK;
 --查询数据
 select avg(vehicle_type) as avg,sum(vehicle_type) as sum from VEHICLE where note is not null;
 select * from WORKING where switch_time >= to_date('2018-09-28 00:02:00','yyyy-mm-dd hh24:mi:ss');

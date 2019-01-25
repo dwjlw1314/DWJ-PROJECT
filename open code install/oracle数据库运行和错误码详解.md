@@ -321,3 +321,23 @@ sid：表示要杀死的进程属于的实例名
 thread：是要杀掉的线程号，即上面查询出的spid
 eg: c:> orakill orcl 12345
 ```
+
+<font color=#FF0000 size=5> <p align="center">ORA-22992</p></font>
+
+```
+SQL> select * from USER_AUTHORITY@SANDB3
+错误描述：ORA-22992: cannot use LOB locators selected from remote tables
+
+解决方案：
+1、创建一张临时表
+SQL> create global temporary table table_temp as select * from USER_AUTHORITY where 1=2
+
+2、然后利用database link把远程数据先insert到临时表中，insert后先不要commit，否则commit后临时表中数据就会丢失
+SQL> insert into table_temp select * from USER_AUTHORITY@SANDB3
+
+3、将临时表中的数据insert到目标库表
+SQL> insert into USER_AUTHORITY select * from table_temp
+
+4、完毕，将临时表drop掉
+SQL> drop table table_temp
+```
