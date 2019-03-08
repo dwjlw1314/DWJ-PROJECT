@@ -17,6 +17,8 @@ touch {1..5}.txt                                                     #批量创�
 yum -y install --installroot=/usr/local/apache  程序名               #指定安装路径
 strings /lib64/libc.so.6 |grep GLIBC                                 #查看linux系统GLIBC库版本
 mount -t iso9660                                                     #查看文件系统类型相关盘符权限详细信息
+mtype [-st] [filename]                                               #是mtools工具集指令，模拟MS-DOS的指令显示文件的内容
+> -s:去除8位字符码集的第一个位，使它兼容于7位的ASCII; -t:将MS-DOS文件中的"换行+光标移至行首"字符转换成Linux的换行字符
 nm -a *.so                                                           #查看动态库文件中的函数名
 free  -m / -h                                                        #已MB为单位显示当前内存使用情况
 autoconf                                                             #生成编译configure文件
@@ -30,6 +32,7 @@ chattr +a / +i  filename/dir                                         #增加文�
 > +a 只能向文件追加内容  +i 文件不能被修改，如果目录具有这个属性，任何进程只能修改目录下的文件，不允许建立和删除文件
 lsattr filename  / lsattr -d dirname                                 #查看文件系统扩展属性
 bc                                                                   #linux计算器
+cal                                                                  #显示当前日历或指定日期的日历
 iconv                                                                #文件编码转换命令
 dos2unix/unix2dos                                                    #将文件中的\r\n和\n互相转换
 brctl show                                                           #查看网桥和端口连接信息
@@ -43,7 +46,7 @@ setfacl/getfacl                                                      #设置和�
 nmap                                                                 #Linux下的网络安全扫描和嗅探工具包
 nmapfe                                                               #nmap图形化界面
 nmtui                                                                #NetworkManager界面，类似setup命令
-nmcli conn                                                           #查看网卡uuid和Type信息
+nmcli con                                                            #查看网卡uuid和Type信息
 nm-connection-editor                                                 #打开网络连接编辑界面
 dmidecode                                                            #Linux下获取详细硬件信息的工具
 htpasswd -c /opt/passwd user                                         #给user用户创建密码文件
@@ -79,6 +82,7 @@ lsmod |grep ftp                                                      #显示linu
 modprobe -l|grep ftp                                                 #查看系统内核模块名字*.ko文件
 modprobe  nf_conntrack_ftp                                           #加载内核模块ftp
 getconf LONG_BIT                                                     #查看CPU位数
+users                                                                #显示当前登录系统的所有用户
 uuidgen                                                              #随机生成UUID值
 uname -r / -s / -a                                                   #查看内核版本信息(内核版本，内核名称，所有)
 cat /etc/centos-release                                              #查看linux系统版本
@@ -99,6 +103,7 @@ swapon/swapoff /dev/sdb6                                             #加入和�
 swapon -a / swapon -s                                                #激活交换空间和查看交换空间命令
 mount -a                                                             #重新读取</etc/fstab>文件进行挂载文件系统
 
+mesg [y/n]                                                           #设置当前终端的写权限
 write gjsy                                                           #给gjsy在线用户发送消息
 wall helloword                                                       #给所有在线用户发送消息
 
@@ -141,7 +146,7 @@ Linux下查看系统启动时间和运行时间
 [root@dwj /opt]# w
 Linux下查看进程相关信息
 [root@dwj /opt]# pidof name                   #显示name进程pid
-[root@dwj /opt]# ps -p pid -o parameter       #pid是进程号，parameter是一下内容之一
+[root@dwj /opt]# ps -p pid -o parameter       #pid是进程号，parameter是以下内容之一
 pid：进程ID
 tty：终端
 user：用户
@@ -303,6 +308,32 @@ vi /etc/security/limits.conf
 -t | 指定每个进程所使用的秒数,单位：seconds
 -u | 可以运行的最大并发进程数
 -v | Shell可使用的最大的虚拟内存，单位：kbytes
+
+<font color=#FF0000 size=5> <p align="center">dd命令</p></font>
+
+```
+linux中特殊的设备(/dev/zero,/dev/null,/dev/unrandom,/dev/random)
+dev/null看作"黑洞"。 它等价于一个只写文件。所有写入它的内容都会永远丢失。 而尝试从它那儿读取内容则什么也读不到。
+所以在dd命令中当为了测试某个磁盘的读性能时候，就可以将of指定为/dev/null
+
+dev/zero文件产生连续不断的null的流(二进制的零流，而不是ASCII型的)。写入它的输出会丢失不见，主要是用来创建一个指定长度用于初始化的空文件.另一个应用是用零去填充一个指定大小的文件，用dd命令为了测试磁盘写性能时候，可以将if指定为/dev/zero这样，就相当源源不断的向测试设备中写入数据
+
+dev/random和/dev/urandom是unix系统提供的产生随机数的设备，区别在于/dev/urandom生成的速度比/dev/random快。如果不能立即生成随机串，/dev/random会一直阻塞，有时会非常耗费CPU;/dev/urandom则会根据其他值立即生成一个随机串，不会阻塞。/dev/urandom生成的随机值没有/dev/random随机。大多数情况下，选用/dev/urandom
+
+常见的DD命令，这四条DD命令区别在于内存中写缓存的处理方式(执行DD命令测试硬盘IO性能，对硬盘的损害很大)
+
+[root@dwj ~]# dd bs=64k count=4k if=/dev/zero of=test
+dd默认的方式不包括“同步(sync)”命令。也就是说，dd命令完成前并没有让系统真正把文件写到磁盘上。所以以上命令只是单纯地把这128MB的数据读到内存缓冲当中(写缓存[write cache])。所以会得到一个超级快的速度。因为dd执行的只是读取速度，直到dd完成后系统才开始真正往磁盘上写数据，但这个速度是看不到了
+
+[root@dwj ~]# dd bs=64k count=4k if=/dev/zero of=test; sync
+分号隔开的只是先后两个独立的命令。当sync命令准备开始往磁盘上真正写入数据的时候，前面dd命令已经把错误的“写入速度”值显示在屏幕上了。所以还是得不到真正的写入速度
+
+[root@dwj ~]# dd bs=64k count=4k if=/dev/zero of=test conv=fdatasync
+dd命令执行到最后会真正执行一次“同步(sync)”操作，所以这时候得到的是读取这128M数据到内存并写入到磁盘上所需的时间，符合实际使用结果
+
+[root@dwj ~]# dd bs=64k count=4k if=/dev/zero of=test oflag=dsync
+dd在执行时每次都会进行同步写入操作。也就是说，这条命令每次读取64k后就要先把这64k写入磁盘，然后再读取下面这64k，一共重复128次。这可能是最慢的一种方式了，因为基本上没有用到写缓存(write cache)
+```
 
 <font color=#FF0000 size=5> <p align="center">系统时间</p></font>
 

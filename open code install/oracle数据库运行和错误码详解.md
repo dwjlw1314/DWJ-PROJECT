@@ -341,3 +341,21 @@ SQL> insert into USER_AUTHORITY select * from table_temp
 4、完毕，将临时表drop掉
 SQL> drop table table_temp
 ```
+
+<font color=#FF0000 size=5> <p align="center">ORA-02292</p></font>
+
+```
+错误描述：ORA-02292: integrity constraint MGV_VEHICLE_FK violated
+
+解决方案：
+1. 查找相关约束信息,其中constraint_name是报错中提示点外键约束名
+SQL> select a.constraint_name, a.table_name, b.constraint_name
+      from user_constraints a, user_constraints b
+      where a.constraint_type = 'R'
+      and b.constraint_type = 'P'
+      and a.r_constraint_name = b.constraint_name
+      and a.constraint_name = 'MGV_VEHICLE_FK'
+
+2. 删除子表中的所有记录
+3. 再次删除主表报错数据
+```

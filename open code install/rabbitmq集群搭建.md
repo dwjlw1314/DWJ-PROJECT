@@ -157,8 +157,8 @@ RabbitMQ: rabbitmq-server-master.zip
 [root@dwj ~]# cd /usr/local/rabbitmq
 [root@dwj rabbitmq]# make
 ```
-1.如果出现 SSL connect error 或者 HTTP request failed 错误，升级nss服务(首先配置网络yum源)
->[root@dwj ~]# yum update nss
+1.如果出现 SSL connect error 或者 HTTP request failed 错误，升级相关服务(首先配置网络yum源)
+>[root@dwj ~]# yum update nss curl libcurl
 
 2.如果出现 elixir: Command not found 错误,安装elixir程序包
 ```
@@ -357,10 +357,7 @@ loopback_users | 只能通过环回接口(即localhost)连接broker的用户列�
 collect_statistics | 统计收集模式。主要与管理插件相关。选项：<br>none (不发出统计事件)<br>coarse (发出每个队列 /每个通道 /每个连接的统计事件)<br>fine (也发出每个消息统计事件)<br>Default: none
 collect_statistics_interval | 统计收集时间间隔(毫秒为单位)。主要针对于 management plugin，Default: 5000
 
-8.运行脚本顺序
-MQ-install.sh  ->  MQ-policy.sh  ->  MQ-jiqun.sh;
-
-9.参考：
+8.参考：
 
 http://blog.csdn.net/rainday0310/article/details/22082503
 http://www.cnblogs.com/caca/p/rabbitmq_demo.html

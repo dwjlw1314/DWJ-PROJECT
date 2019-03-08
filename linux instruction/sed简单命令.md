@@ -20,82 +20,83 @@ sed命令行格式为： sed [-nefri] 'command' 输入文本
 举例：(假设我们有一文件名为ab)
 
 1.删除某行
-
-    [root@dwj Desktop]# sed '1d' ab          #删除第一行?
-    [root@dwj Desktop]# sed '$d' ab          #删除最后一行
-    [root@dwj Desktop]# sed '1,2d' ab        #删除第一行到第二行
-    [root@dwj Desktop]# sed '2,$d' ab        #删除第二行到最后一行
-
+```
+[root@dwj Desktop]# sed '1d' ab          #删除第一行?
+[root@dwj Desktop]# sed '$d' ab          #删除最后一行
+[root@dwj Desktop]# sed '1,2d' ab        #删除第一行到第二行
+[root@dwj Desktop]# sed '2,$d' ab        #删除第二行到最后一行
+```
 2.显示某行
-
-    [root@dwj Desktop]# sed -n '1p' ab       #显示第一行
-    [root@dwj Desktop]# sed -n '$p' ab       #显示最后一行
-    [root@dwj Desktop]# sed -n '1,2p' ab     #显示第一行到第二行
-    [root@dwj Desktop]# sed -n '2,$p' ab     #显示第二行到最后一行
-
+```
+[root@dwj Desktop]# sed -n '1p' ab       #显示第一行
+[root@dwj Desktop]# sed -n '$p' ab       #显示最后一行
+[root@dwj Desktop]# sed -n '1,2p' ab     #显示第一行到第二行
+[root@dwj Desktop]# sed -n '2,$p' ab     #显示第二行到最后一行
+```
 3.使用模式进行查询
-
-    [root@dwj Desktop]# sed -n '/ruby/p' ab  #查询包括关键字ruby所在所有行
-    [root@dwj Desktop]# sed -n '/\$/p' ab    #查询包括关键字$所在所有行，使用反斜线\屏蔽特殊含义
-
+```
+[root@dwj Desktop]# sed -n '/ruby/p' ab  #查询包括关键字ruby所在所有行
+[root@dwj Desktop]# sed -n '/\$/p' ab    #查询包括关键字$所在所有行，使用反斜线\屏蔽特殊含义
+```
 4.增加一行或多行字符串
+```
+#第一行后增加字符串"drink tea"
+[root@dwj Desktop]# cat ab
+  Hello!
+  dwj is me,welcome to my blog.
+  end
+[root@dwj Desktop]# sed '1a drink tea' ab
+  Hello!
+  drink tea
+  dwj is me,welcome to my blog.
+  end
 
-    #第一行后增加字符串"drink tea"
-    [root@dwj Desktop]# cat ab
-      Hello!
-      dwj is me,welcome to my blog.
-      end
-    [root@dwj Desktop]# sed '1a drink tea' ab
-      Hello!
-      drink tea
-      dwj is me,welcome to my blog.
-      end
+#第一行到第三行后增加字符串"drink tea"
+[root@dwj Desktop]# sed '1,3a drink tea' ab
+  Hello!
+  drink tea
+  dwj is me,welcome to my blog.
+  drink tea
+  end
+  drink tea
 
-    #第一行到第三行后增加字符串"drink tea"
-    [root@dwj Desktop]# sed '1,3a drink tea' ab
-      Hello!
-      drink tea
-      dwj is me,welcome to my blog.
-      drink tea
-      end
-      drink tea
-
-    #第一行后增加多行，使用换行符\n
-    [root@dwj Desktop]# sed '1a drink tea\nor coffee' ab
-      Hello!
-      drink tea
-      or coffee
-      dwj is me,welcome to my blog.
-      end
-
+#第一行后增加多行，使用换行符\n
+[root@dwj Desktop]# sed '1a drink tea\nor coffee' ab
+  Hello!
+  drink tea
+  or coffee
+  dwj is me,welcome to my blog.
+  end
+```
 5.代替一行或多行
-
-    #第一行代替为Hi
-    [root@dwj Desktop]# sed '1c Hi' ab
-      Hi
-      dwj is me,welcome to my blog.
-      end
-    #第一行到第二行代替为Hi
-    [root@dwj Desktop]# sed '1,2c Hi' ab
-      Hi
-      end
-
+```
+#第一行代替为Hi
+[root@dwj Desktop]# sed '1c Hi' ab
+  Hi
+  dwj is me,welcome to my blog.
+  end
+#第一行到第二行代替为Hi
+[root@dwj Desktop]# sed '1,2c Hi' ab
+  Hi
+  end
+```
 6.替换一行中的某部分,（要替换的字符串可以用正则表达式）
 >[root@localhost dwj]# sed 's/要替换的字符串/新的字符串/g
 
-    [root@dwj Desktop]# sed -n '/dwj/p' ab | sed 's/dwj/bird/g #把dwj替换为bird
-    [root@dwj Desktop]# sed -n '/dwj/p' ab | sed 's/dwj//g     #删除dwj
-
+```
+[root@dwj Desktop]# sed -n '/dwj/p' ab | sed 's/dwj/bird/g #把dwj替换为bird
+[root@dwj Desktop]# sed -n '/dwj/p' ab | sed 's/dwj//g     #删除dwj
+```
 7.插入
-
-    #在文件ab中最后一行直接输入"bye"
-    [root@dwj Desktop]# sed -i '$a bye' ab
-    [root@dwj Desktop]# cat ab
-      Hello!
-      dwj is me,welcome to my blog.
-      end
-      bye
-
+```
+#在文件ab中最后一行直接输入"bye"
+[root@dwj Desktop]# sed -i '$a bye' ab
+[root@dwj Desktop]# cat ab
+  Hello!
+  dwj is me,welcome to my blog.
+  end
+  bye
+```
 8.删除匹配行（注：若匹配字符串是变量，则需要“”，而不是‘’）
 >[root@dwj Desktop]# sed -i '/匹配字符串/d' filename
 

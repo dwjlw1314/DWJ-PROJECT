@@ -57,6 +57,8 @@
     24. oracle数据库expdp导出导入步骤
     25. linux系统oracle 11gR2 RAC安装
     26. oracle GoldenGate实现数据库同步
+    27. oracle数据库系统参数设置
+    28. ZeroMQ基本使用详情
 
 四. linux常用指令
     1. linux基本命令
@@ -80,7 +82,7 @@
     19. Linux系统日志五大命令详解
     20. iso镜像文件制作
     21. iftop流量监控工具
-    22. Nmap基本用法
+    22. nmap基本用法
     23. Linux替换^M字符方法
     24. ntp时间服务器搭建
 
