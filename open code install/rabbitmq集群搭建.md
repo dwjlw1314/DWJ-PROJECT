@@ -1,6 +1,6 @@
 <font color=#FF0000 size=5> <p align="center">RabbitMQ 概念</p></font>
 
-中间件消息队列产品有 ActiveMQ、RabbitMQ、Kafka、ZeroMQ、RocketMQ
+中间件消息队列产品有 ActiveMQ(java)、RabbitMQ(Erlang)、Kafka(Scala和Java)、ZeroMQ(c++)、RocketMQ(java)
 
 RabbitMQ 特点
 ```
