@@ -104,15 +104,15 @@ pattern | type | description
 ---|---|---
 一对一结对模型 | ZMQ_PAIR |
 请求回应模型 | ZMQ_REQ | client端使用
-            | ZMQ_REP | server端使用
-            | ZMQ_DEALER |将消息以轮询的方式分发给所有对端
-            | ZMQ_ROUTER |
+    -       | ZMQ_REP | server端使用
+    -       | ZMQ_DEALER |将消息以轮询的方式分发给所有对端
+    -       | ZMQ_ROUTER |
 发布订阅模型 | ZMQ_PUB  | publisher端使用
-            | ZMQ_XPUB |
-            | ZMQ_SUB  | subscriber端使用
-            | ZMQ_XSUB |
+    -       | ZMQ_XPUB |
+    -       | ZMQ_SUB  | subscriber端使用
+    -       | ZMQ_XSUB |
 管道模型 | ZMQ_PUSH | push端使用
-        | ZMQ_PULL | pull端使用
+    -   | ZMQ_PULL | pull端使用
 原生模型 |ZMQ_STREAM |
 
 bind函数是将socket绑定到本地的端点(endpoint)，而connect函数连接到指定的peer端点
