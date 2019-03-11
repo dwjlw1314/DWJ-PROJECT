@@ -103,7 +103,7 @@ swapon/swapoff /dev/sdb6                                             #加入和�
 swapon -a / swapon -s                                                #激活交换空间和查看交换空间命令
 mount -a                                                             #重新读取</etc/fstab>文件进行挂载文件系统
 
-mesg [y/n]                                                           #设置当前终端的写权限
+mesg [y/n]                                                           #设置其他用户是否可以发信息到当前终端
 write gjsy                                                           #给gjsy在线用户发送消息
 wall helloword                                                       #给所有在线用户发送消息
 

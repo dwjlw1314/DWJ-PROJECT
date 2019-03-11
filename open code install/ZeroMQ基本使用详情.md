@@ -61,7 +61,188 @@ ZeroMQ: zeromq-4.2.5.tar.gz
 ```
 [root@dwj ~]# tar -xvf zeromq-4.2.5.tar.gz
 [root@dwj zeromq-4.2.5]# ./configure --prefix=/usr/local/zeromq
-[root@dwj zeromq-4.2.5]# make && make install
+[root@dwj zeromq-4.2.5]# make -j 4
+[root@dwj zeromq-4.2.5]# make check && make install
 ```
 
 <font color=#FF0000 size=5> <p align="center">ZeroMQ 代码模型</p></font>
+
+ZMQ提供的所有API均以zmq_开头，包含头文件 #include <zmq.h>
+> gcc [flags] files -lzmq [libraries]
+
+获取当前ZMQ库的版本信息
+```c
+void zmq_version (int *major, int *minor, int *patch);
+```
+
+使用ZQM库函数之前先创建ZMQ context，ZMQ context是线程安全的，可以在多线程环境使用。
+在一个进程中，可以有多个ZMQ context并存，程序终止时，也需要销毁context
+```c
+创建context
+void *zmq_ctx_new ();
+设置context选项
+int zmq_ctx_set (void *context, int option_name, int option_value);
+int zmq_ctx_get (void *context, int option_name);
+销毁context
+int zmq_ctx_term (void *context);
+```
+
+ZMQ Sockets是代表异步消息队列的一个抽象，这里的socket和POSIX套接字的socket不是一回事，ZMQ封装了物理连接的底层细节，对用户不透明。传统的POSIX套接字只能支持单一连接，而ZMQ socket支持多个Client的并发连接，甚至在没有任何对端的情况下，也能放入消息
+ZMQ sockets不是线程安全的，因此，不建议在多个线程中并行操作同一个sockets
+```c
+创建ZMQ Sockets,在bind之前还不能使用
+void *zmq_socket (void *context, int type);
+设置socket选项，该函数可以为IPC和TCP连接提供加密机制，zmq_null(不加密)、zmq_plain(用户名/密码授权)、zmq_curve(椭圆加密)
+int zmq_getsockopt (void *socket, int option_name, void *option_value, size_t *option_len);
+int zmq_setsockopt (void *socket, int option_name, const void *option_value, size_t option_len);
+关闭socket
+int zmq_close (void *socket);
+```
+type参数含义:
+
+pattern | type | description
+---|---|---
+一对一结对模型 | ZMQ_PAIR |
+请求回应模型 | ZMQ_REQ | client端使用
+            | ZMQ_REP | server端使用
+            | ZMQ_DEALER |将消息以轮询的方式分发给所有对端
+            | ZMQ_ROUTER |
+发布订阅模型 | ZMQ_PUB  | publisher端使用
+            | ZMQ_XPUB |
+            | ZMQ_SUB  | subscriber端使用
+            | ZMQ_XSUB |
+管道模型 | ZMQ_PUSH | push端使用
+        | ZMQ_PULL | pull端使用
+原生模型 |ZMQ_STREAM |
+
+bind函数是将socket绑定到本地的端点(endpoint)，而connect函数连接到指定的peer端点
+```c
+int zmq_bind (void *socket, const char *endpoint);
+int zmq_connect (void *socket, const char *endpoint);
+```
+endpoint支持的类型：
+
+transports | description | uri example
+---|---|---
+zmp_tcp | TCP的单播通信 | tcp://
+zmp_ipc | 本地进程间通信 | ipc://
+zmp_inproc | 本地线程间通信 | inproc://
+zmp_pgm | PGM广播通信 | pgm://
+
+收发消息
+```c
+函数将指定buf的指定长度len的字节写入队列，函数返回值是发送的字节数，返回-1表示出错
+int zmq_send (void *socket, void *buf, size_t len, int flags);
+函数的len参数指定接收buf的最大长度，超出部分会被截断，函数返回的值是接收到的字节数，返回-1表示出错
+int zmq_recv (void *socket, void *buf, size_t len, int flags);
+函数表示发送的buf是一个常量内存区（constant-memory），这块内存不需要复制、释放
+int zmq_send_const (void *socket, void *buf, size_t len, int flags);
+```
+
+socket事件监控,下面函数会生成一对sockets，publishers端通过inproc://协议发布sockets状态改变的events，
+消息包含2帧，第1帧包含events id和关联值，第2帧表示受影响的endpoint
+```c
+int zmq_socket_monitor (void *socket, char **addr, int events);
+```
+监控支持的events：
+
+EventType | Desc
+---|---
+ZMQ_EVENT_CONNECTED | 建立连接
+ZMQ_EVENT_CONNECT_DELAYED | 连接失败
+ZMQ_EVENT_CONNECT_RETRIED | 异步连接/重连
+ZMQ_EVENT_LISTENING | bind到端点
+ZMQ_EVENT_BIND_FAILED | bind失败
+ZMQ_EVENT_ACCEPTED | 接收请求
+ZMQ_EVENT_ACCEPT_FAILED | 接收请求失败
+ZMQ_EVENT_CLOSED | 关闭连接
+ZMQ_EVENT_CLOSE_FAILED | 关闭连接失败
+ZMQ_EVENT_DISCONNECTED | 会话（tcp/ipc）中断
+
+I/O多路复用,对sockets集合的I/O多路复用，使用水平触发
+```
+参数items指定一个结构体数组，nitems指定数组的元素个数，timeout参数是超时时间(0表示立即返回，-1表示阻塞等待)
+int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
+
+typedef struct
+{
+    void *socket;
+    int fd;
+    short events;
+    short revents;
+} zmq_pollitem_t;
+
+对于每个zmq_pollitem_t元素，ZMQ会同时检查其socket(ZMQ套接字)和fd(原生套接字)上是否有指定的events发生，且ZMQ套接字优先
+events指定该sockets需要关注的事件，revents返回该sockets已发生的事件。它们的取值为：
+ZMQ_POLLIN(可读)，ZMQ_POLLOUT(可写)，ZMQ_POLLERR(出错)
+```
+
+ZMQ每一条消息都是在消息队列(进程内部或跨进程)中进行传输的数据单元，ZMQ消息本身没有数据结构，因此支持任意类型的数据，
+这完全依赖于自定义消息的数据结构。一条ZMQ消息可以包含多个消息片，每个消息片都是一个独立zmq_msg_t结构。
+ZMQ保证以原子方式传递消息，要么所有消息片都发送成功，要么都不成功
+```
+初始化消息
+typedef void (zmq_free_fn) (void *data, void *hint);
+zmq_msg_init()函数初始化一个消息对象zmq_msg_t ，不要直接访问zmq_msg_t对象，可以通过zmq_msg_开头一类的函数来访问它
+int zmq_msg_init (zmq_msg_t *msg);
+int zmq_msg_init_data (zmq_msg_t *msg, void *data, size_t size, zmq_free_fn *ffn, void *hint);
+int zmq_msg_init_size (zmq_msg_t *msg, size_t size);
+zmq_msg_init()、zmq_msg_init_data()、zmq_msg_init_size() 三个函数是互斥的，每次使用其中一个即可
+
+设置消息属性
+int zmq_msg_get (zmq_msg_t *message, int property);
+int zmq_msg_set (zmq_msg_t *message, int property, int value);
+
+释放消息
+int zmq_msg_close (zmq_msg_t *msg);
+
+收发消息,flags参数如下：
+ZMQ_DONTWAIT，非阻塞模式，如果没有可用的消息，将errno设置为EAGAIN
+ZMQ_SNDMORE，发送多个消息片时，除了最后一个外，其它每个消息片都必须使用ZMQ_SNDMORE标记位
+int zmq_msg_send (zmq_msg_t *msg, void *socket, int flags);
+int zmq_msg_recv (zmq_msg_t *msg, void *socket, int flags);
+
+获取消息内容，返回指向消息对象所含内容的指针
+void *zmq_msg_data (zmq_msg_t *msg);
+标识该消息片是否是整个消息的一部分，是否还有更多的消息片待接收
+int zmq_msg_more (zmq_msg_t *message);
+返回消息的字节数
+size_t zmq_msg_size (zmq_msg_t *msg);
+
+控制消息，函数实现的是浅拷贝
+int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);
+函数中，将dst指向src消息，然后src被置空
+int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src);
+```
+
+错误处理，ZMQ库使用POSIX处理函数错误，返回NULL指针或者负数时表示调用出错
+```c
+函数返回当前线程的错误码errno变量的值
+int zmq_errno (void);
+函数将错误映射成错误字符串
+const char *zmq_strerror (int errnum);
+```
+
+ZMQ提供代理功能，代理可以在前端socket和后端socket之间转发消息
+```c
+共享队列(shared queue)，前端是ZMQ_ROUTER socket，后端是ZMQ_DEALER socket，proxy会把clients发来的请求，公平地分发给services
+转发队列(forwarded)，前端是ZMQ_XSUB socket, 后端是ZMQ_XPUB socket, proxy会把从publishers收到的消息转发给所有的subscribers
+流(streamer)，前端是ZMQ_PULL socket, 后端是ZMQ_PUSH socket
+int zmq_proxy (const void *frontend, const void *backend, const void *capture);
+int zmq_proxy_steerable (const void *frontend, const void *backend, const void *capture, const void *control);
+```
+
+proxy使用的一个示例：
+```c
+// Create frontend and backend sockets
+void *frontend = zmq_socket (context, ZMQ_ROUTER);
+assert (backend);
+void *backend = zmq_socket (context, ZMQ_DEALER);
+assert (frontend);
+
+// Bind both sockets to TCP ports
+assert (zmq_bind (frontend, "tcp://*:8080") == 0);
+assert (zmq_bind (backend, "tcp://*:9090") == 0);
+
+//  Start the queue proxy, which runs until ETERM zmq_proxy(frontend, backend, NULL);
+```
