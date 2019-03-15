@@ -80,11 +80,22 @@ void zmq_version (int *major, int *minor, int *patch);
 ```c
 创建context
 void *zmq_ctx_new ();
-设置context选项
+ZMQ_IO_THREADS: 如果仅使用Inproc传输消息，则设置为零，否则至少将其设置为1个。必须在context创建任何套接字之前设置
 int zmq_ctx_set (void *context, int option_name, int option_value);
+ZMQ_BLOCKY: 如果context终止时阻塞，则返回1；不阻塞则返回0
+ZMQ_IO_THREADS: 参数返回context的ZMQ线程池的大小
+ZMQ_MAX_SOCKETS: 参数返回允许创建socket数量的最大值
+ZMQ_MAX_MSGSZ: 参数返回context允许的最大消息大小，默认值为int_max
+ZMQ_SOCKET_LIMIT: 参数返回接受的最大套接字数
 int zmq_ctx_get (void *context, int option_name);
 销毁context
-int zmq_ctx_term (void *context);
+int zmq_ctx_destroy (void *context);
+int zmq_ctx_shutdown(void *context);
+环境上下文的终止过程会按下列步骤进行：
+● context创建的socket的任何阻塞调用都会立刻返回错误代码ETERM。所有对基于context的更深层次的操作都会失败并返回错误代码ETERM
+● 中断所有的阻塞调用后，函数会进入阻塞状态，直到满足下列条件：所有基于context创建的scoekt都已经被zmq_close()函数关闭
+● context上的每一个socket来说，所有被应用进程使用zmq_send()发送的消息必须被真实的发送到了网络上，或者socket设置ZMQ_LINGER 的超时时间已到
+int zmq_ctx_term(void *context);
 ```
 
 ZMQ Sockets是代表异步消息队列的一个抽象，这里的socket和POSIX套接字的socket不是一回事，ZMQ封装了物理连接的底层细节，对用户不透明。传统的POSIX套接字只能支持单一连接，而ZMQ socket支持多个Client的并发连接，甚至在没有任何对端的情况下，也能放入消息
@@ -95,14 +106,12 @@ void *zmq_socket (void *context, int type);
 设置socket选项，该函数可以为IPC和TCP连接提供加密机制，zmq_null(不加密)、zmq_plain(用户名/密码授权)、zmq_curve(椭圆加密)
 int zmq_getsockopt (void *socket, int option_name, void *option_value, size_t *option_len);
 int zmq_setsockopt (void *socket, int option_name, const void *option_value, size_t option_len);
-关闭socket
-int zmq_close (void *socket);
 ```
 type参数含义:
 
 pattern | type | description
 ---|---|---
-一对一结对模型 | ZMQ_PAIR | 通过inproc方式用在进程内部通信
+一对一结对模型 | ZMQ_PAIR | 通过inproc方式用在进程内部通信，不会自动进行重连
 请求应答模型 | ZMQ_REQ | client端使用，阻塞且不丢弃
 请求应答模型 | ZMQ_REP | server端使用，丢弃且不阻塞
 请求应答模型 | ZMQ_DEALER | 将消息以轮询的方式分发给所有对端，阻塞且不丢弃
@@ -115,7 +124,7 @@ pattern | type | description
 管道模型 | ZMQ_PULL | pull端使用，阻塞且不丢弃
 原生模型 | ZMQ_STREAM |
 
-bind函数是将socket绑定到本地的端点(endpoint)，而connect函数连接到指定的peer端点
+bind函数是将socket绑定到本地的端点(endpoint)。而connect函数连接到指定的peer端点，socket会进入普通ready状态。成功调用并不意味着连接已经真实的建立，但是使用inproc://传输的时候必须在调用zmq_connect()之前执行zmq_bind()
 ```c
 int zmq_bind (void *socket, const char *endpoint);
 int zmq_connect (void *socket, const char *endpoint);
@@ -139,8 +148,8 @@ int zmq_recv (void *socket, void *buf, size_t len, int flags);
 int zmq_send_const (void *socket, void *buf, size_t len, int flags);
 ```
 
-socket事件监控,下面函数会生成一对sockets，publishers端通过inproc://协议发布sockets状态改变的events，
-消息包含2帧，第1帧包含events id和关联值，第2帧表示受影响的endpoint
+socket事件监控,函数会产生一个PAIR类型的socket，用来把socket状态改变通过inproc://传输方式发送到endpoint终结点上，
+消息包含2帧，第1帧包含事件id和事件值，组织方式是16 bit的ID和32 bit的事件值。第2帧表示受影响的endpoint
 ```c
 int zmq_socket_monitor (void *socket, char **addr, int events);
 ```
@@ -157,7 +166,105 @@ ZMQ_EVENT_ACCEPTED | 接收请求
 ZMQ_EVENT_ACCEPT_FAILED | 接收请求失败
 ZMQ_EVENT_CLOSED | 关闭连接
 ZMQ_EVENT_CLOSE_FAILED | 关闭连接失败
-ZMQ_EVENT_DISCONNECTED | 会话（tcp/ipc）中断
+ZMQ_EVENT_DISCONNECTED | 会话(tcp/ipc)中断
+
+zmq_socket_monitor使用的一个示例：
+```c
+// Read one event off the monitor socket; return value and address
+// by reference, if not null, and event number by value. Returns -1 in case of error.
+static int get_monitor_event (void *monitor, int *value, char **address)
+{
+	// First frame in message contains event number and value
+	zmq_msg_t msg;
+	zmq_msg_init (&msg);
+	if (zmq_msg_recv (&msg, monitor, 0) == -1)
+		return -1; // Interrupted, presumably
+	assert (zmq_msg_more (&msg));
+
+	uint8_t *data = (uint8_t *)zmq_msg_data (&msg);
+	uint16_t event = *(uint16_t *) (data);
+	if (value) *value = *(uint32_t *) (data + 2);
+
+	// Second frame in message contains event address
+	zmq_msg_init (&msg);
+	if (zmq_msg_recv (&msg, monitor, 0) == -1)
+		return -1; // Interrupted, presumably
+	assert (!zmq_msg_more (&msg));
+
+	if (address) {
+		uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
+		size_t size = zmq_msg_size (&msg);
+		*address = (char *) malloc (size + 1);
+		memcpy (*address, data, size);
+		(*address)[size] = 0;
+	}
+	return event;
+}
+
+int main (void)
+{
+	void *ctx = zmq_ctx_new ();
+	// We'll monitor these two sockets
+	void *client = zmq_socket (ctx, ZMQ_DEALER);
+	void *server = zmq_socket (ctx, ZMQ_DEALER);
+
+	// Socket monitoring only works over inproc://
+	int rc = zmq_socket_monitor (client, "tcp://127.0.0.1:9999", 0);
+	assert (rc == -1 || zmq_errno () == EPROTONOSUPPORT);
+
+	// Monitor all events on client and server sockets
+	rc = zmq_socket_monitor (client, "inproc://monitor-client", ZMQ_EVENT_ALL);
+	rc = zmq_socket_monitor (server, "inproc://monitor-server", ZMQ_EVENT_ALL);
+
+	// Create two sockets for collecting monitor events
+	void *client_mon = zmq_socket (ctx, ZMQ_PAIR);
+	void *server_mon = zmq_socket (ctx, ZMQ_PAIR);
+
+	// Connect these to the inproc endpoints so they'll get events
+	rc = zmq_connect (client_mon, "inproc://monitor-client");
+	rc = zmq_connect (server_mon, "inproc://monitor-server");
+
+	// Now do a basic ping test
+	rc = zmq_bind (server, "tcp://127.0.0.1:9998");
+	rc = zmq_connect (client, "tcp://127.0.0.1:9998");
+	bounce (client, server);
+
+	// Close client and server
+	close_zero_linger (client);
+	close_zero_linger (server);
+
+	// Now collect and check events from both sockets
+  int event = get_monitor_event (client_mon, NULL, NULL);
+  if (event == ZMQ_EVENT_CONNECT_DELAYED)
+  event = get_monitor_event (client_mon, NULL, NULL);
+  assert (event == ZMQ_EVENT_CONNECTED);
+  event = get_monitor_event (client_mon, NULL, NULL);
+  assert (event == ZMQ_EVENT_MONITOR_STOPPED);
+
+  // This is the flow of server events
+  event = get_monitor_event (server_mon, NULL, NULL);
+  assert (event == ZMQ_EVENT_LISTENING);
+  event = get_monitor_event (server_mon, NULL, NULL);
+  assert (event == ZMQ_EVENT_ACCEPTED);
+  event = get_monitor_event (server_mon, NULL, NULL);
+  assert (event == ZMQ_EVENT_CLOSED);
+  event = get_monitor_event (server_mon, NULL, NULL);
+  assert (event == ZMQ_EVENT_MONITOR_STOPPED);
+
+	// Close down the sockets
+	close_zero_linger (client_mon);
+	close_zero_linger (server_mon);
+	zmq_ctx_term (ctx);
+
+	return 0;
+}
+```
+
+socket关闭函数，程序中通过zmq_recv()函数接收但没有被应用程序使用的消息都将会被丢弃。已经使用zmq_send()发送的消息但是还没有被设备发送到peer的处理方式，将由socket的ZMQ_LINGER值决定。默认是不丢弃，但当调用zmq_ctx_term()函数时会导致应用程序阻塞
+```c
+关闭参数指定的socket
+int zmq_close (void *socket);
+```
 
 I/O多路复用,对sockets集合的I/O多路复用，使用水平触发
 ```
