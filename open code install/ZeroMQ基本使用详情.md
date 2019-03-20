@@ -27,7 +27,7 @@ ZeroMQ将消息通信分成4种模型：
 
 <font color=#FF0000 size=5> <p align="center">ZeroMQ 通信协议及工作流程</p></font>
 
-ZMQ提供进程内、进程间、机器间、广播等四种通信协议，配置简单，用类似于URL形式的字符串指定即可，格式分别为inproc://、ipc://、tcp://、pgm://。ZeroMQ会自动根据指定的字符串解析出协议、地址、端口号等信息
+ZMQ提供进程内、进程间、机器间、广播等四种通信协议，配置简单，用类似于URL形式的字符串指定即可，格式分别为inproc://、ipc://、tcp://、pgm://。pgm和epgm传输方式只能被ZMQ_PUB和ZMQ_SUB两种socket使用
 
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.28.5.jpg)
 
@@ -109,24 +109,26 @@ int zmq_setsockopt (void *socket, int option_name, const void *option_value, siz
 ```
 type参数含义:
 
-pattern | type | description
----|---|---
-一对一结对模型 | ZMQ_PAIR | 通过inproc方式用在进程内部通信，不会自动进行重连
-请求应答模型 | ZMQ_REQ | client端使用，阻塞且不丢弃
-请求应答模型 | ZMQ_REP | server端使用，丢弃且不阻塞
-请求应答模型 | ZMQ_DEALER | 将消息以轮询的方式分发给所有对端，阻塞且不丢弃
-请求应答模型 | ZMQ_ROUTER | 将以公平的方式接收所有对端消息，丢弃且不阻塞
-发布订阅模型 | ZMQ_PUB  | publisher端使用，丢弃且不阻塞
-发布订阅模型 | ZMQ_XPUB | 可以接收来来自订阅者的订阅信息
-发布订阅模型 | ZMQ_SUB  | subscriber端使用，通过设置ZMQ_SUBSRIBE选项来指定需要订阅的消息
-发布订阅模型 | ZMQ_XSUB | 可以发送订阅信息给发布者来订阅
-管道模型 | ZMQ_PUSH | push端使用，阻塞且不丢弃
-管道模型 | ZMQ_PULL | pull端使用，阻塞且不丢弃
-原生模型 | ZMQ_STREAM |
+pattern | type | Compatible sockets | description
+---|---|---|---
+一对一结对模型 | ZMQ_PAIR | ZMQ_PAIR | 通过inproc方式用在进程内部通信，不会自动进行重连
+请求应答模型 | ZMQ_REQ | ZMQ_REP,ZMQ_ROUTER | client端使用，阻塞且不丢弃
+请求应答模型 | ZMQ_REP | ZMQ_REQ,ZMQ_DEALER | server端使用，丢弃且不阻塞
+请求应答模型 | ZMQ_DEALER | ZMQ_ROUTER,ZMQ_REP,ZMQ_DEALER | 将消息以轮询的方式分发给所有对端，阻塞且不丢弃
+请求应答模型 | ZMQ_ROUTER | ZMQ_DEALER,ZMQ_REQ,ZMQ_ROUTER | 将以公平的方式接收所有对端消息，丢弃且不阻塞
+发布订阅模型 | ZMQ_PUB | ZMQ_SUB,ZMQ_XSUB | publisher端使用，丢弃且不阻塞
+发布订阅模型 | ZMQ_XPUB | ZMQ_SUB,ZMQ_XSUB | 可以接收来来自订阅者的订阅信息
+发布订阅模型 | ZMQ_SUB | ZMQ_PUB,ZMQ_XPUB | subscriber端使用，通过设置ZMQ_SUBSRIBE选项来指定需要订阅的消息
+发布订阅模型 | ZMQ_XSUB | ZMQ_PUB,ZMQ_XPUB | 可以发送订阅信息给发布者来订阅
+管道模型 | ZMQ_PUSH | ZMQ_PULL | push端使用，阻塞且不丢弃
+管道模型 | ZMQ_PULL | ZMQ_PUSH | pull端使用，阻塞且不丢弃
+原生模型 | ZMQ_STREAM | \ | \
 
 bind函数是将socket绑定到本地的端点(endpoint)。而connect函数连接到指定的peer端点，socket会进入普通ready状态。成功调用并不意味着连接已经真实的建立，但是使用inproc://传输的时候必须在调用zmq_connect()之前执行zmq_bind()
 ```c
 int zmq_bind (void *socket, const char *endpoint);
+函数会将socket参数与绑定的endpoint指定的终结点解除绑定
+int zmq_unbind (void *socket, const char *endpoint);
 int zmq_connect (void *socket, const char *endpoint);
 ```
 endpoint支持的类型：
@@ -258,16 +260,18 @@ int main (void)
 
 	return 0;
 }
-```
+```*
 
 socket关闭函数，程序中通过zmq_recv()函数接收但没有被应用程序使用的消息都将会被丢弃。已经使用zmq_send()发送的消息但是还没有被设备发送到peer的处理方式，将由socket的ZMQ_LINGER值决定。默认是不丢弃，但当调用zmq_ctx_term()函数时会导致应用程序阻塞
 ```c
-关闭参数指定的socket
+关闭参数指定的socket，zmq_connect()函数无法重用套接字
 int zmq_close (void *socket);
+断开socket参数与endpoint参数指定的终结点的连接，zmq_connect()函数可以重用套接字
+int zmq_disconnect (void *socket, const char *addr);
 ```
 
 I/O多路复用,对sockets集合的I/O多路复用，使用水平触发
-```
+```c
 参数items指定一个结构体数组，nitems指定数组的元素个数，timeout参数是超时时间(0表示立即返回，-1表示阻塞等待)
 int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
@@ -282,28 +286,31 @@ typedef struct
 对于每个zmq_pollitem_t元素，ZMQ会同时检查其socket(ZMQ套接字)和fd(原生套接字)上是否有指定的events发生，且ZMQ套接字优先
 events指定该sockets需要关注的事件，revents返回该sockets已发生的事件。它们的取值为：
 ZMQ_POLLIN(可读)，ZMQ_POLLOUT(可写)，ZMQ_POLLERR(出错)
-```
+```*
 
 ZMQ每一条消息都是在消息队列(进程内部或跨进程)中进行传输的数据单元，ZMQ消息本身没有数据结构，因此支持任意类型的数据，
 这完全依赖于自定义消息的数据结构。一条ZMQ消息可以包含多个消息片，每个消息片都是一个独立zmq_msg_t结构。
 ZMQ保证以原子方式传递消息，要么所有消息片都发送成功，要么都不成功
 ```
 初始化消息
-typedef void (zmq_free_fn) (void *data, void *hint);
-zmq_msg_init()函数初始化一个消息对象zmq_msg_t ，不要直接访问zmq_msg_t对象，可以通过zmq_msg_开头一类的函数来访问它
+zmq_msg_init()函数初始化成一个空的消息对象，可以通过zmq_msg_开头一类的函数来访问该对象
 int zmq_msg_init (zmq_msg_t *msg);
-int zmq_msg_init_data (zmq_msg_t *msg, void *data, size_t size, zmq_free_fn *ffn, void *hint);
+从一个指定的存储空间中初始化一个ZMQ消息对象的数据；用data和size参数对msg指定的ZMQ消息对象的内容进行初始化。ZMQ不会执行拷贝操作，并且ZMQ会取得指定数据的拥有权。还提供了回收功能函数zff，将会在data数据不再使用的时候被ZMQ调用一次，ZMQ会将函数中的参数data和hint参数传递给zff函数
+typedef void (zmq_free_fn) (void *data, void *hint);
+int zmq_msg_init_data (zmq_msg_t *msg, void *data, size_t size, zmq_free_fn *zff, void *hint);
+使用一个指定的空间大小初始化ZMQ消息对象，函数执行的时候会选择是否把消息存储在栈里面(小消息)，还是堆里面(大消息)，考虑到性能原因，zmq_msg_init_size()函数不会清除消息数据
 int zmq_msg_init_size (zmq_msg_t *msg, size_t size);
+
 zmq_msg_init()、zmq_msg_init_data()、zmq_msg_init_size() 三个函数是互斥的，每次使用其中一个即可
 
-设置消息属性
+设置和获取消息属性
 int zmq_msg_get (zmq_msg_t *message, int property);
 int zmq_msg_set (zmq_msg_t *message, int property, int value);
 
 释放消息
 int zmq_msg_close (zmq_msg_t *msg);
 
-收发消息,flags参数如下：
+收发消息帧,flags参数由下列标志组合(|)而成:
 ZMQ_DONTWAIT，非阻塞模式，如果没有可用的消息，将errno设置为EAGAIN
 ZMQ_SNDMORE，发送多个消息片时，除了最后一个外，其它每个消息片都必须使用ZMQ_SNDMORE标记位
 int zmq_msg_send (zmq_msg_t *msg, void *socket, int flags);
@@ -316,9 +323,9 @@ int zmq_msg_more (zmq_msg_t *message);
 返回消息的字节数
 size_t zmq_msg_size (zmq_msg_t *msg);
 
-控制消息，函数实现的是浅拷贝
+函数把src对象中的内容复制到dest指定的消息对象中，属于浅拷贝。如果dest中有数据的话，原有数据将被释放
 int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);
-函数中，将dst指向src消息，然后src被置空
+函数把src对象里面的内容移动到dest指定的消息对象里面，src变为一个空消息。dest原有数据将被释放
 int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src);
 ```
 
@@ -330,16 +337,16 @@ int zmq_errno (void);
 const char *zmq_strerror (int errnum);
 ```
 
-ZMQ提供代理功能，代理可以在前端socket和后端socket之间转发消息
+ZMQ提供代理功能，代理可以在前端和后端的socket之间转发消息
 ```c
-共享队列(shared queue)，前端是ZMQ_ROUTER socket，后端是ZMQ_DEALER socket，proxy会把clients发来的请求，公平地分发给services
-转发队列(forwarded)，前端是ZMQ_XSUB socket, 后端是ZMQ_XPUB socket, proxy会把从publishers收到的消息转发给所有的subscribers
-流(streamer)，前端是ZMQ_PULL socket, 后端是ZMQ_PUSH socket
+共享队列(shared queue)，前端是ZMQ_ROUTER socket，后端是ZMQ_DEALER socket，代理会扮演一个共享队列的角色，从多个客户端接收消息，并且把这些消息公平的分发到服务端。这些请求会被前端公平的放置在队列里进行接收，并通过后端进行均衡的分发
+转发队列(forwarded)，前端是ZMQ_XSUB socket, 后端是ZMQ_XPUB socket，代理会把从前端收到的消息转发给后端
+流(streamer)，前端是ZMQ_PULL socket, 后端是ZMQ_PUSH socket，代理会从后端收集消息并发送给前端使用管道传输模式的工作端
 int zmq_proxy (const void *frontend, const void *backend, const void *capture);
 int zmq_proxy_steerable (const void *frontend, const void *backend, const void *capture, const void *control);
 ```
 
-proxy使用的一个示例：
+proxy使用的一个示例:
 ```c
 // Create frontend and backend sockets
 void *frontend = zmq_socket (context, ZMQ_ROUTER);
@@ -350,6 +357,69 @@ assert (frontend);
 // Bind both sockets to TCP ports
 assert (zmq_bind (frontend, "tcp://*:8080") == 0);
 assert (zmq_bind (backend, "tcp://*:9090") == 0);
+// Start the queue proxy, which runs until ETERM
+zmq_proxy(frontend, backend, NULL);
+```
 
-//  Start the queue proxy, which runs until ETERM zmq_proxy(frontend, backend, NULL);
+zmq_proxy_steerable使用的一个示例：
+```
+创建一个共享的代理队列
+//  Create frontend, backend and control sockets
+void *frontend = zmq_socket (context, ZMQ_ROUTER);
+void *backend = zmq_socket (context, ZMQ_DEALER);
+void *control = zmq_socket (context, ZMQ_SUB);
+//  Bind sockets to TCP ports
+assert (zmq_bind (frontend, "tcp://*:5555") == 0);
+assert (zmq_bind (backend, "tcp://*:5556") == 0);
+assert (zmq_connect (control, "tcp://*:5557") == 0);
+// Subscribe to the control socket since we have chosen SUB here
+assert (zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0));
+//  Start the queue proxy, which runs until ETERM or "TERMINATE" received on the control socket
+zmq_proxy_steerable (frontend, backend, NULL, control);
+
+在另一个节点上创建一个控制器，进程或者其它
+void *control = zmq_socket (context, ZMQ_PUB);
+assert (zmq_bind (control, "tcp://*:5557") == 0);
+// stop the proxy
+assert (zmq_send (control, "STOP", 5, 0) == 0);
+// resume the proxy
+assert (zmq_send (control, "RESUME", 7, 0) == 0);
+// terminate the proxy
+assert (zmq_send (control, "TERMINATE", 10, 0) == 0);
+```
+
+利用zmq_stream创建一个简单的http服务器
+```
+void *ctx = zmq_ctx_new ();
+assert (ctx);
+/* Create ZMQ_STREAM socket */
+void *socket = zmq_socket (ctx, ZMQ_STREAM);
+assert (socket);
+int rc = zmq_bind (socket, "tcp://*:8080");
+assert (rc == 0);
+/* Data structure to hold the ZMQ_STREAM ID */
+uint8_t id [256];
+size_t id_size = 256;
+while (1)
+{
+    /* Get HTTP request; ID frame and then request */
+    id_size = zmq_recv (socket, id, 256, 0);
+    assert (id_size > 0);
+    /* Prepares the response */
+    char http_response [] =
+    "HTTP/1.0 200 OK\r\n"
+    "Content-Type: text/plain\r\n"
+    "\r\n"
+    "Hello, World!";
+    /* Sends the ID frame followed by the response */
+    zmq_send (socket, id, id_size, ZMQ_SNDMORE);
+    zmq_send (socket, http_response, strlen (http_response), ZMQ_SNDMORE);
+    /* Closes the connection by sending the ID frame followed by a zero response */
+    zmq_send (socket, id, id_size, ZMQ_SNDMORE);
+    zmq_send (socket, 0, 0, ZMQ_SNDMORE);
+    /* NOTE: If we don't use ZMQ_SNDMORE, then we won't be able to send more */
+    /* message to any client */
+}
+zmq_close (socket);
+zmq_ctx_destroy (ctx);
 ```
