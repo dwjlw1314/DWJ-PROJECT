@@ -47,7 +47,7 @@ CPU：all 表示统计信息为所有 CPU 的平均值
 偏离值含义：
 若 %iowait 的值过高，表示硬盘存在I/O瓶颈
 若 %idle 的值高但系统响应慢时，有可能是 CPU 等待分配内存，此时应加大内存容量
-若 %idle 的值持续低于1，则系统的 CPU 处理能力相对较低，表明系统中最需要解决的资源是 CPU 。
+若 %idle 的值持续低于1，则系统的 CPU 处理能力相对较低，表明系统中最需要解决的资源是 CPU
 ```
 如果要查看二进制文件test中的内容，键入如下sar命令：sar -u -f test
 
@@ -162,7 +162,7 @@ pswpout/s：每秒系统换出的交换页面（swap page）数量
 
 <font size=5>8.设备使用情况监控</font>
 
-每10秒采样一次，连续采样3次，报告设备使用情况，键入如下命令：sar -d 10 3 –p
+每10秒采样一次，连续采样3次，报告设备使用情况，键入如下命令：sar -d 10 3 -p
 ```
 屏幕显示如下：
 17:45:54    DEV    tps    rd_sec/s    wr_sec/s    avgrq-sz    avgqu-sz    await    svctm    %util
@@ -183,12 +183,53 @@ svctm:系统处理每次请求的平均时间,不包括在请求队列中消耗�
 %util:I/O请求占CPU的百分比,比率越大,说明越饱和
 
 偏离值含义：
-avgqu-sz 的值较低时，设备的利用率较高。
-当%util的值接近 1% 时，表示设备带宽已经占满。
+avgqu-sz 的值较低时，设备的利用率较高
+当%util的值接近 1% 时，表示设备带宽已经占满
 ```
 要判断系统瓶颈问题，有时需几个 sar 命令选项结合起来
 ```
 怀疑CPU存在瓶颈， 可用 sar -u 和 sar -q 等来查看
 怀疑内存存在瓶颈，可用 sar -B、sar -r 和 sar -W 等来查看
 怀疑I/O存在瓶颈， 可用 sar -b、sar -u 和 sar -d 等来查看
+```
+
+<font size=5>9.网口流量监控</font>
+
+查看某一个网卡的流量，键入如下命令：sar -n DEV 1 2|grep eth0
+```
+参数说明：有6个不同的开关：DEV | EDEV | NFS | NFSD | SOCK | ALL。DEV显示网络接口信息，EDEV显示关于网络错误的统计数据，NFS统计活动的NFS客户端的信息，NFSD统计NFS服务器的信息，SOCK显示套接字信息，ALL显示所有5个开关。它们可以单独或者一起使用
+
+屏幕显示如下：
+    TIME        IFACE     rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s
+01:18:15 AM      eth1      6.06      0.00      0.42      0.00      0.00      0.00      0.00
+01:18:16 AM      eth1      6.38      0.00      0.44      0.00      0.00      0.00      0.00
+Average:         eth1      6.22      0.00      0.43      0.00      0.00      0.00      0.00
+
+输出项说明：
+IFACE：LAN接口
+rxpck/s：每秒钟接收的数据包
+txpck/s：每秒钟发送的数据包
+rxbyt/s：每秒钟接收的字节数，单位是kB/s
+txbyt/s：每秒钟发送的字节数，单位是kB/s
+rxcmp/s：每秒钟接收的压缩数据包
+txcmp/s：每秒钟发送的压缩数据包
+rxmcst/s：每秒钟接收的多播数据包
+```
+查看网络错误的统计，键入如下命令：sar -n EDEV 1 2
+```
+屏幕显示如下：
+Average:  IFACE  rxerr/s  txerr/s  coll/s  rxdrop/s  txdrop/s  txcarr/s  rxfram/s  rxfifo/s  txfifo/s
+Average:     lo     0.00     0.00    0.00    0.00      0.00      0.00      0.00      0.00      0.00
+Average:   eth1     0.00     0.00    0.00    0.00      0.00      0.00      0.00      0.00      0.00
+
+输出项说明：
+rxerr/s：每秒钟接收的坏数据包
+txerr/s：每秒钟发送的坏数据包
+coll/s：每秒冲突数
+rxdrop/s：因为缓冲充满，每秒钟丢弃的已接收数据包数
+txdrop/s：因为缓冲充满，每秒钟丢弃的已发送数据包数
+txcarr/s：发送数据包时，每秒载波错误数
+rxfram/s：每秒接收数据包的帧对齐错误数
+rxfifo/s：接收的数据包每秒FIFO过速的错误数
+txfifo/s：发送的数据包每秒FIFO过速的错误数
 ```

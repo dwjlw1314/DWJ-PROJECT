@@ -9,6 +9,7 @@ strace -p 9586 -o strace.log                                         #对9586进
 source /home/oracle/.bash_profile                                    #设置oracle用户环境变量
 source /etc/profile                                                  #使修改后的环境变量生效
 sysctl -p                                                            #使修改后的内核参数生效
+service --status-all                                                 #查看系统所有进程启动状态信息
 whoami / who am i                                                    #显示当前登录系统用户
 who 和 w                                                             #显示当前登录用户详细信息
 cat > gjsy.txt << end                                                #使用end作为文件结束输入标记
@@ -26,6 +27,7 @@ ldd  name                                                            #输出程�
 diff -u file1 file2                                                  #比较file1和file2两个文件
 vimdiff file1 file2                                                  #左右屏幕比较文件
 nano                                                                 #vim相同的文本编辑命令
+nload / "watch more /proc/net/dev"                                   #监控服务器网卡流量
 ntsysv                                                               #自启动服务配置程序
 id  username                                                         #查看username用户的uid，gid，groups
 chattr +a / +i  filename/dir                                         #增加文件系统扩展属性
@@ -35,11 +37,13 @@ bc                                                                   #linux计�
 cal                                                                  #显示当前日历或指定日期的日历
 iconv                                                                #文件编码转换命令
 dos2unix/unix2dos                                                    #将文件中的\r\n和\n互相转换
+ethtool eth0                                                         #主要用于查询配置网卡参数
 brctl show                                                           #查看网桥和端口连接信息
 ip link set dev docker0 down                                         #关闭网桥docker0
 brctl delbr docker0                                                  #删除网桥docker0
 ifcfg eth0 add/del ip/mask                                           #eth0网卡添加删除ip
 ifcfg eth0 up/down                                                   #eth0网卡启用和关闭
+iwconfig                                                             #用于查看无线网络
 getenforce                                                           #查看SElinux状态
 setenforce                                                           #设置SElinux状态
 setfacl/getfacl                                                      #设置和获取文件的ACL权限
@@ -82,6 +86,8 @@ lsmod |grep ftp                                                      #显示linu
 modprobe -l|grep ftp                                                 #查看系统内核模块名字*.ko文件
 modprobe  nf_conntrack_ftp                                           #加载内核模块ftp
 getconf LONG_BIT                                                     #查看CPU位数
+umask -p                                                             #设置新创建目录或文件的默认权限
+> umask 0022  目录：7- 掩码权限数字 ; 文件：目录权限去掉执行权限         #--案例--
 users                                                                #显示当前登录系统的所有用户
 uuidgen                                                              #随机生成UUID值
 uname -r / -s / -a                                                   #查看内核版本信息(内核版本，内核名称，所有)
@@ -131,29 +137,39 @@ logrotate -f /etc/logrotate.conf                                     #强制运�
 时间转换
 ```
 把日期换算为时间戳
-[root@dwj /opt]# echo $(($(date -d "2008/05/01" +%s)/86400+1))
+[root@dwj /opt]# echo $(($(date -d "2008/05/01" +%s)/86400))
 把时间戳换算为日期
 [root@dwj /opt]# date -d "1970/01/01 14000 days"
 把秒数换算成日期
-[root@dwj /opt]# date --date='@1199116800'
 [root@dwj /opt]# date -d @1199116800
+[root@dwj /opt]# date --date='@1199116800'
+[root@dwj /opt]# date -d "10 days" #获取当前时间10天以后的日期
+[root@dwj /opt]# date -d "164224 second ago" #获取164224秒之前的日期
+```
 Linux下查看系统启动时间和运行时间
-[root@dwj /opt]# date -d "164224 second ago"    #获取164224秒之前的日期
+```
 [root@dwj /opt]# date -d "$(awk -F. '{print $1}' /proc/uptime) second ago" +"%Y-%m-%d %H:%M:%S"
 [root@dwj /opt]# cat /proc/uptime| awk -F. '{run_days=$1 / 86400;run_hour=($1 % 86400)/3600;run_minute=($1 % 3600)/60;run_second=$1 % 60;printf("runtime: %d:%d:%d:%d",run_days,run_hour,run_minute,run_second)}'
 [root@dwj /opt]# last reboot
 [root@dwj /opt]# who -b
 [root@dwj /opt]# w
-Linux下查看进程相关信息
-[root@dwj /opt]# pidof name                   #显示name进程pid
-[root@dwj /opt]# ps -p pid -o parameter       #pid是进程号，parameter是以下内容之一
-pid：进程ID
-tty：终端
-user：用户
-comm：进程名
-lstart：开始时间
-etime：运行时间
 ```
+Linux下查看进程相关信息
+```
+[root@dwj /opt]# pidof name                   #显示name进程pid
+[root@dwj /opt]# ps -p pid -o parameter       #pid是进程号
+```
+parameter是以下内容之一:
+
+name | desc
+---|---
+pid | 进程ID
+tty | 终端
+user | 用户
+comm | 进程名
+lstart | 开始时间
+etime | 运行时间
+
 terminal终端常用组合键含义
 ```
 [root@dwj /opt]# ctrl + e                                #跳转到输入命令末尾
@@ -168,6 +184,7 @@ terminal终端常用组合键含义
 [root@dwj /opt]# ctrl + shift + =                        #放大terminal终端
 [root@dwj /opt]# ctrl  + -                               #缩小terminal终端
 [root@dwj /opt]# ctrl  + 0                               #还原原始大小
+[root@dwj /opt]# ctrl  + z                               #让进程暂停运行进入后台
 ```
 terminal终端变量
 
@@ -182,6 +199,17 @@ $*	|  传递给脚本或函数的所有参数
 $@	|  传递给脚本或函数的所有参数。被双引号(" ")包含时，与 $* 稍有不同
 $?	|  上个命令的退出状态，或函数的返回值
 $$	|  当前Shell进程ID。对于 Shell 脚本，就是这些脚本所在的进程ID
+
+route命令结果Flags标记含义如下
+```
+U — 路由是活动的
+H — 目标是一个主机
+G — 路由指向网关
+R — 恢复动态路由产生的表项
+D — 由路由的后台程序动态地安装
+M — 由路由的后台程序修改
+! — 拒绝路由
+```
 
 释放缓存区内存的方法
 ```

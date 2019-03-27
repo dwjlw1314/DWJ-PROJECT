@@ -260,7 +260,7 @@ int main (void)
 
 	return 0;
 }
-```*
+```
 
 socket关闭函数，程序中通过zmq_recv()函数接收但没有被应用程序使用的消息都将会被丢弃。已经使用zmq_send()发送的消息但是还没有被设备发送到peer的处理方式，将由socket的ZMQ_LINGER值决定。默认是不丢弃，但当调用zmq_ctx_term()函数时会导致应用程序阻塞
 ```c
@@ -286,7 +286,7 @@ typedef struct
 对于每个zmq_pollitem_t元素，ZMQ会同时检查其socket(ZMQ套接字)和fd(原生套接字)上是否有指定的events发生，且ZMQ套接字优先
 events指定该sockets需要关注的事件，revents返回该sockets已发生的事件。它们的取值为：
 ZMQ_POLLIN(可读)，ZMQ_POLLOUT(可写)，ZMQ_POLLERR(出错)
-```*
+```
 
 ZMQ每一条消息都是在消息队列(进程内部或跨进程)中进行传输的数据单元，ZMQ消息本身没有数据结构，因此支持任意类型的数据，
 这完全依赖于自定义消息的数据结构。一条ZMQ消息可以包含多个消息片，每个消息片都是一个独立zmq_msg_t结构。
