@@ -59,6 +59,7 @@
     26. oracle GoldenGate实现数据库同步
     27. oracle数据库系统参数设置
     28. ZeroMQ基本使用详情
+    29. Clamav的安装和使用
 
 四. linux常用指令
     1. linux基本命令

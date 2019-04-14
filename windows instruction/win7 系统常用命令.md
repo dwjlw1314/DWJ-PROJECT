@@ -1,12 +1,21 @@
-#win10 系统激活命令
-
-    C:\WINDOWS\system32>slmgr -upk (清空原有密钥)
-    C:\WINDOWS\system32>slmgr -ipk VK7JG-NPHTM-C97JM-9MPGT-3V66T
-    C:\WINDOWS\system32>slmgr /skms kms.xspace.in
-    C:\WINDOWS\system32>slmgr -ato
-    激活以后，打开运行，然后这里我们输入命令slmgr.vbs -xpr查看激活的状态
+win10 系统激活命令
 ```
+C:\WINDOWS\system32>slmgr -upk (清空原有密钥)
+C:\WINDOWS\system32>slmgr -ipk VK7JG-NPHTM-C97JM-9MPGT-3V66T
+C:\WINDOWS\system32>slmgr /skms kms.xspace.in
+C:\WINDOWS\system32>slmgr -ato
+激活以后，打开运行，然后这里输入命令：
+C:\Users\dwj> slmgr.vbs -xpr   #查看激活的状态
+C:\Users\dwj> slmgr.vbs -dlv   #查看激活的详情
+```
+电脑模拟wifi
+```
+C:\Users\dwj> netsh wlan set hostednetwork mode=allow ssid=dwj key=abcd,1234
+C:\Users\dwj> netsh wlan start hostednetwork
+C:\Users\dwj> netsh wlan show hostednetwork
+````
 win+R可以运行命令：
+```
 credwiz                   #备份或还原储存的用户名和密码
 cleanmgr                  #磁盘清理
 compmgmt.msc              #计算机管理
@@ -88,6 +97,7 @@ change.exe                #与终端服务器相关的查询
 comp.exe                  #比较两个文件和文件集的内容
 convert.exe               #转换文件系统到ntfs
 defrag                    #磁盘碎片整理
+diskpart / list disk      #查看磁盘信息
 sc                        #用于与服务控制管理器和服务进行通信的命令行程序
 wmic                      #扩展WMI(Windows管理工具)
 ```

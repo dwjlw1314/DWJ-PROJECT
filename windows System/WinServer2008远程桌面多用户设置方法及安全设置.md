@@ -13,10 +13,11 @@
 二、win2008设置多用户远程桌面连接的方法
 
 1、依次点击【控制面板】-【管理工具】，选择“远程桌面服务”中的“远程桌面会话配置”
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/2.4.1.png)
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/2.4.2.png)
 
-2、右键点击RDP-tcp选择属性，选择网络适配器选项卡，将最大连接数调整为2（为了安全性考虑，2为连接数的最大值），如果是灰色不能修改，
+2、右键点击RDP-tcp选择属性，选择网络适配器选项卡，将最大连接数调整为2(为了安全性考虑，2为连接数的最大值)，如果是灰色不能修改，
 可以为服务器添加角色，右键我的电脑选择管理，在角色里面添加远程桌面服务，然后重新启动 ->
 
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/2.2.3.png)
