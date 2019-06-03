@@ -27,7 +27,7 @@ ZeroMQ将消息通信分成4种模型：
 
 <font color=#FF0000 size=5> <p align="center">ZeroMQ 通信协议及工作流程</p></font>
 
-ZMQ提供进程内、进程间、机器间、广播等四种通信协议，配置简单，用类似于URL形式的字符串指定即可，格式分别为inproc://、ipc://、tcp://、pgm://。pgm和epgm传输方式只能被ZMQ_PUB和ZMQ_SUB两种socket使用
+ZMQ提供进程内、进程间、机器间、广播等四种通信协议，配置简单，用类似于URL形式的字符串指定即可，格式分别为inproc://、ipc://、tcp://、pgm://。pgm和epgm传输方式只能被ZMQ_PUB和ZMQ_SUB两种socket使用。inproc协议有一个专门的限制，在连接之前需要绑定
 
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.28.5.jpg)
 
@@ -49,6 +49,16 @@ ZMQ提供进程内、进程间、机器间、广播等四种通信协议，配�
 7、服务器端和客户端的启动没有先后顺序
 8、支持多种通信协议，可以灵活地适应多种通信环境，包括进程内、进程间、机器间、广播
 9、可以绑定C、C++、Java、.NET、Python等30多种开发语言
+```
+分段消息需要注意的一些事项：
+```
+1.当发送分段消息的时候，第一段(和接下来的所有段)会和最后一段数据同时发送
+2.如果使用zmq_poll(3)，当接收到一条消息的第一段，接下来的所有段也都会到达
+3.ØMQ接收到一条消息的所有部分，要么就什么也接收不到
+4.一个消息的每一段是一个独立的zmq_msg项
+5.不论是否选择了RCVMORE选项，都会接受到一条消息的所有部分
+6.ØMQ发送消息时，先把所有消息段排队，知道最后一段也进入队列，再把它们一起发送出去
+7.没有办法可以取消发送了一部分的消息，除非关闭套接字
 ```
 
 <font color=#FF0000 size=5> <p align="center">ZeroMQ 源码编译</p></font>
@@ -94,7 +104,7 @@ int zmq_ctx_shutdown(void *context);
 环境上下文的终止过程会按下列步骤进行：
 ● context创建的socket的任何阻塞调用都会立刻返回错误代码ETERM。所有对基于context的更深层次的操作都会失败并返回错误代码ETERM
 ● 中断所有的阻塞调用后，函数会进入阻塞状态，直到满足下列条件：所有基于context创建的scoekt都已经被zmq_close()函数关闭
-● context上的每一个socket来说，所有被应用进程使用zmq_send()发送的消息必须被真实的发送到了网络上，或者socket设置ZMQ_LINGER 的超时时间已到
+● context上的每一个socket来说，所有使用zmq_send()发送的消息必须被真实的发送到了网络上，或者socket设置ZMQ_LINGER的时间已到
 int zmq_ctx_term(void *context);
 ```
 
@@ -122,6 +132,8 @@ pattern | type | Compatible sockets | description
 发布订阅模型 | ZMQ_XSUB | ZMQ_PUB,ZMQ_XPUB | 可以发送订阅信息给发布者来订阅
 管道模型 | ZMQ_PUSH | ZMQ_PULL | push端使用，阻塞且不丢弃
 管道模型 | ZMQ_PULL | ZMQ_PUSH | pull端使用，阻塞且不丢弃
+请求应答模型 | ZMQ_XREQ | #define ZMQ_XREQ ZMQ_DEALER | \
+请求应答模型 | ZMQ_XREP | #define ZMQ_XREP ZMQ_ROUTER | \
 原生模型 | ZMQ_STREAM | \ | \
 
 bind函数是将socket绑定到本地的端点(endpoint)。而connect函数连接到指定的peer端点，socket会进入普通ready状态。成功调用并不意味着连接已经真实的建立，但是使用inproc://传输的时候必须在调用zmq_connect()之前执行zmq_bind()
@@ -266,6 +278,7 @@ socket关闭函数，程序中通过zmq_recv()函数接收但没有被应用程�
 ```c
 关闭参数指定的socket，zmq_connect()函数无法重用套接字
 int zmq_close (void *socket);
+
 断开socket参数与endpoint参数指定的终结点的连接，zmq_connect()函数可以重用套接字
 int zmq_disconnect (void *socket, const char *addr);
 ```
@@ -333,6 +346,7 @@ int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src);
 ```c
 函数返回当前线程的错误码errno变量的值
 int zmq_errno (void);
+
 函数将错误映射成错误字符串
 const char *zmq_strerror (int errnum);
 ```
@@ -423,3 +437,36 @@ while (1)
 zmq_close (socket);
 zmq_ctx_destroy (ctx);
 ```
+
+ZMQ提供了内置设备，使用一个设备需要调用zmq_device()并且传递两个套接字给它，一个作为前端，一个作为后端
+>zmq_device (ZMQ_QUEUE, frontend, backend);
+
+设备名 | description | sockets
+---|---|---
+ZMQ_QUEUE | 队列设备，例如请求-应答代理 | XREP/XREQ
+ZMQ_FORWARDER | 传送器，例如发布-订阅代理服务器 | SUB/PUB
+ZMQ_STREAMER | 流转换器，它像FORWARDER，但是用于管道流 | PULL/PUSH
+
+ZMQ提供持久的套接字，允许ZMQ发送缓冲区和发送者存在同样长的时间，如下函数设置身份以创建持久套机字
+>zmq_setsockopt (socket, ZMQ_IDENTITY, "gjsy", 4);
+
+关于套接字身份的建议
+```
+1.必须在连接或者绑定套接字之前设置它的身份
+2.身份是二进制字符串，以零字节开始的字符串是为ZMQ使用预留的
+3.不要给两个套接字使用相同的身份，会使另一个套接字声明失败
+4.在绑定以后或者重启一个端点时不要再修改套接字的身份，会使连接到它的套接字声明失败
+5.程序中不要创建很多套接字的随机身份。会导致大量的持久套接字堆积，使节点崩溃
+6.如果需要知道发送消息的节点的身份，只有XREP套接字会自动处理。其他套接字都需要发送一个地址作为消息的一部分
+```
+ZMQ提供套接字设置高水位线。uint64_t hwm = 5;
+>zmq_setsockopt (socket, ZMQ_HWM, &hwm, sizeof(hwm));
+
+使用高水位线的注意事项：
+```
+1.它会影响到单一套接字的发送和接收缓冲区。一些套接字(PUB,PUSH)只有发送缓冲区。一些(SUB,PULL,REQ,REP)只有接收缓冲区。一些(XREQ,XREPX,PAIR)既有接收缓冲区又有发送缓冲区
+2.当套接字达到它的高水位线，要么阻塞要么丢掉数据，这取决于套接字类型。PUB套接字会丢掉数据，而别的套接字则会阻塞
+```
+
+为了防止发布方套接字耗尽内存崩溃掉，ZMQ提供了一个分区，可以存储不能存储在队列消息的磁盘文件
+>zmq_setsockopt (socket, ZMQ_SWAP, &swap, sizeof (swap));

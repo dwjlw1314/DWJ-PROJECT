@@ -359,3 +359,21 @@ SQL> select a.constraint_name, a.table_name, b.constraint_name
 2. 删除子表中的所有记录
 3. 再次删除主表报错数据
 ```
+
+<font color=#FF0000 size=5> <p align="center">OGG-00868</p></font>
+
+```
+GGSCI (GuayaDB1) 2> start ANTEX_G
+错误描述：OGG-00868  Error code 1291, error message: ORA-01291: missing logfile
+ (Missing Log File <unknown>. Read Position SCN: Unknown)
+
+解决方案：
+GGSCI (GuayaDB1) 3> dblogin userid ggu,password ggu
+Successfully logged into database.
+
+GGSCI (GuayaDB1 as antman@santdb1) 4> UNREGISTER EXTRACT ANTEX_G DATABASE
+2019-05-06 17:51:10 INFO OGG-01750  Successfully unregistered EXTRACT ANTEX_G from database.
+
+GGSCI (GuayaDB1 as antman@santdb1) 5> REGISTER EXTRACT ANTEX_G DATABASE
+2019-05-06 17:17:19 INFO OGG-02003  Extract ANTEX_G successfully registered with database at SCN 452197.
+```

@@ -718,6 +718,8 @@ insert into WORKING values('F08C1DDC-E828-11E4-89C7-9D9859F01C00','MAT0532',sysd
 insert into WORKING (id,vehicle_id) values('uuid','MAT0533');
 --把VEHICLE表数据插入到WORKING中
 insert into WORKING select * from VEHICLE;
+--根据scn号插入指定数据
+insert into WORKING select * from WORKING as of scn 1730685;
 --更新数据 (最后事务提交 commit;)
 update VEHICLE set note = 'text' where vehicle_id = 'MAA3006';
 --建立一个快表将working表数据复制一份
@@ -732,6 +734,10 @@ using '(DESCRIPTION =
     (SERVICE_NAME = antlab)
   )
 )';
+--查看当前的SCN号
+select dbms_flashback.get_system_change_number fscn from dual;
+--通过时间来查看历史的scn号码
+select name,FIRST_CHANGE#  fscn,NEXT_CHANGE# nscn,FIRST_TIME from v$archived_log;
 --通过database link查询数据
 select count(*) from VEHICLE@LAB_DB_LINK;
 --查询数据

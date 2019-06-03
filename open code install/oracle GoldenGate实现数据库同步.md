@@ -38,6 +38,18 @@ Replicat进程，通常叫做应用进程。运行在目标端，是数据传递
 ```
 为了更有效、更安全的把数据库事务信息从源端投递到目标端。GoldenGate引进trail文件的概念。前面提到extract抽取完数据以 后 Goldengate会将抽取的事务信息转化为一种GoldenGate专有格式的文件。然后pump负责把源端的trail文件投递到目标端，所以源、 目标两端都会存在这种文件。该文件存在的目的旨在防止单点故障，将事务信息持久化，并且使用checkpoint机制来记录其读写位置，如果故障发生，则数据可以根据checkpoint记录的位置来重传
 ```
+OGG主要包含Manager进程、Extract进程、Pump进程、Replicat进程，其对应的目录含义如下：
+```
+dirprm：该进程所配置的参数文件，(edit param 进程组名)配置该文件
+dirchk：检查点文件，记录了该进程的检查点信息
+dirdat：trial文件的默认存放位置，2个用户定义的字符+6个数字组成
+dirrpt：report文件，(view report 进程组名)可以查看该进程运行时的报错信息等
+dirdef：存放生成的源端或目标端数据定义文件
+dirtmp: 超出分配内存的事务临时存储目录
+dirjar：OGGmonitor相关的jar包
+dirpcs：进程状态文件
+dirsql：Sql脚本
+```
 
 <font color=#FF0000 size=5><p align="center">GoldenGate的安装</p></font>
 
@@ -572,3 +584,6 @@ EXTRACT     RUNNING     EXT1        00:00:00      17:12:13
 
 如果启动失败，可以查看GoldenGate安装目录下的错误日志(ggserr.log)
 >[oracle@node1 ogg_src]$ tail -f ggserr.log
+
+查看进程启动日志，格式如下：
+>GGSCI (node1) 1> view report EXT1

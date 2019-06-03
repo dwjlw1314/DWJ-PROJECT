@@ -26,6 +26,7 @@ autoconf                                                             #生成编�
 ldd  name                                                            #输出程序name使用的动态库和动态库的位置
 diff -u file1 file2                                                  #比较file1和file2两个文件
 vimdiff file1 file2                                                  #左右屏幕比较文件
+size pragma_name                                                     #获取可执行程序各个段的大小
 nano                                                                 #vim相同的文本编辑命令
 nload / "watch more /proc/net/dev"                                   #监控服务器网卡流量
 ntsysv                                                               #自启动服务配置程序
