@@ -99,6 +99,7 @@ whatis                                                               #查看可�
 whiptail                                                             #在shell脚本运行中显示对话框
 > whiptail --msgbox showmessage 100 200                              #--案例--
 locate stdio.h                                                       #从文件系统数据库索引中查找任何类型文件
+ldconfig -v                                                          #显示所有软链接对应关系
 updatedb                                                             #定期更新locate数据库，命令由cron运行
 HISTTIMEFORMAT="%F %T "                                              #history历史查看显示时间格式环境变量设置
 tune2fs -l /dev/sdb5 || dumpe2fs -h /dev/sdb5                        #查看分区文件系统信息
@@ -198,7 +199,7 @@ $n	|  传递给脚本或函数的参数。n 是一个数字，表示第几个参
 $#	|  传递给脚本或函数的参数个数
 $*	|  传递给脚本或函数的所有参数
 $@	|  传递给脚本或函数的所有参数。被双引号(" ")包含时，与 $* 稍有不同
-$?	|  上个命令的退出状态，或函数的返回值
+$?	|  上个命令的退出状态，或函数的返回值；windows获取命令：echo %ERRORLEVEL%
 $$	|  当前Shell进程ID。对于 Shell 脚本，就是这些脚本所在的进程ID
 
 route命令结果Flags标记含义如下

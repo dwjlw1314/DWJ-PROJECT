@@ -1,4 +1,4 @@
-本次记录Eclipse配置<font color=#FF0000> <u>C++11</u></font>开发中的跨工程文件编译，内联文件编译等
+<font color=#FF0000 size=5><p align="center">C++11配置跨工程文件编译，内联文件编译</p></font>
 
 1.菜单“Project”——“Properties”——“C++ General”，如图所示：
 
@@ -28,4 +28,12 @@
 
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.6.7.png)
 
-8.待加
+<font color=#FF0000 size=5><p align="center">设置Eclipse支持C++ 11</p></font>
+
+1.Properties > C/C++ Build > Setting > GCC C++ Compiler > Miscellaneous，在Other flags原有参数后添加-std=c++0x
+
+![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.6.8.jpg)
+
+2.Properties > C/C++ General > Paths and Sysmbols > Symbols > Gun C++，Add添加Name=GXX_EXPERIMENTAL_CXX0X，其余留空
+
+![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.6.9.jpg)
