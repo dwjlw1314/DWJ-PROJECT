@@ -37,6 +37,7 @@ lsattr filename  / lsattr -d dirname                                 #查看文�
 bc                                                                   #linux计算器
 cal                                                                  #显示当前日历或指定日期的日历
 iconv                                                                #文件编码转换命令
+grep -rn "AC" ./                                                     #当前目录查找AC所在文件
 dos2unix/unix2dos                                                    #将文件中的\r\n和\n互相转换
 ethtool eth0                                                         #主要用于查询配置网卡参数
 brctl show                                                           #查看网桥和端口连接信息

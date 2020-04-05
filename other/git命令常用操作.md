@@ -165,6 +165,11 @@ s commitver '注释*********'
 #这样，可以用last轻松地看到最后一次提交
 >[root@dwj /]# git last
 
+如果是在windows上使用git，设置不转换文件格式
+>[root@dwj /]# git config --global core.autocrlf false
+>[root@dwj /]# git config --global core.safecrlf true
+>[root@dwj /]# git config --global core.eol lf
+
 <font color=#FF0000 size=5><p align="center">git status 工作区和暂存区文件状态简览</p></font>
 
 >[root@dwj /]# git status -s   状态报告输出如下：

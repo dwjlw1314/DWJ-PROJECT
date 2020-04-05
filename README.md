@@ -88,10 +88,11 @@
     24. ntp时间服务器搭建
 
 五. windows常用指令
-    1. win7 系统常用命令
+    1. Windows系统常用命令
     2. tracert路由跟踪使用方法
     3. windows系统网络API函数
     4. windows系统常用文件路径
+    5. 动态库文件dll生成lib库文件
 
 六. 网络设备命令
     1. 交换机使用命令

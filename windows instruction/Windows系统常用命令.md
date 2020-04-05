@@ -100,4 +100,5 @@ defrag                    #磁盘碎片整理
 diskpart / list disk      #查看磁盘信息
 sc                        #用于与服务控制管理器和服务进行通信的命令行程序
 wmic                      #扩展WMI(Windows管理工具)
+dumpbin -exports gjsy.lib #查看lib文件中的函数名和函数参数
 ```
