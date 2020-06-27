@@ -1,0 +1,6 @@
+<font color=#FF0000 size=5> <p align="center">Schema</p></font>
+创建Schema，尽管DBMS在定义schema方面有所不同，但是其有一个共同点，就是每一个都支持CREATE SCHEMA语句
+
+在MySQL中，CREATE SCHEMA创建了一个数据库，这是因为CREATE SCHEMA是CREATE DATABASE的同义词。换句话说，你可以使用CREATE SCHEMA或者CREATE DATABASE来创建一个数据库
+在Oracle中，CREATE SCHEMA语句实际上并不创建一个模式，这是因为在创建用户时，用户就已经创建了一个模式，也就是说在ORACLE中CREATE USER就创建了一个schema，CREATE SCHEMA语句允许你将schema同表和视图关联起来，并在这些对象上授权，从而不必在多个事务中发出多个SQL语句
+在SQL Server中，CREATE SCHEMA将按照名称创建一个模式，与MySQL不同，CREATE SCHEMA语句创建了一个单独定义到数据库的模式。和ORACLE也不同，CREATE SCHEMA语句实际创建了一个模式，一旦创建了schema，就可以往模式中添加用户和对象

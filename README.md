@@ -20,6 +20,7 @@
     15. profile和bashrc文件详解
     16. GRUB配置文件加密
     17. linux系统添加新硬盘
+    18. 远程调用linux图像界面
 
 二. windows系统
     1. Win7 FTP服务器部署
@@ -60,6 +61,7 @@
     27. oracle数据库系统参数设置
     28. ZeroMQ基本使用详情
     29. Clamav的安装和使用
+    30. oracle数据库基本术语
 
 四. linux常用指令
     1. linux基本命令
@@ -86,6 +88,7 @@
     22. nmap基本用法
     23. Linux替换^M字符方法
     24. ntp时间服务器搭建
+    25. lsof基本用法
 
 五. windows常用指令
     1. Windows系统常用命令

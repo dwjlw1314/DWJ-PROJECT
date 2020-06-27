@@ -13,6 +13,7 @@ service --status-all                                                 #查看系�
 whoami / who am i                                                    #显示当前登录系统用户
 who 和 w                                                             #显示当前登录用户详细信息
 cat > gjsy.txt << end                                                #使用end作为文件结束输入标记
+cat file1 file2 file3 > outfile                                      #文件合并输出到outfile
 su - root -c "useradd  test"                                         #不切换root用户，一次执行root权限命令
 touch {1..5}.txt                                                     #批量创建文件
 yum -y install --installroot=/usr/local/apache  程序名               #指定安装路径
@@ -75,6 +76,7 @@ xfsdump -I                                                           #查看xfs�
 xfsdump -f /opt/dwj -s grub2/grub.cfg /boot -L grub2 -M boot         #备份/boot/grub2/grub.cfg文件
 xfsdump -f /opt/lgl /dev/sdb5 -L sdb5 -M sdb5                        #备份sdb5文件分区
 xfsrestore -f /opt/dwj /boot                                         #恢复备份的文件系统
+xdpyinfo                                                             #查看系统X11详细信息
 dmesg                                                                #查看系统启动过程的所有信息
 time 命令                                                            #显示命令执行的时间             
 partprobe                                                            #重新读取分区表信息
