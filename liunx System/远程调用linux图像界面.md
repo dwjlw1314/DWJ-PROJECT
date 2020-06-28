@@ -15,11 +15,11 @@
 
 启动SecureCRT，进入Options->Session Options->Remote/X11 选中Forword X11 Packets ->OK
 
-![image](https://github.com/dwjlw1314/DWJ-RESUME/raw/master/PictureSource/1.18.1.jpg)
+![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/1.18.1.jpg)
 
 >[root@localhost dwj]# vim /etc/ssh/sshd_config  #修改 X11Forwarding yes
 
-![image](https://github.com/dwjlw1314/DWJ-RESUME/raw/master/PictureSource/1.18.2.jpg)
+![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/1.18.2.jpg)
 
 重启sshd服务
 >[root@localhost dwj]# service sshd restart
@@ -37,8 +37,8 @@
 >[root@localhost dwj]# echo $DISPLAY  #显示localhost:10.0
 
 如果 xhost + 不能执行，可以输入以下命令:
->[root@localhost dwj]# export DISPLAY=:0.0
+>[root@localhost dwj]# export DISPLAY=:0.0  # 0.0具体根据上一条命令修改
 
 安装xclock程序，运行验证环境是否配置完成
->[root@localhost dwj]# sudo apt-get install xclock
+>[root@localhost dwj]# sudo apt-get install xclock  <br>
 >[root@localhost dwj]# ./xclock
