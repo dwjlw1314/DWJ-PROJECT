@@ -12,6 +12,7 @@ sysctl -p                                                            #使修改�
 service --status-all                                                 #查看系统所有进程启动状态信息
 whoami / who am i                                                    #显示当前登录系统用户
 who 和 w                                                             #显示当前登录用户详细信息
+view abc.txt                                                         #vim只读版本，防止误操作
 cat > gjsy.txt << end                                                #使用end作为文件结束输入标记
 cat file1 file2 file3 > outfile                                      #文件合并输出到outfile
 su - root -c "useradd  test"                                         #不切换root用户，一次执行root权限命令
@@ -105,6 +106,7 @@ locate stdio.h                                                       #从文件�
 ldconfig -v                                                          #显示所有软链接对应关系
 updatedb                                                             #定期更新locate数据库，命令由cron运行
 HISTTIMEFORMAT="%F %T "                                              #history历史查看显示时间格式环境变量设置
+systemctl list-unit-files                                            #查看系统中所有服务启动状态
 tune2fs -l /dev/sdb5 || dumpe2fs -h /dev/sdb5                        #查看分区文件系统信息
 tune2fs -l /dev/sda1 | grep create || passwd -S root                 #查看操作系统的安装时间
 e2label /dev/sdb5 mydisk                                             #设置分区卷标信息,默认是查看
@@ -316,6 +318,28 @@ rwxrw-rwt     表示有sticky标志
 
 >[root@dwj ~]# ulimit -a              #显示系统部分内核参数配置信息  <br>
 >[root@dwj ~]# ulimit -SHn 102400     #修改当前session有效文件描述符的限制
+>[root@dwj ~]# ulimit -c unlimited    #开启program core dump的支持
+
+长期开启core dump功能需要修改/etc/profile，在末尾加上命令：
+>ulimit -c unlimited >/dev/null 2>&1
+
+core dump文件的生成方式可以修改 /etc/sysctl.conf 文件，加入以下内容：
+```
+kernel.core_uses_pid = 1     //Appends the coring processes PID to the core file name.
+kernel.core_pattern = /tmp/core-%e-%s-%u-%g-%p-%t
+/*
+When the application terminates abnormally, a core file should appear in the /tmp. The kernel.core_pattern sysctl controls exact location of core file. You can define the core file name with the following template whih can contain % specifiers which are substituted by the following values when a core file is created:
+%% - A single % character
+%p - PID of dumped process
+%u - real UID of dumped process
+%g - real GID of dumped process
+%s - number of signal causing dump
+%t - time of dump (seconds since 0:00h, 1 Jan 1970)
+%h - hostname (same as ’nodename’ returned by uname(2))
+%e - executable filename
+*/
+fs.suid_dumpable = 2         // Make sure you get core dumps for setuid programs.
+```
 
 永久变更需要修改/etc/security/limits.conf 文件，如下：
 ```

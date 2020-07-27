@@ -164,6 +164,7 @@ Oracle sqlplus登陆方式
 
 #以操作系统权限认证的sys管理员登陆
 [oracle@dwj ~]$ sqlplus / as sysdba
+[oracle@dwj ~]$ sqlplus sys/123456@orcl as sysdba
 
 #以操作系统权限认证的sysbackup管理员登陆
 [oracle@dwj ~]$ sqlplus / as sysbackup
