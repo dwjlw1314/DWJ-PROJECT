@@ -253,3 +253,33 @@ NAME                                 TYPE   �
 ------------------------------------ ----------- -------------
 sga_max_size                         big integer 32G
 ```
+5.db_files值在用alter system修改后必须重启实例才能生效
+
+查看原来的配置：
+>SQL> show parameter db_files;
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- -----------------
+db_files                             integer     200
+
+注意：后面必须得加scope=spfile，否则会报错
+>SQL> alter system set db_files=2000 scope=spfile;  <br>
+System altered.
+
+重启数据库（RAC集群需要在所有节点进行修改重启）：
+```
+SQL> shutdown immediate;
+Database closed.
+Database dismounted.
+ORACLE instance shut down.
+SQL> startup
+ORACLE instance started.
+
+Total System Global Area 1468006400 bytes
+Fixed Size                  1303076 bytes
+Variable Size             612371932 bytes
+Database Buffers          847249408 bytes
+Redo Buffers                7081984 bytes
+Database mounted.
+Database opened.
+```

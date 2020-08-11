@@ -13,6 +13,7 @@ service --status-all                                                 #查看系�
 whoami / who am i                                                    #显示当前登录系统用户
 who 和 w                                                             #显示当前登录用户详细信息
 view abc.txt                                                         #vim只读版本，防止误操作
+> :%!xxd                                                             #16进制显示文件内容
 cat > gjsy.txt << end                                                #使用end作为文件结束输入标记
 cat file1 file2 file3 > outfile                                      #文件合并输出到outfile
 su - root -c "useradd  test"                                         #不切换root用户，一次执行root权限命令
@@ -28,6 +29,7 @@ autoconf                                                             #生成编�
 ldd  name                                                            #输出程序name使用的动态库和动态库的位置
 diff -u file1 file2                                                  #比较file1和file2两个文件
 vimdiff file1 file2                                                  #左右屏幕比较文件
+hexdump -C filename                                                  #16进制方式查看filename内容
 size pragma_name                                                     #获取可执行程序各个段的大小
 nano                                                                 #vim相同的文本编辑命令
 nload / "watch more /proc/net/dev"                                   #监控服务器网卡流量
@@ -370,8 +372,7 @@ vi /etc/security/limits.conf
 
 ```
 linux中特殊的设备(/dev/zero,/dev/null,/dev/unrandom,/dev/random)
-dev/null看作"黑洞"。 它等价于一个只写文件。所有写入它的内容都会永远丢失。 而尝试从它那儿读取内容则什么也读不到。
-所以在dd命令中当为了测试某个磁盘的读性能时候，就可以将of指定为/dev/null
+dev/null看作"黑洞"。 它等价于一个只写文件。所有写入它的内容都会永远丢失。 而尝试从它那儿读取内容则什么也读不到。所以在dd命令中当为了测试某个磁盘的读性能时候，就可以将of指定为/dev/null
 
 dev/zero文件产生连续不断的null的流(二进制的零流，而不是ASCII型的)。写入它的输出会丢失不见，主要是用来创建一个指定长度用于初始化的空文件.另一个应用是用零去填充一个指定大小的文件，用dd命令为了测试磁盘写性能时候，可以将if指定为/dev/zero这样，就相当源源不断的向测试设备中写入数据
 
@@ -391,6 +392,98 @@ dd命令执行到最后会真正执行一次“同步(sync)”操作，所以这
 [root@dwj ~]# dd bs=64k count=4k if=/dev/zero of=test oflag=dsync
 dd在执行时每次都会进行同步写入操作。也就是说，这条命令每次读取64k后就要先把这64k写入磁盘，然后再读取下面这64k，一共重复128次。这可能是最慢的一种方式了，因为基本上没有用到写缓存(write cache)
 ```
+
+二、dd应用实例:
+1.将本地的/dev/hdb整盘备份到/dev/hdd
+>[root@dwj ~]# dd if=/dev/hdb of=/dev/hdd
+
+2.将/dev/hdb全盘数据备份到指定路径的image文件
+>[root@dwj ~]# dd if=/dev/hdb of=/root/image
+
+3.将备份文件恢复到指定盘
+>[root@dwj ~]# dd if=/root/image of=/dev/hdb
+
+4.备份/dev/hdb全盘数据，并利用gzip工具进行压缩，保存到指定路径
+>[root@dwj ~]# dd if=/dev/hdb | gzip > /root/image.gz
+
+5.将压缩的备份文件恢复到指定盘
+>[root@dwj ~]# gzip -dc /root/image.gz | dd of=/dev/hdb
+
+6.备份与恢复MBR   <br>
+备份磁盘开始的512个字节大小的MBR信息到指定文件：
+>[root@dwj ~]# dd if=/dev/hda of=/root/image count=1 bs=512
+   count=1指仅拷贝一个块；bs=512指块大小为512个字节。
+
+备份恢复(将备份的MBR信息写到磁盘开始部分)：
+>[root@dwj ~]# dd if=/root/image of=/dev/had
+
+备份软盘
+>[root@dwj ~]# dd if=/dev/fd0 of=disk.img count=1 bs=1440k (即块大小为1.44M)
+
+8.拷贝内存内容到硬盘
+>[root@dwj ~]# dd if=/dev/mem of=/root/mem.bin bs=1024 (指定块大小为1k)
+
+9.拷贝光盘内容到指定文件夹，并保存为cd.iso文件
+>[root@dwj ~]# dd if=/dev/cdrom(hdc) of=/root/cd.iso
+
+10.销毁磁盘数据
+>[root@dwj ~]# dd if=/dev/urandom of=/dev/hda1
+注意：利用随机的数据填充硬盘，在某些必要的场合可以用来销毁数据
+
+12.测试硬盘的读写速度
+>[root@dwj ~]# dd if=/dev/zero bs=1024 count=1000000 of=/root/1Gb.file
+>[root@dwj ~]# dd if=/root/1Gb.file bs=64k | dd of=/dev/null
+通过以上两个命令输出的命令执行时间，可以计算出硬盘的读、写速度
+
+13.确定硬盘的最佳块大小：
+```
+dd if=/dev/zero bs=1024 count=1000000 of=/root/1Gb.file
+dd if=/dev/zero bs=2048 count=500000 of=/root/1Gb.file
+dd if=/dev/zero bs=4096 count=250000 of=/root/1Gb.file
+dd if=/dev/zero bs=8192 count=125000 of=/root/1Gb.file
+通过比较以上命令输出中所显示的命令执行时间，即可确定系统最佳的块大小
+```
+
+14.修复硬盘：
+>[root@dwj ~]# dd if=/dev/sda of=/dev/sda
+当硬盘较长时间(一年以上)放置不使用后，磁盘上会产生magnetic flux point，当磁头读到这些区域时会遇到困难，并可能导致I/O错误。当这种情况影响到硬盘的第一个扇区时，可能导致硬盘报废。上边的命令有可能使这些数据起死回生。并且这个过程是安全、高效的
+
+15.利用netcat远程备份
+>[root@dwj ~]# dd if=/dev/hda bs=16065b | netcat < targethost-IP > 1234
+
+在源主机上执行此命令备份/dev/hda
+>[root@dwj ~]# netcat -l -p 1234 | dd of=/dev/hdc bs=16065b
+
+在目的主机上执行此命令来接收数据并写入/dev/hdc
+>[root@dwj ~]# netcat -l -p 1234 | bzip2 > partition.img <br>
+>[root@dwj ~]# netcat -l -p 1234 | gzip > partition.img
+以上两条指令是目的主机指令的变化分别采用bzip2、gzip对数据进行压缩，并将备份文件保存在当前目录。
+
+将一个很大的视频文件中的第i个字节的值改成0x41（也就是大写字母A的ASCII值）
+>[root@dwj ~]# echo A | dd of=bigfile seek=$i bs=1 count=1 conv=notrunc
+
+三、/dev/null和/dev/zero的区别
+/dev/null，外号叫无底洞，你可以向它输出任何数据，它通吃，并且不会撑着
+/dev/zero，是一个输入设备，你可你用它来初始化文件。该设备无穷尽地提供0
+/dev/null, 它是空设备，任何写入它的输出都会被抛弃。如果不想让消息以标准输出显示或写入文件，那么可以将消息重定向到位桶
+
+把/dev/null看作"黑洞"， 它等价于一个只写文件，所有写入它的内容都会永远丢失.，而尝试从它那儿读取内容则什么也读不到。然而， /dev/null对命令行和脚本都非常的有用
+
+l.禁止标准输出
+>[root@dwj ~]# cat $filename >/dev/null
+
+2.隐藏cookie而不再使用
+特别适合处理这些由商业Web站点发送的讨厌的"cookies"
+```
+if [ -f ~/.netscape/cookies ] then  #如果存在则删除
+rm -f ~/.netscape/cookies
+fi
+ln -s /dev/null ~/.netscape/cookies
+现在所有的cookies都会丢入黑洞而不会保存在磁盘上了
+```
+3.使用/dev/zero
+像/dev/null一样， /dev/zero也是一个伪文件，但它实际上产生连续不断的null的流（二进制的零流，而不是ASCII型的）。 写入它的输出会丢失不见，而从/dev/zero读出一连串的null也比较困难， 虽然这也能通过od或一个十六进制编辑器来做到。 /dev/zero主要的用处是用来创建一个指定长度用于初始化的空文件，就像临时交换文件。
+用/dev/zero创建一个交换临时文件
 
 <font color=#FF0000 size=5> <p align="center">系统时间</p></font>
 

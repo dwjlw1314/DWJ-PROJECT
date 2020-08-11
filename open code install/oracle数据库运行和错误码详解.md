@@ -377,3 +377,20 @@ GGSCI (GuayaDB1 as antman@santdb1) 4> UNREGISTER EXTRACT ANTEX_G DATABASE
 GGSCI (GuayaDB1 as antman@santdb1) 5> REGISTER EXTRACT ANTEX_G DATABASE
 2019-05-06 17:17:19 INFO OGG-02003  Extract ANTEX_G successfully registered with database at SCN 452197.
 ```
+
+<font color=#FF0000 size=5> <p align="center">SP2-0734</p></font>
+
+```
+SQL> @/home/oracle/.xx.sql
+错误描述：
+P2-0734: unknown command beginning "WHEN conn...." - rest of line ignored.
+SP2-0734: unknown command beginning "cat.catalo..." - rest of line ignored.
+SP2-0734: unknown command beginning "END Qualif..." - rest of line ignored.
+SP2-0042: unknown command "FROM" - rest of line ignored.
+SP2-0044: For a list of known commands enter HELP
+and to leave enter EXIT.
+
+解决方案：
+1. 将sql文件语句总所有中文注释改为英文；
+2. sql文件开头使用 set sqlblanklines on 因为空行导致sql语句加载到机器内存中截断了
+```

@@ -125,6 +125,27 @@ select t.segment_name, t.tablespace_name, t.segment_id, t.status
     from dba_rollback_segs t
     where t.tablespace_name like 'UN%'
 ```
+循环添加表空间
+```sql
+declare
+    v_i int;
+    loop_times int;
+    tmp_str varchar(100);
+    strsql varchar(4000);
+begin
+    v_i := 1000;
+    loop_times := 1;
+    while loop_times < 129 loop
+        v_i := v_i + 1;
+        tmp_str := 'ANG_COMMON_DATA_HASH_'||substr(to_char(v_i),2,3);
+
+        loop_times := loop_times + 1;
+        strsql := 'create tablespace '||tmp_str||' datafile '||chr(39)||
+               '+OCR/PRO_BUSI/DATAFILE/'||tmp_str||chr(39)||' size 100m autoextend on';
+        execute immediate strsql;
+    end loop;
+ end;
+```
 
 <font color=#FF0000 size=5> <p align="center">Oracle dbstart和dbshut</p></font>
 
@@ -194,6 +215,10 @@ b. 查询 tnsnames.ora 文件，从里边找 orcl 的记录，并且找到数据
 c. 如果服务器 listener 进程没有问题的话，建立与 listener 进程的连接
 d. 根据不同的服务器模式如专用服务器模式或者共享服务器模式，listener采取连接动作。默认是专用服务器模式
 ```
+
+unix下查看进程的最后几个字母就是sid
+>[oracle@dwj ~]$ ps -ef|grep ora_ 
+
 检查系统当前视图相关参数(v$parameter视图中查询参数的时候其实都是通过x$ksppi和x$ksppcv这两个内部视图中得到的)
 ```sql
 SQL> select count(*) from v$instance;              #数据库实例所有参数字段
@@ -218,7 +243,10 @@ SQL> select MESSAGE from v$session_longops;        #捕捉运行很久的SQL
 SQL> select * from v$locked_object;                #查看未提交的事务
 SQL> select * from v$transaction;                  #查看未提交的事务,一般关联v$session
 SQL> select * from v$version;                      #查看数据库的版本
+SQL> select * from v$asm_disk_stat;                #查看ASM对应磁盘组以及设备名
+SQL> select * from dba_data_files                  #查看表空间对应的数据文件路径
 SQL> select * from dba_mviews;                     #查看物化视图刷新状态信息
+SQL> select * from dba_dependencies;               #查看用户下的view和trigger
 SQL> select * from dba_mview_logs                  #查询物化视图日志(快照)
 SQL> select * from dba_mview_refresh_times;        #查看物化视图刷新时间
 ```
@@ -267,8 +295,8 @@ sqlplus模式下查看、修改、删除列格式
 >SQL> select file_type,PERCENT_SPACE_USED,NUMBER_OF_FILES from v$flash_recovery_area_usage;
 
 Oracle的物理结构主要有 1.dbf数据文件 2.log重做日志文件 3.ctl控制文件 4.ora参数文件
->SQL> select file_name,tablespace_name,BYTES/1048576 MB maxbytes/1048576 Max_MB from dba_data_files;  <br>
->SQL> select file_name,tablespace_name,BYTES/1048576 MB maxbytes/1048576 Max_MB from dba_temp_files;
+>SQL> select file_name,tablespace_name,BYTES/1048576 MB, maxbytes/1048576 Max_MB from dba_data_files;  <br>
+>SQL> select file_name,tablespace_name,BYTES/1048576 MB, maxbytes/1048576 Max_MB from dba_temp_files;
 
 关闭数据库，有四种不同的关闭选项
 ```
@@ -303,8 +331,10 @@ SQL> select status from v$instance;    #OPEN
 SQL> select open_mode from v$database; #READ WRITE 或者 READ ONLY
 ```
 
-查询某用户下的所有表空间详细信息(desc 适用所有视图参数eg:Tablespaces;Views;Sequences;Indexes;...)
+查询某用户下的所有表详细信息(desc 适用所有视图参数eg:Tablespaces;Views;Sequences;Indexes;...)
 ```sql
+--查询表的描述信息
+SQL> select * from dba_tab_comments where owner='user';
 --在dba权限下查询 user 用户下的所有表的信息
 SQL> select count(*) from dba_tables where owner='user';
 SQL> select count(*) from all_tables where owner='user';
@@ -662,6 +692,8 @@ alter table VEHICLE modify note default 'ecuador';
 alter table VEHICLE modify note default NULL;
 --杀死阻塞了其他连接的 session; eg: alter system kill session '62,35686';
 alter system kill session 'SID,SERIAL#';
+--删除asm磁盘组文件
+alter diskgroup OCR drop file '+OCR/PRO_BUSI/DATAFILE/xxx.dbf';
 --删除数据表 (无法使用flashback恢复),如果其他表的外键引用该表的主键,不用cascade关键字删除会报错
 drop table VEHICLE purge;
 --如果其他表的外键引用该表的主键，不用cascade关键字删除表就会报错；使用flashback可以恢复，但外键无法恢复
@@ -735,6 +767,10 @@ using '(DESCRIPTION =
     (SERVICE_NAME = antlab)
   )
 )';
+--查询表的DDL信息
+select dbms_metadata.get_ddl('TABLE','VEHICLE') from dual;
+--查询表空间的DDL信息
+select dbms_metadata.get_ddl('TABLESPACE','tablespace name') from dual;
 --查看当前的SCN号
 select dbms_flashback.get_system_change_number fscn from dual;
 --通过时间来查看历史的scn号码
@@ -1008,6 +1044,13 @@ SQL> grant read,write on directory dump_dir to antman;
 ```
 
 <font color=#FF0000 size=5> <p align="center">RMAN 备份及恢复步骤</p></font>
+
+```
+可以用来备份和还原数据库文件、归档日志和控制文件。它也可以用来执行完全或不完全的数据库恢复
+RMAN不能用于备份初始化参数文件（备份控制文件时一齐备份）和口令文件
+RMAN启动数据库上的Oracle服务器进程来进行备份或还原。备份、还原、恢复是由这些进程驱动的
+RMAN可以由OEM的Backup Manager GUI来控制
+```
 
 1、切换服务器归档模式，如果已经是归档模式可跳过此步
 ```
