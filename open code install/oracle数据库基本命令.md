@@ -228,6 +228,7 @@ SQL> select * from dba_tablespaces;                #查看数据库表空间信�
 SQL> select * from nls_database_parameters;        #查看数据库服务器字符集
 SQL> select * from user_tab_partitions;            #查看数据库表分区信息
 SQL> select object_name,created from user_objects  #查看数据表名和创建时间
+SQL> select name from v$datafile;                  #查看当前用户表空间位置
 SQL> select name from v$tempfile;                  #查看当前用户临时表空间位置
 SQL> select count(*) from v$process;               #查询数据库当前进程的连接数
 SQL> select count(*) from v$session;               #查看数据库当前会话的连接数
@@ -243,15 +244,26 @@ SQL> select MESSAGE from v$session_longops;        #捕捉运行很久的SQL
 SQL> select * from v$locked_object;                #查看未提交的事务
 SQL> select * from v$transaction;                  #查看未提交的事务,一般关联v$session
 SQL> select * from v$version;                      #查看数据库的版本
-SQL> select * from v$asm_disk_stat;                #查看ASM对应磁盘组以及设备名
+SQL> select * from v$asm_disk_stat;                #查看ASM对应物理磁盘组以及设备名
+SQL> select * from v$asm_diskgroup;                #查看ASM对应逻辑磁盘组信息
 SQL> select * from dba_data_files                  #查看表空间对应的数据文件路径
 SQL> select * from dba_mviews;                     #查看物化视图刷新状态信息
 SQL> select * from dba_dependencies;               #查看用户下的view和trigger
 SQL> select * from dba_mview_logs                  #查询物化视图日志(快照)
 SQL> select * from dba_mview_refresh_times;        #查看物化视图刷新时间
+SQL> select * FROM all_triggers/user_triggers;     #查看用户所有的触发器             
 ```
 sqlplus的buffer会缓存最后一条sql语句，可以使用"/"来执行最后一条命令，也可以使用"edit"
 编辑最后一条sql语句。l(list) 可以显示buffer中最后一条命令
+
+sqlplus方式运行脚本输出内容写入文件
+```
+spool on
+set heading off
+spool path/result.text
+@show.sql
+spool off
+```
 
 sqlplus模式下查看、修改、删除列格式
 >SQL> column vehicle_id   <br>
@@ -276,8 +288,8 @@ sqlplus模式下查看、修改、删除列格式
 查询日志文件路径
 > SQL> show parameter background_dump_dest
 
-查看闪回空间大小
->SQL> show parameter db_recovery_file_dest_size
+查看归档日志路径和大小
+>SQL> show parameter db_recovery
 
 查看数据库服务器字符集方式一
 > SQL> select userenv('language') from dual;
@@ -370,6 +382,12 @@ SQL> desc user_users
 
 让修改数据库系统参数生效
 >SQL> alter system register;
+
+强制系统进行日志切换,是对单实例数据库或RAC中的当前实例执行
+>SQL> alter system switch logfile
+
+强制系统进行日志切换,是对数据库所有的实例执行日志切换
+>SQL> alter system archive log current
 
 修改数据库允许的最大连接数(需要重启数据库才能实现连接数的修改)
 ```
@@ -698,6 +716,8 @@ alter diskgroup OCR drop file '+OCR/PRO_BUSI/DATAFILE/xxx.dbf';
 drop table VEHICLE purge;
 --如果其他表的外键引用该表的主键，不用cascade关键字删除表就会报错；使用flashback可以恢复，但外键无法恢复
 drop table VEHICLE cascade constraint;
+--删除触发器 , user/teigger_name
+drop trigger ANG_CUST.APPLICATIONFILE_TRG
 --删除索引
 drop index WORKING_INDEX;
 --删除数据表中的数据，但并不删除表本身
@@ -767,10 +787,22 @@ using '(DESCRIPTION =
     (SERVICE_NAME = antlab)
   )
 )';
---查询表的DDL信息
+--把clob转换为字符串
+select dbms_lob.substr(dbms_metadata.get_ddl('TABLE','VEHICLE')) as str from dual;
+--查询指定表的DDL信息
 select dbms_metadata.get_ddl('TABLE','VEHICLE') from dual;
---查询表空间的DDL信息
+--查询指定表空间的DDL信息
 select dbms_metadata.get_ddl('TABLESPACE','tablespace name') from dual;
+--查询所有表的DDL信息
+select dbms_metadata.get_ddl('TABLE',dt.table_name) from dba_tables dt;
+--查询所有索引的DDL信息
+select dbms_metadata.get_ddl('INDEX',di.index_name,di.owner) from dba_indexes di;
+--查询所有表空间的DDL信息
+select dbms_metadata.get_ddl('TABLESPACE', dts.tablespace_name) from dba_tablespaces dts;
+--查询所有视图的DDL信息
+select dbms_metadata.get_ddl('VIEW', dv.view_name) from dba_views dv;
+--查询所有用户创建的DDL信息
+select dbms_metadata.get_ddl('USER', du.username) from dba_users du;
 --查看当前的SCN号
 select dbms_flashback.get_system_change_number fscn from dual;
 --通过时间来查看历史的scn号码

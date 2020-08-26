@@ -152,6 +152,9 @@ s commitver '注释*********'
 列出指定配置的字段
 >[root@dwj /]# git config user.name
 
+取消ssh认证
+>[root@dwj /]# git config --global http.sslVerify false
+
 配置默认文本编辑器
 >[root@dwj /]# git config --global core.editor notepad++
 

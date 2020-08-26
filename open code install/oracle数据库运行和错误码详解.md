@@ -55,6 +55,13 @@ PGUAYAS =
 [root@dwj ~]# exp c##antman/ant@PGUAYAS file=~/backup.dmp log=~/backup.log full=y
 ```
 
+<font color=#FF0000 size=5> <p align="center">ORA-01756</p></font>
+```
+错误描述：ORA-01756: quoted string not properly terminated
+
+解决方案：这是由于引号内的字符串没有正确结束,或者sql语句不完整或有语法错误
+```
+
 <font color=#FF0000 size=5> <p align="center">EXP-00091</p></font>
 
 ```
@@ -393,4 +400,74 @@ and to leave enter EXIT.
 解决方案：
 1. 将sql文件语句总所有中文注释改为英文；
 2. sql文件开头使用 set sqlblanklines on 因为空行导致sql语句加载到机器内存中截断了
+```
+
+<font color=#FF0000 size=5> <p align="center">SP2-0341</p></font>
+
+```
+SQL> @/home/oracle/.xx.sql
+错误描述：SP2-0341: line overflow during variable substitution (>3000 characters at line 1)
+
+解决方案：
+1. 将sql文件行进行折行处理；
+2. 设置行显示大小  set linesize 4000
+```
+
+<font color=#FF0000 size=5> <p align="center">ORA-12514</p></font>
+
+```
+错误描述：ORA-12514  TNS:listener does not currently know of service requested in connect descriptor
+
+问题描述：Oracle 12c 修改RAC集群的rac-scan
+
+1.查看scan ip的状态信息
+[grid@dwj ~]# srvctl config scan
+
+2.停止scan_listener,scan
+[grid@dwj ~]# srvctl stop scan_listener
+[grid@dwj ~]# srvctl stop scan
+
+3.确认 scan_listener,scan 的状态
+[grid@dwj ~]# srvctl status scan_listener
+[grid@dwj ~]# srvctl status scan
+
+4.在所有节点中 /etc/hosts 文件中修改 rac-scan 对应的ip
+
+5.查看srvctl命令所在文件夹
+[grid@dwj ~]# cd $ORACLE_HOME
+[grid@dwj ~]# cd bin/ && pwd
+
+6. 使用root命令修改rac-scan，即修改为/etc/hosts里面rac-scan对应的ip
+[root@dwj /u01/app/11.2.0/grid/bin]# ./srvctl modify scan -n rac-scan
+注：-n后面跟的是 /etc/hosts 下 rac-scan 的名称
+[root@dwj /u01/app/11.2.0/grid/bin]# ./srvctl config scan
+
+7. 启动scan_listener,scan并查看状态
+[grid@dwj ~]# srvctl status scan
+[grid@dwj ~]# srvctl start scan_listener
+[grid@dwj ~]# srvctl start scan
+
+8. 使用新的scan ip测试连接
+```
+
+<font color=#FF0000 size=5> <p align="center">ORA-15021</p></font>
+
+```
+[grid@dwj ~]# rman target /
+错误描述：
+ORACLE error: ORA-15021: parameter "remote_dependencies_mode" is not valid in ASM instance
+
+解决方案：
+[grid@dwj ~]# export ORACLE_SID=实例名
+```
+
+<font color=#FF0000 size=5> <p align="center">SP2-0341</p></font>
+
+```
+SQL> @/home/oracle/.xx.sql
+错误描述：SP2-0341: line overflow during variable substitution (>3000 characters at line 1)
+
+解决方案：
+1. 将sql文件行进行折行处理；
+2. 设置行显示大小  set linesize 4000
 ```

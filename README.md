@@ -21,6 +21,7 @@
     16. GRUB配置文件加密
     17. linux系统添加新硬盘
     18. 远程调用linux图像界面
+    19. linux系统根目录扩展空间
 
 二. windows系统
     1. Win7 FTP服务器部署

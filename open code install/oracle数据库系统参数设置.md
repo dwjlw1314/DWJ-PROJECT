@@ -283,3 +283,19 @@ Redo Buffers                7081984 bytes
 Database mounted.
 Database opened.
 ```
+
+6.更改归档日志路径(db_recovery_file_dest)
+
+查看原来的配置：
+>SQL> show parameter db_recovery_file_dest;
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- -----------------
+db_recovery_file_dest                string     +ORADATA
+
+注意：如果报错，后面添加 scope=spfile
+>SQL> alter system set db_recovery_file_dest='+ORALOG';  <br>
+System altered.
+
+RAC集群所有节点自动生效,无需重启DB实例
+```
