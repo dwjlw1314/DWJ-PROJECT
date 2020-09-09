@@ -616,7 +616,7 @@ CRS-4622: Oracle High Availability Services autostart is enabled.
 >[oracle@node1 database]$ ./runInstaller
 
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/oraclegR1/3.25.24.jpg)
-取消<I wish to receive security updates via My Oracle Support>,Next选择第二个，只安装数据库软件
+取消(I wish to receive security updates via My Oracle Support),Next选择第二个，只安装数据库软件
 
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/oraclegR1/3.25.25.jpg)
 选择Next,如果节点互信总是出问题，重新手动配置一下就ok
@@ -742,7 +742,7 @@ ora.scan1.vip
 >[grid@node1 ~]$ srvctl start database -d santdb
 
 关闭和启动指定数据库实例方法
->[grid@node1 ~]$ srvctl stop instance –d santdb –i santdb1
+>[grid@node1 ~]$ srvctl stop instance –d santdb –i santdb1 <br>
 >[grid@node1 ~]$ srvctl start instance –d santdb –i santdb1
 
 获取数据库安装的详细参数，使用config选项

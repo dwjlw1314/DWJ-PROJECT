@@ -1171,7 +1171,7 @@ RMAN> shutdown normal;                                #关闭数据库
 RMAN> startup mount;                #启动实例
 RMAN> restore database;             #还原数据库
 RMAN> recover database;             #恢复数据库
-RMAN> alter database open;          #打开数据库
+SQL> alter database open;           #打开数据库
 ```
 12、恢复和复原表空间
 ```

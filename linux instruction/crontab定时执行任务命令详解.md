@@ -48,6 +48,8 @@ crontab命令用于安装、删除或者列出用于驱动cron后台进程的表
 每个用户都可以有自己的crontab文件。/var/spool/cron下的crontab文件不可以直接创建或者直接修改
 >[root@dwj /var/spool/cron]# crontab -e      #创建/var/spool/cron下的crontab文件
 
+>[root@dwj /var/spool/cron]# crontab -e -u oracle   #创建oracle用户的crontab文件
+
 在crontab文件中每行都包括六个域，其中前五个是指定被执行的时间，最后一个是要被执行的命令,格式如下：
 ```
 minute hour day-of-month month-of-year day-of-week commands
@@ -62,7 +64,7 @@ minute hour day-of-month month-of-year day-of-week commands
   -r 删除当前的crontab文件
 　-e 使用VISUAL或者EDITOR环境变量所指的编辑器编辑当前的crontab文件。当结束编辑离开时，编辑后的文件将自动安装
 ```
-八、例子
+八、例子(适用于/etc/crontab的编辑方式)
 每小时执行/etc/cron.hourly内的脚本
 >01 * * * * root run-parts /etc/cron.hourly
 
