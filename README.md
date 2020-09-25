@@ -97,6 +97,8 @@
     3. windows系统网络API函数
     4. windows系统常用文件路径
     5. 动态库文件dll生成lib库文件
+    6. ping命令脚本
+    7. windows常用知识
 
 六. 网络设备命令
     1. 交换机使用命令

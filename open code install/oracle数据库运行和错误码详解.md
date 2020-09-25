@@ -461,6 +461,32 @@ ORACLE error: ORA-15021: parameter "remote_dependencies_mode" is not valid in AS
 [grid@dwj ~]# export ORACLE_SID=实例名
 ```
 
+<font color=#FF0000 size=5> <p align="center">ORA-28007</p></font>
+
+```
+[grid@dwj ~]# rman target /
+错误描述：
+ORACLE error: ORA-28007: the password cannot be reused
+
+解决方案：
+SQL> ALTER PROFILE DEFAULT LIMIT PASSWORD_REUSE_MAX UNLIMITED;
+SQL> ALTER PROFILE DEFAULT LIMIT PASSWORD_REUSE_TIME UNLIMITED;
+SQL> ALTER USER user ACCOUNT UNLOCK;
+SQL> ALTER USER user identified by 123;
+
+相关问题关联描述：
+SQL> select profile, resource_name, limit from dba_profiles where
+     resource_name in('PASSWORD_REUSE_TIME','PASSWORD_REUSE_MAX') and profile = 'DEFAULT';
+resource_name说明:
+FAILED_LOGIN_ATTEMPTS    ---> 不知道口令的话尝试登录的次数，达到这个次数之后账户被自动锁定
+PASSWORD_LIFE_TIME       ---> 口令的生命周期，超过这段时间口令可能会自动过期，是否过期要看是否设定
+PASSWORD_REUSE_TIME      ---> 这个特性限制口令在多少天内不能重复使用
+PASSWORD_REUSE_MAX       ---> 这个特性是针对PASSWORD_REUSE_TIME的，说明要想在PASSWORD_REUSE_TIME这个参数指定的时间内重复使用当前口令，那么至少需要修改过口令的次数(修改过的口令当然肯定需要和当前口令不同，因为毕竟还有PASSWORD_REUSE_TIME 特性的限制)
+PASSWORD_VERIFY_FUNCTION ---> 密码验证规则函数
+PASSWORD_LOCK_TIME       ---> 接着FAILED_LOGIN_ATTEMPTS参数，口令被自动锁定的时间，达到这个时间之后，下次登录时系统自动解除对这个账户的锁定
+PASSWORD_GRACE_TIME      ---> 接着PASSWORD_LIFE_TIME特性，如果PASSWORD_LIFE_TIME的期限已到，继续可以使用的天数，在这段时间内如果我们登录系统，会有提示，提示系统在几天内过期
+```
+
 <font color=#FF0000 size=5> <p align="center">SP2-0341</p></font>
 
 ```

@@ -207,3 +207,179 @@ sql>@/home/app/oracle/product/10.1.0/db_1/javavm/install/initjvm
 sql>connect system/pass
 sql>@/home/app/oracle/product/10.1.0/db_1/sqlplus/admin/pupbld
 ```
+
+<font color=#FF0000 size=5> <p align="center">数据库字符集</p></font>
+
+```
+在整个运行环节中，字符集在3个环节中发挥作用：
+1.软件在操作系统上运作时的对用户的显示，此时采用操作系统定义的字符集进行显示。sqlplus是运行在操作系统上的软件，当然要使用系统所指定的字符集对外显示内容
+2.数据向oracle服务端传送前的通告。也就是sqlplus告诉服务器现在使用的字符集是什么
+3.数据流到达服务器后，按照服务器所使用的字符集自动翻译客户端的数据，然后存储进系统
+```
+
+```
+在客户端sqlplus和服务端传送数据，数据会按照服务端字符集进行翻译，这个过程是自动完成的不需要人工干预。客户端要想正确显示从服务端读取到的数据，也需要按照本地的字符集设置进行翻译，这个过程也是自动的
+
+sqlplus作为运行在操作系统上的软件，必然使用操作系统所使用的字符集设置。sqlplus设置的字符集，作用只有一个，那就是通告服务器端，为相互之间的字符集翻译做准备
+
+客户端的字符集设置是在NLS_LANG环境变量中设置的，客户读端的字符集可以和oracle客户端设置得不一样（本来人家就是自动翻译的），但是客户端字符集一定要和操作系统设置的字符集相匹配！
+
+考虑一下，sqlplus使用的是操作系统的字符集定义显示和发送数据（假设是TYPE_A），却告诉oracle服务器自己使用的字符集是TYPE_B，oracle服务器会将客户端发送过来的TYPE_A数据当作TYPE_B字符集格式用自身的TYPE_C字符集进行翻译，然后再存储进系统，这就形成了乱码。反向的过程类似，Oracle服务器发出的数据格式是TYPE_C，但是客户端软件认为自己使用的编码是TYPE_B并进行了翻译，交给操作系统用TYPE_A字符集进行翻译显示，最终导致了无法正确显示
+
+一个现实的例子：RHEL5.8操作系统安装了中文支持包以后，所有的语言环境都被设置成了zh_CN.UTF-8（通过LANG环境变量可知，也可通过locale命令查到）,数据库服务器所使用的字符集为ZHS16GBK,很明显，这两者不一致，sqlplus在没有设置NLS_LANG环境变量时，与数据库保持一致，此时，从服务端取得的数据不需要翻译，被sqlplus读取并用zh_CN.UTF-8的字符编码映射关系进行翻译显示，所有的汉字变成了?
+
+根据上面的分析，要解决这一问题，要把sqlplus的字符集设置成和操作系统一致即可，操作系统设置的是zh_CN.UTF-8，但在.bash_profile里面还不能直接将NLS_LANG设置为zh_CN.UTF-8，因为这个zh_CN.UTF8是字符集的localeID而不是字符集的名称，真正的名称叫SIMPLIFIEDCHINESE_CHINA.AL32UTF8
+如果设置成zh_CN.UTF8，oracle会报ORA-12705: Cannotaccess NLS data files or invalid environmentspecified错误
+在.bash_profile里面加入NLS_LANG="SIMPLIFIEDCHINESE_CHINA.AL32UTF8"; export NLS_LANG 问题就解决了
+```
+
+不同平台的一些细节：
+```
+Windows（ 如简体系统为：ZHS16GBK，繁体系统为：MSWIN950 ）
+
+1、设置session变量
+
+# 常用中文字符集
+set NLS_LANG=SIMPLIFIED CHINESE_CHINA.ZHS16GBK
+# 常用unicode字符集
+set NLS_LANG=american_america.AL32UTF8
+
+2、可以通过修改注册表键值永久设置
+HKEY_LOCAL_MACHINE/SOFTWARE/ORACLE/HOMExx/NLS_LANG
+
+3、设置环境变量
+NLS_LANG=SIMPLIFIED CHINESE_CHINA.ZHS16GBK
+NLS_LANG=american_america.AL32UTF8
+
+Unix/Linus:
+
+1、设置session变量
+
+# 常用unicode字符集
+export NLS_LANG=american_america.AL32UTF8
+# 常用中文字符集
+export NLS_LANG="Simplified Chinese_china".ZHS16GBK
+
+2、编辑 bash_profile文件进行永久设置
+# vim .bash_profile
+NLS_LANG="Simplified Chinese_china".ZHS16GBK
+export NLS_LANG
+```
+
+1、查看sqlplus客户编码：
+>[oracle@dwj ~]$ echo $NLS_LANG
+
+2、查看系统编码：
+>[oracle@dwj ~]$ locale
+
+3、查看数据库字符集，执行如下查询:
+>SQL> select userenv('language') from dual;
+
+Oracle字符集转换的基本原则：
+```
+设置客户端的NLS_LANG为客户端操作系统的字符集
+如果数据库字符集等于NLS_LANG，数据库和客户端传输字符时不作任何转换
+如果它们俩不等，则需要在不同字符集间转换，只有客户端操作系统字符集是数据库字符集子集的基础上才能正确转换，否则会出现乱码
+```
+
+参考：https://www.cnblogs.com/bingo1717/p/7803359.html
+
+<font color=#FF0000 size=5> <p align="center">游标</p></font>
+
+隐式游标，隐式游标的好处是不需要手动关闭，方便
+```sql
+for currow in (
+   select t.col1, t.col2
+   from tableName t
+   where ...
+) loop
+    if currow.col1 = 0 then
+       return;    -- 中止sp，返回
+   end if;
+end loop;
+```
+显式游标
+```sql
+declare
+isok integer;
+v_event_id number(10);
+v_isagain number(2);
+v_rate number(2);
+
+v_sender char(11) := '13800138000';
+
+cursor cursorVar is select event_id, isagain, rate from call_event where sender = v_sender; -- 声明游标
+
+begin
+    open cursorVar;    -- 打开游标
+    loop
+         fetch cursorVar into v_event_id, v_isagain, v_rate;       -- 取值
+         exit when cursorVar%notfound;                             -- 当没有记录时退出循环
+         dbms_output.put_line(v_event_id || ', ' || v_isagain || ', ' || v_rate);
+    end loop;
+
+    close cursorVar;   -- 关闭游标
+
+    --游标的属性有：%FOUND,%NOTFOUNRD,%ISOPEN,%ROWCOUNT;
+    --%FOUND:已检索到记录时，返回true
+    --%NOTFOUNRD：检索不到记录时，返回true
+    --%ISOPEN:游标已打开时返回true
+    --%ROWCOUNT:代表检索的记录数，从1开始
+end;
+```
+带参数游标
+```sql
+declare
+isok integer;
+v_event_id number(10);
+v_isagain number(2);
+v_rate number(2);
+
+v_sender char(11) := '13800138000';
+
+cursor cursorVar(p_sender varchar2) is select event_id, isagain, rate from call_event where sender = p_sender; -- 声明游标
+
+begin
+    open cursorVar(v_sender);    -- 打开游标，在括号里传参
+    loop
+         fetch cursorVar into v_event_id, v_isagain, v_rate;       -- 取值
+         exit when cursorVar%notfound;                             --当没有记录时退出循环
+         dbms_output.put_line(v_event_id || ', ' || v_isagain || ', ' || v_rate);
+    end loop;
+
+    close cursorVar;   -- 关闭游标
+end;
+```
+
+<font color=#FF0000 size=5> <p align="center">物化视图</p></font>
+
+创建物化视图语句(默认情况下，如果没指定刷新方法和刷新模式，则Oracle默认为FORCE和DEMAND)
+> create materialized view mv_name as select * from table_name
+
+创建定时刷新的物化视图(指定物化视图每天刷新一次,没有指定刷新时间)
+> create materialized view mv_name refresh force on demand start with sysdate next sysdate+1
+
+创建指定时间刷新的物化视图
+> create materialized view mv_name refresh force on demand start with sysdate next to_date( concat( to_char( sysdate+1,'dd-mm-yyyy'),' 22:00:00'),'dd-mm-yyyy hh24:mi:ss')
+
+物化视图的删除
+> drop materialized view mv_name
+
+物化视图的特点
+```
+1.物化视图在某种意义上说就是一个物理表(而且不仅仅是一个物理表)，这通过其可以被user_tables查询出来，而得到佐证
+2.物化视图也是一种段(segment)，所以其有自己的物理存储属性
+3.物化视图会占用数据库磁盘空间
+```
+
+物化视图数据随着基表更新方式
+```
+oracle提供手工刷新和自动刷新，默认为手工刷新。也就是说，通过手工执行某个Oracle提供的系统级存储过程或包，来保证物化视图与基表数据一致性
+自动刷新，其实也就是Oracle会建立一个job，通过这个job来调用相同的存储过程或包，加以实现
+刷新模式有两种：ON DEMAND和ON COMMIT，前者不刷新(手工或自动)就不更新物化视图，而后者不刷新也会更新物化视图，只要基表发生了COMMIT
+刷新方法有四种：FAST、COMPLETE、FORCE和NEVER
+FAST 刷新采用增量刷新，只刷新自上次刷新以后进行的修改
+COMPLETE 刷新对整个物化视图进行完全的刷新
+FORCE Oracle在刷新时会去判断是否可以进行快速刷新，如果可以则采用FAST方式，否则采用COMPLETE的方式
+NEVER 不进行任何刷新
+```

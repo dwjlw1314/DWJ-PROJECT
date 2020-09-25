@@ -119,6 +119,21 @@ select se.USERNAME, se.SID||','||se.SERIAL# "sid,serial", s.SQL_ID, s.MODULE, su
     and s.address = su.sqladdr
     order by se.username, se.sid;
 ```
+查看消耗资源最多的SQL(v$sql为每一条sql保留一个条目，而v$sqlarea中会进行指针合并，通过version_count计算子指针的个数)
+```sql
+SELECT hash_value, executions, buffer_gets, disk_reads, parse_calls  
+FROM V$SQLAREA WHERE buffer_gets > 10000000 OR disk_reads > 1000000  
+ORDER BY buffer_gets + 100 * disk_reads DESC;
+```
+查询时间段内执行的sql、Produce
+```sql
+select * from v$sqlarea a where 1=1
+    and a.LAST_ACTIVE_TIME >=  to_date( '2013-02-21 18:23:00','yyyy-MM-dd HH24:mi:ss')
+    and a.LAST_ACTIVE_TIME <  to_date( '2013-02-21 18:24:00','yyyy-MM-dd HH24:mi:ss')
+    and a.MODULE_HASH <> 0
+    and a.MODULE = 'JDBC Thin Client'
+    order by a.LAST_ACTIVE_TIME desc
+```
 查看回滚段状态和名字
 ```sql
 select t.segment_name, t.tablespace_name, t.segment_id, t.status
@@ -145,6 +160,37 @@ begin
         execute immediate strsql;
     end loop;
  end;
+```
+数据库定时任务dbms_job管理
+```sql
+1、创建job(系统会自动分配一个任务号jobnum)：
+variable jobno number;
+dbms_job.submit(:jobnum,   —-job号
+ 'your_procedure;',        —-执行的存储过程, ';'不能省略
+  next_date,               —-下次执行时间
+ 'interval'                --每次间隔时间，interval以天为单位
+);
+2、删除job: dbms_job.remove(jobnum);
+3、修改要执行的操作: dbms_job.what(jobnum, what);  
+4、修改下次执行时间：dbms_job.next_date(jobnum, next_date);
+5、修改间隔时间：dbms_job.interval(jobnum, interval);
+6、启动job: dbms_job.run(jobnum);
+7、停止job: dbms.broken(jobnum, broken, nextdate); #broken为boolean值
+
+查看job_queue_processes参数(该参数表示oracle能够并发的job的数量，当值为0时表示全部停止oracle的job)
+SQL> show parameter job_queue_process;
+
+跟踪任务的情况(查看任务队列)
+SQL> select job, next_date, next_sec, failures, broken from user_jobs;
+
+关于job的Interval运行时间：
+1、Interval => TRUNC(sysdate,'mi') + 1/(24*60)            #每分钟执行
+2、Interval => TRUNC(sysdate) + 1 +1/(24)                 #每天的凌晨1点执行
+3、Interval => TRUNC(next_day(sysdate,'星期一'))+1/24      #每周一凌晨1点执行
+4、Interval => TRUNC(LAST_DAY(SYSDATE))+1+1/24            #每月1日凌晨1点执行
+5、Interval => TRUNC(ADD_MONTHS(SYSDATE,3),'Q') + 1/24    #每季度的第一天凌晨1点执行
+6、Interval => ADD_MONTHS(trunc(sysdate,'yyyy'),6)+1/24   #每年7月1日和1月1日凌晨1点
+7、Interval => ADD_MONTHS(trunc(sysdate,'yyyy'), 12)+1/24 #每年1月1日凌晨1点执行
 ```
 
 <font color=#FF0000 size=5> <p align="center">Oracle dbstart和dbshut</p></font>
@@ -227,16 +273,20 @@ SQL> select * from dba_datapump_jobs               #查询EXP/IMP在后台执行
 SQL> select * from dba_tablespaces;                #查看数据库表空间信息
 SQL> select * from nls_database_parameters;        #查看数据库服务器字符集
 SQL> select * from user_tab_partitions;            #查看数据库表分区信息
+SQL> select * from dba_source/all_source;          #查看所有数据库对象的脚本信息
+SQL> select * from dba_registered_mviews;          #查看多少物化视图注册到了刷新机制中
 SQL> select object_name,created from user_objects  #查看数据表名和创建时间
 SQL> select name from v$datafile;                  #查看当前用户表空间位置
 SQL> select name from v$tempfile;                  #查看当前用户临时表空间位置
 SQL> select count(*) from v$process;               #查询数据库当前进程的连接数
 SQL> select count(*) from v$session;               #查看数据库当前会话的连接数
 SQL> select name from v$controlfile;               #查看控制文件
+SQL> select * from user_source                     #查看所有对象源代码
+SQL> select name from v$SQL_WORKAREA_ACTIVE        #查看视图相关操作如sort，hash，join等及内存信息
 SQL> select member from v$logfile;                 #查看redo日志文件详情
 SQL> select name from v$archived_log;              #查看归档日志记录
 SQL> select flashback_on from v$database;          #查看闪回是否开启
-SQL> select flashback_on from v$database;          #查看数据库service_names
+SQL> select name from v$database;                  #查看数据库service_names
 SQL> select created,log_mode from v$database;      #查看数据库的创建日期和归档方式
 SQL> select SQL_TEXT,SQL_ID,MODULE from v$sql;     #查看数据库执行语句文本内容
 SQL> select * from v$pdbs;                         #12C查看容器详情
@@ -246,10 +296,12 @@ SQL> select * from v$transaction;                  #查看未提交的事务,一
 SQL> select * from v$version;                      #查看数据库的版本
 SQL> select * from v$asm_disk_stat;                #查看ASM对应物理磁盘组以及设备名
 SQL> select * from v$asm_diskgroup;                #查看ASM对应逻辑磁盘组信息
-SQL> select * from dba_data_files                  #查看表空间对应的数据文件路径
+SQL> select * from dba_rgroup/dba_refresh          #查看刷新组以及所包含的物化视图的数据字典
+SQL> select * from dba_data_files;                 #查看表空间对应的数据文件路径
+SQL> select * from dba_constraints;                #查询实例所有外键约束
 SQL> select * from dba_mviews;                     #查看物化视图刷新状态信息
 SQL> select * from dba_dependencies;               #查看用户下的view和trigger
-SQL> select * from dba_mview_logs                  #查询物化视图日志(快照)
+SQL> select * from dba_mview_logs;                 #查询物化视图日志(快照)
 SQL> select * from dba_mview_refresh_times;        #查看物化视图刷新时间
 SQL> select * FROM all_triggers/user_triggers;     #查看用户所有的触发器             
 ```
@@ -282,6 +334,9 @@ sqlplus模式下查看、修改、删除列格式
 查看数据库归档设置详情
 >SQL> archive log list
 
+启用自动跟踪功能
+>SQL> set autotrace on
+
 检查数据库全部或者部分参数(parameter_name可选模糊匹配)
 > SQL> show parameter [parameter_name]        #eg:show parameter service_names
 
@@ -290,6 +345,9 @@ sqlplus模式下查看、修改、删除列格式
 
 查看归档日志路径和大小
 >SQL> show parameter db_recovery
+
+查看执行计划(Explain Plan)
+select * from table(dbms_xplan.display);
 
 查看数据库服务器字符集方式一
 > SQL> select userenv('language') from dual;
@@ -559,6 +617,13 @@ orclpdb.com     3     ORCLPDB
 删除用户(指定关键字 cascade ,可删除用户拥有的所有对象)
 >SQL> drop user c##antman cascade;
 
+```
+oracle存储过程中is和as区别总结如下：
+在存储过程(PROCEDURE)和函数(FUNCTION)中没有区别
+在视图(VIEW)中只能用AS不能用IS
+在游标(CURSOR)中只能用IS不能用AS
+```
+
 建立查询删除 directory 文件，并授读写权限
 ```sql
 SQL> create directory dwj as '/root/dwj';
@@ -661,7 +726,7 @@ create table WORKING(
 );
 --启用和禁用触发器
 alter table VEHICLE disable/enable all triggers;
---创建降序表索引，在不读取整个表的情况下，可以使数据库应用程序可以更快地查找数据
+--创建唯一性的降序表索引，在不读取整个表的情况下，可以使数据库应用程序可以更快地查找数据
 create unique index WORKING_INDEX on WORKING(vehicle_id desc);  '可以使用下面的方式在指定表空间'
 create unique index WORKING_INDEX on WORKING(vehicle_id desc) local tablespace gps_tbs nologging;
 --命令使索引失效
@@ -716,10 +781,16 @@ alter diskgroup OCR drop file '+OCR/PRO_BUSI/DATAFILE/xxx.dbf';
 drop table VEHICLE purge;
 --如果其他表的外键引用该表的主键，不用cascade关键字删除表就会报错；使用flashback可以恢复，但外键无法恢复
 drop table VEHICLE cascade constraint;
+--删除函数
+drop function function_name;
+--删除存储
+drop PROCEDURE procedure_name;
 --删除触发器 , user/teigger_name
 drop trigger ANG_CUST.APPLICATIONFILE_TRG
 --删除索引
 drop index WORKING_INDEX;
+--删除物化视图
+drop materialized view mv_name;
 --删除数据表中的数据，但并不删除表本身
 truncate table VEHICLE;
 --从回收站删除类型为 table 的 ant_pts
@@ -745,6 +816,9 @@ drop table | truncate table | delete from
 <font color=#FF0000 size=5> <p align="center">数据库表操作语句</p></font>
 
 设置"SQL>"终端行宽
+>SQL> set linesize 120
+
+设置每页显示的行数
 >SQL> set linesize 120
 
 查看sql语句执行返回状态值
