@@ -497,3 +497,30 @@ SQL> @/home/oracle/.xx.sql
 1. 将sql文件行进行折行处理；
 2. 设置行显示大小  set linesize 4000
 ```
+
+<font color=#FF0000 size=5> <p align="center">恢复unused列的方法</p></font>
+```
+设置unused的作用是为了在cpu、内存等资源不充足的时候，先做上unused标记再等数据库资源空闲的时候用drop set unused删除
+设置unused列之后，并不是将该列数据立即删除，而是被隐藏起来，物理上还是存在的
+
+查询要操作表对象的ID
+1. SQL> SELECT OBJECT_ID,OBJECT_NAME FROM USER_OBJECTS;    #52717 TEST----OBJECT_ID=52717
+
+2. SQL> conn / as sysdba
+
+3. SQL> select col#,intcol#,name from col$ where obj#=52717;  #SYS_C00003_12092313:06:51$----原来的列名被系统修改
+
+4. SQL> select cols from tab$ where obj#=52717;   #2----系统字段数目发生变化计数
+
+5. SQL> update col$ set col#=intcol# where obj#=52717;
+
+6. SQL> update tab$ set cols=cols+1 where obj#=52717;
+
+7. SQL> update col$ set name='column_name' where obj#=52717 and col#=3;  #column_name是要改动列名
+
+8. SQL> update col$ set property=0 where obj#=52717;
+
+9. SQL> commit;
+
+10. SQL> startup force;  #这一步是必不可少的
+```

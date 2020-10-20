@@ -298,4 +298,14 @@ db_recovery_file_dest                string     +ORADATA
 System altered.
 
 RAC集群所有节点自动生效,无需重启DB实例
+
+Oracle系统体系结构组成包含5个重要部分
 ```
+1. 连接数据库实例服务
+2. 服务器进程
+3. 文件系统管理
+4. 内存区域管理（SGA系统全局区）
+5. 后台进程
+```
+
+Oracle启动时，自动分配SGA内存，创建oracle内存结构，再启动若干常驻内存的操作系统进程，组成oracle进程结构，内存区域和后台进程构成了一个oracle实例

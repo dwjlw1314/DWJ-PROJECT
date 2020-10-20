@@ -13,6 +13,7 @@ select ss.username, se.SID, VALUE / 100 cpu_usage_seconds
 ```
 获取当前会话 ID，进程 ID，客户端 ID
 ```sql
+#userenv函数常用的几个参数(ISDBA，LANG，LNAGUAGE，SESSIONID，SID)
 select b.sid, b.serial#, a.spid processid, b.process clientpid
     from v$process a, v$session b
     where a.addr = b.paddr
@@ -282,7 +283,7 @@ SQL> select count(*) from v$process;               #查询数据库当前进程�
 SQL> select count(*) from v$session;               #查看数据库当前会话的连接数
 SQL> select name from v$controlfile;               #查看控制文件
 SQL> select * from user_source                     #查看所有对象源代码
-SQL> select name from v$SQL_WORKAREA_ACTIVE        #查看视图相关操作如sort，hash，join等及内存信息
+SQL> select * from v$sql_workarea_active           #查看视图相关操作如sort，hash，join等及内存信息
 SQL> select member from v$logfile;                 #查看redo日志文件详情
 SQL> select name from v$archived_log;              #查看归档日志记录
 SQL> select flashback_on from v$database;          #查看闪回是否开启
@@ -298,6 +299,7 @@ SQL> select * from v$asm_disk_stat;                #查看ASM对应物理磁盘�
 SQL> select * from v$asm_diskgroup;                #查看ASM对应逻辑磁盘组信息
 SQL> select * from dba_rgroup/dba_refresh          #查看刷新组以及所包含的物化视图的数据字典
 SQL> select * from dba_data_files;                 #查看表空间对应的数据文件路径
+SQL> select * from dba_tab_columns;                #查看所有表中的列信息
 SQL> select * from dba_constraints;                #查询实例所有外键约束
 SQL> select * from dba_mviews;                     #查看物化视图刷新状态信息
 SQL> select * from dba_dependencies;               #查看用户下的view和trigger
@@ -405,6 +407,12 @@ SQL> select open_mode from v$database; #READ WRITE 或者 READ ONLY
 ```sql
 --查询表的描述信息
 SQL> select * from dba_tab_comments where owner='user';
+--添加表的描述信息
+SQL> comment on table VEHICLE is 'car info';
+--查询表列的描述信息
+SQL> select * from dba_col_comments where owner='user';
+--添加表列的描述信息
+SQL> comment on column VEHICLE.id is 'car colmen info';
 --在dba权限下查询 user 用户下的所有表的信息
 SQL> select count(*) from dba_tables where owner='user';
 SQL> select count(*) from all_tables where owner='user';
@@ -747,6 +755,14 @@ select index_name,status from user_ind_partitions/dba_ind_partitions;
 --分区索引重建，只需要重建那个失效的分区
 alter index WORKING_INDEX rebuild partition partition_name (online);
 alter index WORKING_INDEX rebuild partition partition_name;
+--设置表的指定列为无用状态
+alter table VEHICLE set unused(column_name);
+--删除表无用状态的列
+alter table VEHICLE drop unused columns;
+--删除表的column_name指定列
+alter table vehicle drop column column_name;
+--设置表指定列不可见/可见状态
+alter table vehicle modify (column_name invisible/visible);
 --添加主键,只能有一个
 alter table VEHICLE add constraint VEHICLE_PK primary key(vehicle_id);
 --删除指定表分区
@@ -791,6 +807,8 @@ drop trigger ANG_CUST.APPLICATIONFILE_TRG
 drop index WORKING_INDEX;
 --删除物化视图
 drop materialized view mv_name;
+--删除 vehicle_view 视图
+drop view vehicle_view;
 --删除数据表中的数据，但并不删除表本身
 truncate table VEHICLE;
 --从回收站删除类型为 table 的 ant_pts
@@ -819,10 +837,19 @@ drop table | truncate table | delete from
 >SQL> set linesize 120
 
 设置每页显示的行数
->SQL> set linesize 120
+>SQL> set pagesize 120
 
 查看sql语句执行返回状态值
 >SQL> show sqlcode
+
+<font color=#FF0000 size=5>sql语句执行顺序</font>
+```
+1. 执行from子句，确定要检索的数据来源
+2. 执行where子句，使用限定符对数据进行过滤
+3. 执行group by子句，根据指定字段进行分组
+4. 执行select子句，确定要检索出的分组字段以及编写相应统计函数
+5. 执行order by子句排序，该语句是所有sql子句的最后执行
+```
 
 ```sql
 alter table c##antman.vehicle rename to newname;                 #修改表名
@@ -833,8 +860,6 @@ alter table VEHICLE modify note NVARCHAR2(500) [default value];  #修改字段�
 
 --创建或替换 view 视图中的 vehicle_view 视图数据
 create or replace view vehicle_view as select * from VEHICLE;
---删除 vehicle_view 视图
-drop view vehicle_view;
 --主外键生效/失效
 alter table VEHICLE disable/enable constraint VEHICLE_PK;
 --触发器生效/失效
@@ -871,12 +896,18 @@ select dbms_metadata.get_ddl('TABLESPACE','tablespace name') from dual;
 select dbms_metadata.get_ddl('TABLE',dt.table_name) from dba_tables dt;
 --查询所有索引的DDL信息
 select dbms_metadata.get_ddl('INDEX',di.index_name,di.owner) from dba_indexes di;
+--获取表的DDL语句, where条件添加字段限定
+select dbms_metadata.get_ddl('TABLE',u.table_name) from user_tables u;
+--获取表空间的DDL语句, where条件添加字段限定
+select dbms_metadata.get_ddl('TABLESPACE',u.TABLESPACE_NAME) from user_tables u;
 --查询所有表空间的DDL信息
 select dbms_metadata.get_ddl('TABLESPACE', dts.tablespace_name) from dba_tablespaces dts;
 --查询所有视图的DDL信息
 select dbms_metadata.get_ddl('VIEW', dv.view_name) from dba_views dv;
 --查询所有用户创建的DDL信息
 select dbms_metadata.get_ddl('USER', du.username) from dba_users du;
+--获取32位 GUID值(该数据类型实际是16位)，然后从 位置3 提取2个值
+select dbms_lob.substr(to_blob(sys_guid()),3,2) from dual;
 --查看当前的SCN号
 select dbms_flashback.get_system_change_number fscn from dual;
 --通过时间来查看历史的scn号码
@@ -910,7 +941,7 @@ select * from VEHICLE where vehicle_id like '%_%';
 --查询 VEHICLE 表，优先按照 vehicle_type 降序，再按照 vehicle_id 升序 进行显示
 --注意：升序空值在结果的末尾，降序空值在结果的最前面
 select vehicle_id,vehicle_type from VEHICLE order by vehicle_type desc,vehicle_id;
---按照日期的年份进行排序显示,还可以使用month，day进行显示；extract 是提取函数
+--按照日期的年份进行抽取并排序显示,还可以使用month，day，hour，minute，second进行显示；extract 是提取函数
 select extract(year from switch_time) as year from WORKING order by year;
 --查询 VEHICLE 表中的数据，同时 vehicle_id 包含在 WORKING 表中且等于 'MAT0532'
 select * from VEHICLE where vehicle_id in (select vehicle_id from WORKING) and vehicle_id = 'MAT0532';
@@ -931,7 +962,7 @@ delete from WORKING t where rowid not in (select min(rowid) from WORKING group b
 select * from WORKING switch_time between to_date('2018-08','yyyy-mm') and to_date('2018-09','yyyy-mm');
 --会让 MAT0532 对应记录处于锁定状态，其他用户无法修改，修改后必须跟随 commit;
 select * from VEHICLE where vehicle_id = 'MAT0532' for update;
---获取指定日期的下一个日期时间
+--获取指定日期的下一个日期时间，也可以使用‘星期一’类似的指定
 select next_day(sysdate,'Saturday') from dual;
 --查询给定日期范围的月数
 select months_between(sysdate,switch_time) from WORKING;
@@ -941,6 +972,8 @@ select * from USER_CONSTRAINTS t where t.constraint_name like '%_FK';
 select sysdate,add_months(sysdate,1) from dual;
 --获取当前月份的第一天，扩展 'year','day','HH24'...
 select trunc(sysdate, 'month') as "first day" from dual;
+----获取当前星期的第一天，周日，获取其它6天可以 +n
+select trunc(sysdate, 'day') +n as "first day" from dual;
 --获取当前月份的最后一天,trunc函数不显示时间
 select trunc(last_day(sysdate)) "last day" from dual;
 --获取当前月份的天数
@@ -975,6 +1008,8 @@ select sysdate,to_char(sysdate,'yyyy-mm-dd hh24:mi:ss') from dual;
 select sysdate,to_char(sysdate,'yyyy-mm-dd hh:mi:ss') from dual;
 select sysdate,to_char(sysdate,'yyyy-ddd hh:mi:ss') from dual;
 select sysdate,to_char(sysdate,'yyyy-mm iw-d hh:mi:ss') from dual;
+--获取毫秒精度的时间
+select systimestamp from dual;
 --字符串到日期转换操作,格式对应即可
 select to_date('2003-10-17 21:15:37','yyyy-mm-dd hh24:mi:ss') from dual;
 --返回当前时间的秒毫秒，可以指定秒后面的精度(最大=9)
@@ -1005,13 +1040,9 @@ drop sequence sqe_vehicle;
 create or replace public synonym car for C##ANTMAN.VEHICLE;
 --删除对象名称同义词
 drop public synonym car;
--- Create database link
-create database link DWJ connect to c##antman identified by ant
-  using '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.0.1)(PORT = 1521))
-  (CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = orcl.com)))';
 -- Drop existing database link
 drop database link DWJ;
---oracle 可以使用 NVL() 函数获取字段为空的取值定义
+--oracle 可以使用 NVL()函数获取字段为空的取值定义
 select nvl(note,0) from VEHICLE;
 select vehicle_id,nvl(vehicle_type,0) + substr(vehicle_id,4,4) from VEHICLE;
 --oracle 计数和计算的内建函数基本类型 1.Aggregate 合计函数 2.Scalar 函数
@@ -1025,12 +1056,6 @@ select vehicle_id,nvl(vehicle_type,0) + substr(vehicle_id,4,4) from VEHICLE;
 2. MOD(x,y)	                                #返回除法操作的余数
 2. LENGTH(column_name)	                    #返回某个文本域的长度
 2. MID(column_name,start[,length])          #从文本字段中提取字符 eg:MID(id,1,3)
---获取表的DDL语句
-select dbms_metadata.get_ddl('TABLE',u.table_name) from user_tables u;
---获取表空间的DDL语句
-select dbms_metadata.get_ddl('TABLESPACE',u.TABLESPACE_NAME) from user_tables u;
---获取32位 GUID值(该数据类型实际是16位)，然后从 位置3 提取2个值
-select dbms_lob.substr(to_blob(sys_guid()),3,2) from dual;
 --提取vehicle_id字段部分数据转换成数字
 select to_number(substr(vehicle_id,4,3)) from VEHICLE;
 --大小写转换
@@ -1065,6 +1090,9 @@ select level empl_id,
 
 查询 WORKING 表创建时间，其中对象名称必须是大写的
 >SQL> select created from dba_objects where object_name = 'WORKING';
+
+查询当前用户所有DBLink
+>SQL> select * from dba_objects where  object_type like '%LINK%';
 
 可以设置 SQL_TRACE 参数跟踪查看 SQL 语句执行具体过程
 >SQL> alter session set sql_trace=true;
