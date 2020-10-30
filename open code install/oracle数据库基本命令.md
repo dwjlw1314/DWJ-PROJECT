@@ -272,6 +272,7 @@ SQL> select count(*) from v$instance;              #数据库实例所有参数�
 SQL> select status from v$instance;                #查看oracle启动状态
 SQL> select * from dba_datapump_jobs               #查询EXP/IMP在后台执行的状态
 SQL> select * from dba_tablespaces;                #查看数据库表空间信息
+SQL> select * from dba_profiles;                   #查看用户使用的概要文件完整信息
 SQL> select * from nls_database_parameters;        #查看数据库服务器字符集
 SQL> select * from user_tab_partitions;            #查看数据库表分区信息
 SQL> select * from dba_source/all_source;          #查看所有数据库对象的脚本信息
@@ -286,6 +287,7 @@ SQL> select * from user_source                     #查看所有对象源代码
 SQL> select * from v$sql_workarea_active           #查看视图相关操作如sort，hash，join等及内存信息
 SQL> select member from v$logfile;                 #查看redo日志文件详情
 SQL> select name from v$archived_log;              #查看归档日志记录
+SQL> select * from v$reserved_words;               #查看数据字典的所有关键字
 SQL> select flashback_on from v$database;          #查看闪回是否开启
 SQL> select name from v$database;                  #查看数据库service_names
 SQL> select created,log_mode from v$database;      #查看数据库的创建日期和归档方式
@@ -299,8 +301,10 @@ SQL> select * from v$asm_disk_stat;                #查看ASM对应物理磁盘�
 SQL> select * from v$asm_diskgroup;                #查看ASM对应逻辑磁盘组信息
 SQL> select * from dba_rgroup/dba_refresh          #查看刷新组以及所包含的物化视图的数据字典
 SQL> select * from dba_data_files;                 #查看表空间对应的数据文件路径
+SQL> select * from dba_ts_quotas;                  #查看用户所使用的表空间配额
 SQL> select * from dba_tab_columns;                #查看所有表中的列信息
 SQL> select * from dba_constraints;                #查询实例所有外键约束
+SQL> select * from dba_sequences;                  #查询实例所有序列信息
 SQL> select * from dba_mviews;                     #查看物化视图刷新状态信息
 SQL> select * from dba_dependencies;               #查看用户下的view和trigger
 SQL> select * from dba_mview_logs;                 #查询物化视图日志(快照)
@@ -499,12 +503,19 @@ extent management local;
 
 第4步：创建用户并指定临时表空间和数据表空间
 SQL> create user c##antman identified by ant default tablespace gjsy_data
-     temporary tablespace gjsy_temp;
+     temporary tablespace gjsy_temp
+     --以下是可选参数
+     quota 300M on gjsy_data
+     account unlock
+     password expire;
 
-第5步：给用户授予权限(以下是不同权限的设置方式，取其一即可)
+第5步：给用户授予系统权限(以下是不同权限的设置方式，取其一即可)
+--权限分为 系统权限和对象权限
 SQL> grant select any dictionary to c##antman;
 SQL> grant connect,select any table to c##antman;
 SQL> grant connect,resource,dba to c##antman;
+--给用户授予权限,并且with admin option子句表示可以将其权限再授予其他用户
+SQL> grant create table to c##antman with admin option;
 
 撤销权限(即取消角色)，语法：revoke role-type from username;
 SQL> revoke connect,resource from c##antman;
@@ -521,7 +532,7 @@ oracle为兼容以前版本，提供三种标准角色(role):connect/resource和
 
 3.dba role(管理员角色),dba role拥有所有的系统权限,包括无限制的空间限额和给其他用户授予各种权限的能力,system用户由dba角色拥有
 
-查询某一角色的具体权限，(角色名需大写)
+查询某一角色的具体系统权限，(角色名需大写)
 SQL> select * from dba_sys_privs where grantee='CONNECT';
 ```
 用户还可以创建自己的 role ,但是用户必须具有 create role 系统权限
@@ -535,14 +546,29 @@ SQL> grant select on class to c##gjsy_role;
 3.删除角色(与 gjsy_role 角色相关的权限将从数据库全部删除)
 drop role c##gjsy_role;
 
-查询当前用户的详细权限
+查询当前用户的详细系统权限
 SQL> select * from session_privs;
+
+查询当前用户的对象权限
+SQL> select * from user_tab_privs_recd;
+
+查询当前用户分配出去了哪些对象权限
+SQL> select * from user_tab_privs_made;
+
+查询当前用户分配出去了哪些列权限
+SQL> select * from user_col_privs_made;
+
+查询当前用户所具备列的对象权限
+SQL> select * from user_col_privs_recd;
 
 查询当前用户拥有哪些角色
 SQL> select * from user_role_privs;
 
 查询数据库所有用户拥有哪些角色
 SQL> select * from dba_role_privs;
+
+查询数据库角色拥有哪些系统权限
+SQL> select * from role_sys_privs;
 ```
 ORACLE 12C版本中 cdb 和 pdb 关系图
 
@@ -732,7 +758,9 @@ create table WORKING(
 	vehicle_id     NVARCHAR2(20),
 	switch_time    DATE
 );
---启用和禁用触发器
+--启用和禁用指定触发器
+alter trigger  trigger_name disable/enable;
+--启用和禁用一张表的全部触发器
 alter table VEHICLE disable/enable all triggers;
 --创建唯一性的降序表索引，在不读取整个表的情况下，可以使数据库应用程序可以更快地查找数据
 create unique index WORKING_INDEX on WORKING(vehicle_id desc);  '可以使用下面的方式在指定表空间'
@@ -805,6 +833,8 @@ drop PROCEDURE procedure_name;
 drop trigger ANG_CUST.APPLICATIONFILE_TRG
 --删除索引
 drop index WORKING_INDEX;
+--删除包和包体
+drop package [body] WORKING_PACKAGE;
 --删除物化视图
 drop materialized view mv_name;
 --删除 vehicle_view 视图
@@ -968,6 +998,10 @@ select next_day(sysdate,'Saturday') from dual;
 select months_between(sysdate,switch_time) from WORKING;
 --查看用户下所有包含外键的表
 select * from USER_CONSTRAINTS t where t.constraint_name like '%_FK';
+--查看用户下所有相关外键的列信息
+select t.column_name from user_cons_columns t;
+--查看用户下所有相关索引的列信息
+select t.column_name from user_ind_columns t;
 --指定日期加上指定月数，求出之后的日期
 select sysdate,add_months(sysdate,1) from dual;
 --获取当前月份的第一天，扩展 'year','day','HH24'...

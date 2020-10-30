@@ -212,10 +212,11 @@ audit_file_dest               string      /u01/app/oracle/adu
 查看原来的配置：
 >SQL> show parameter sga_max_size
 
+```
 NAME                                 TYPE        VALUE
 ------------------------------------ ----------- -----------------
 sga_max_size                         big integer 16G
-
+```
 注意：后面必须得加scope=spfile，否则会报错
 >SQL> alter system set sga_max_size=32G scope=spfile;  <br>
 System altered.
@@ -257,11 +258,11 @@ sga_max_size                         big integer 32G
 
 查看原来的配置：
 >SQL> show parameter db_files;
-
+```
 NAME                                 TYPE        VALUE
 ------------------------------------ ----------- -----------------
 db_files                             integer     200
-
+```
 注意：后面必须得加scope=spfile，否则会报错
 >SQL> alter system set db_files=2000 scope=spfile;  <br>
 System altered.
@@ -288,18 +289,30 @@ Database opened.
 
 查看原来的配置：
 >SQL> show parameter db_recovery_file_dest;
-
+```
 NAME                                 TYPE        VALUE
 ------------------------------------ ----------- -----------------
 db_recovery_file_dest                string     +ORADATA
-
+```
 注意：如果报错，后面添加 scope=spfile
 >SQL> alter system set db_recovery_file_dest='+ORALOG';  <br>
 System altered.
 
 RAC集群所有节点自动生效,无需重启DB实例
 
-Oracle系统体系结构组成包含5个重要部分
+7.更改最大的允许作业运行数
+
+查看原来的配置：
+>SQL> show parameter job_queue_processes
+```
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- -----------------
+job_queue_processes                  integer     100 （如果是0 表示不允许使用作业）
+```
+>SQL> alter system set job_queue_processes= 1000  <br>
+System altered.
+
+8.Oracle系统体系结构组成包含5个重要部分
 ```
 1. 连接数据库实例服务
 2. 服务器进程
