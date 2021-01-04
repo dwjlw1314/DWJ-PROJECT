@@ -24,7 +24,7 @@ mount -t iso9660                                                     #查看文�
 mtype [-st] [filename]                                               #是mtools工具集指令，模拟MS-DOS的指令显示文件的内容
 > -s:去除8位字符码集的第一个位，使它兼容于7位的ASCII; -t:将MS-DOS文件中的"换行+光标移至行首"字符转换成Linux的换行字符
 nm -a *.so                                                           #查看动态库文件中的函数名
-free  -m / -h                                                        #已MB为单位显示当前内存使用情况
+free  -m / -h                                                        #以MB为单位显示当前内存使用情况
 autoconf                                                             #生成编译configure文件
 ldd  name                                                            #输出程序name使用的动态库和动态库的位置
 diff -u file1 file2                                                  #比较file1和file2两个文件
@@ -82,7 +82,8 @@ xfsdump -f /opt/lgl /dev/sdb5 -L sdb5 -M sdb5                        #备份sdb5
 xfsrestore -f /opt/dwj /boot                                         #恢复备份的文件系统
 xdpyinfo                                                             #查看系统X11详细信息
 dmesg                                                                #查看系统启动过程的所有信息
-time 命令                                                            #显示命令执行的时间             
+time 命令                                                            #显示命令执行的时间
+tee 1.xml << EOF                                                     #读取标准输入数据写入文件
 partprobe                                                            #重新读取分区表信息
 pstree -p                                                            #查看进程树结构
 parted -l                                                            #输出文件系统类型
@@ -94,7 +95,8 @@ find  ! -name '.*' -a ! -regex '.*/\.[^/]*/.*'                       #查找除�
 lsmod |grep ftp                                                      #显示linux系统内核模块ftp是否加载
 modprobe -l|grep ftp                                                 #查看系统内核模块名字*.ko文件
 modprobe  nf_conntrack_ftp                                           #加载内核模块ftp
-getconf LONG_BIT                                                     #查看CPU位数
+getconf LONG_BIT / PAGE_SIZE                                         #查看CPU位数 / 内存分页大小
+tune2fs -l /dev/sda1 | grep "Block size"                             #查看文件系统块大小
 umask -p                                                             #设置新创建目录或文件的默认权限
 > umask 0022  目录：7- 掩码权限数字 ; 文件：目录权限去掉执行权限         #--案例--
 users                                                                #显示当前登录系统的所有用户
@@ -160,7 +162,7 @@ logrotate -f /etc/logrotate.conf                                     #强制运�
 Linux下查看系统启动时间和运行时间
 ```
 [root@dwj /opt]# date -d "$(awk -F. '{print $1}' /proc/uptime) second ago" +"%Y-%m-%d %H:%M:%S"
-[root@dwj /opt]# cat /proc/uptime| awk -F. '{run_days=$1 / 86400;run_hour=($1 % 86400)/3600;run_minute=($1 % 3600)/60;run_second=$1 % 60;printf("runtime: %d:%d:%d:%d",run_days,run_hour,run_minute,run_second)}'
+[root@dwj /opt]# cat /proc/uptime | awk -F. '{run_days=$1 / 86400;run_hour=($1 % 86400)/3600;run_minute=($1 % 3600)/60;run_second=$1 % 60;printf("runtime: %d:%d:%d:%d",run_days,run_hour,run_minute,run_second)}'
 [root@dwj /opt]# last reboot
 [root@dwj /opt]# who -b
 [root@dwj /opt]# w

@@ -383,3 +383,7 @@ COMPLETE 刷新对整个物化视图进行完全的刷新
 FORCE Oracle在刷新时会去判断是否可以进行快速刷新，如果可以则采用FAST方式，否则采用COMPLETE的方式
 NEVER 不进行任何刷新
 ```
+
+Oracle 表分区思维导图
+
+![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/3.30.1.png)

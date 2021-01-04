@@ -269,22 +269,24 @@ unix下查看进程的最后几个字母就是sid
 检查系统当前视图相关参数(v$parameter视图中查询参数的时候其实都是通过x$ksppi和x$ksppcv这两个内部视图中得到的)
 ```sql
 SQL> select count(*) from v$instance;              #数据库实例所有参数字段
-SQL> select status from v$instance;                #查看oracle启动状态
-SQL> select * from dba_datapump_jobs               #查询EXP/IMP在后台执行的状态
+SQL> select status from v$instance;                #查看oracle启动状
+SQL> select owner from dba_segments;               #查询表空间下的用户
+SQL> select * from user_source;                    #查看所有对象源代码
+SQL> select * from user_errors;                    #查看所有子程序(procedure)错误信息
+SQL> select object_name,created from user_objects; #查看数据表名和创建时间
+SQL> select * from dba_datapump_jobs;              #查询EXP/IMP在后台执行的状态
 SQL> select * from dba_tablespaces;                #查看数据库表空间信息
 SQL> select * from dba_profiles;                   #查看用户使用的概要文件完整信息
 SQL> select * from nls_database_parameters;        #查看数据库服务器字符集
 SQL> select * from user_tab_partitions;            #查看数据库表分区信息
 SQL> select * from dba_source/all_source;          #查看所有数据库对象的脚本信息
 SQL> select * from dba_registered_mviews;          #查看多少物化视图注册到了刷新机制中
-SQL> select object_name,created from user_objects  #查看数据表名和创建时间
 SQL> select name from v$datafile;                  #查看当前用户表空间位置
 SQL> select name from v$tempfile;                  #查看当前用户临时表空间位置
 SQL> select count(*) from v$process;               #查询数据库当前进程的连接数
 SQL> select count(*) from v$session;               #查看数据库当前会话的连接数
 SQL> select name from v$controlfile;               #查看控制文件
-SQL> select * from user_source                     #查看所有对象源代码
-SQL> select * from v$sql_workarea_active           #查看视图相关操作如sort，hash，join等及内存信息
+SQL> select * from v$sql_workarea_active;          #查看视图相关操作如sort，hash，join等及内存信息
 SQL> select member from v$logfile;                 #查看redo日志文件详情
 SQL> select name from v$archived_log;              #查看归档日志记录
 SQL> select * from v$reserved_words;               #查看数据字典的所有关键字
@@ -299,7 +301,7 @@ SQL> select * from v$transaction;                  #查看未提交的事务,一
 SQL> select * from v$version;                      #查看数据库的版本
 SQL> select * from v$asm_disk_stat;                #查看ASM对应物理磁盘组以及设备名
 SQL> select * from v$asm_diskgroup;                #查看ASM对应逻辑磁盘组信息
-SQL> select * from dba_rgroup/dba_refresh          #查看刷新组以及所包含的物化视图的数据字典
+SQL> select * from dba_rgroup/dba_refresh;         #查看刷新组以及所包含的物化视图的数据字典
 SQL> select * from dba_data_files;                 #查看表空间对应的数据文件路径
 SQL> select * from dba_ts_quotas;                  #查看用户所使用的表空间配额
 SQL> select * from dba_tab_columns;                #查看所有表中的列信息
@@ -309,7 +311,12 @@ SQL> select * from dba_mviews;                     #查看物化视图刷新状�
 SQL> select * from dba_dependencies;               #查看用户下的view和trigger
 SQL> select * from dba_mview_logs;                 #查询物化视图日志(快照)
 SQL> select * from dba_mview_refresh_times;        #查看物化视图刷新时间
-SQL> select * FROM all_triggers/user_triggers;     #查看用户所有的触发器             
+SQL> select * FROM all_triggers/user_triggers;     #查看用户所有的触发器
+SQL> select * from rc_database;                    #查询恢复目录中注册的数据库
+SQL> select * from rc_datafile;                    #查询恢复目录中目标数据库的数据文件信息
+SQL> select * from rc_tablespace;                  #查询恢复目录中目标数据库的表空间信息
+SQL> select * from rc_stored_script;               #查询恢复目录中创建的存储脚本信息
+SQL> select * from rc_stored_script_line;          #查询恢复目录中的存储脚本内容
 ```
 sqlplus的buffer会缓存最后一条sql语句，可以使用"/"来执行最后一条命令，也可以使用"edit"
 编辑最后一条sql语句。l(list) 可以显示buffer中最后一条命令
@@ -453,11 +460,14 @@ SQL> desc user_users
 让修改数据库系统参数生效
 >SQL> alter system register;
 
-强制系统进行日志切换,是对单实例数据库或RAC中的当前实例执行
+设置系统强制进行日志切换,是对单实例数据库或RAC中的当前实例执行
 >SQL> alter system switch logfile
 
-强制系统进行日志切换,是对数据库所有的实例执行日志切换
+设置系统强制进行日志切换,是对数据库所有的实例执行日志切换
 >SQL> alter system archive log current
+
+设置数据库强制归档
+>SQL> alter database force logging;
 
 修改数据库允许的最大连接数(需要重启数据库才能实现连接数的修改)
 ```
@@ -518,11 +528,16 @@ SQL> grant connect,resource,dba to c##antman;
 SQL> grant create table to c##antman with admin option;
 
 撤销权限(即取消角色)，语法：revoke role-type from username;
+--只能按照对象权限或者系统权限回收，不能按照列权限回收
 SQL> revoke connect,resource from c##antman;
 ```
 
-给用户授予细粒度权限，privileges(all、select、insert、update、delete、alter、index、references)
+给用户授予细粒度权限，privileges(all、select、insert、update、delete、execute, alter、index、references)
 >SQL> grant privileges on object to c##antman;    #object 可以是tablesname
+
+给用户授予对象权限，即细粒度的使用
+>SQL> grant select,insert on c##antvideo.vhicle to c##antman;   #c##antvideo.vhicle 用户.表
+
 
 oracle为兼容以前版本，提供三种标准角色(role):connect/resource和dba
 ```
@@ -548,6 +563,9 @@ drop role c##gjsy_role;
 
 查询当前用户的详细系统权限
 SQL> select * from session_privs;
+
+查询当前用户的详细系统角色
+SQL> select * from session_roles;
 
 查询当前用户的对象权限
 SQL> select * from user_tab_privs_recd;
@@ -825,6 +843,8 @@ alter diskgroup OCR drop file '+OCR/PRO_BUSI/DATAFILE/xxx.dbf';
 drop table VEHICLE purge;
 --如果其他表的外键引用该表的主键，不用cascade关键字删除表就会报错；使用flashback可以恢复，但外键无法恢复
 drop table VEHICLE cascade constraint;
+--删除概要文件,如果有用户使用了概要文件，则需要使用cascade
+drop profile profile_name;
 --删除函数
 drop function function_name;
 --删除存储
@@ -1130,6 +1150,9 @@ select level empl_id,
 
 可以设置 SQL_TRACE 参数跟踪查看 SQL 语句执行具体过程
 >SQL> alter session set sql_trace=true;
+
+修改oracle默认的日期显示格式
+>SQL> alter session set nls_date_format = 'yyyy-mm-dd hh24:mi:ss';
 
 数据库数据去重有以下那么三种方法
 ```
