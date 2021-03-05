@@ -110,6 +110,13 @@ major   minor   #blocks    name
 /usr/share/man                                      #系统手册页目录
 /var/lib/xfsdump/inventory                          #xfsdump命令处理记录文件
 /var/log/yum.log                                    #yum的日志文件
+/var/log/cro：                                      #记录 crond 计划任务产生的事件信息
+/var/log/dmesg                                      #记录 Linux 操作系统在引导过程中的各种事件信息
+/var/log/maillog                                    #记录进入或发出系统的电子邮件活动
+/var/log/lastlog                                    #记录每个用户最近的登录事件
+/var/log/secure                                     #记录用户认证相关的安全事件信息
+/var/log/wtmp                                       #记录每个用户登录、注销及系统启动和停机事件
+/var/log/btmp                                       记录失败的、错误的登录尝试及验证事件。
 /var/spool/mqueue                                   #已发送邮件内容
 /var/                                               #详细目录信息如下图
 ```

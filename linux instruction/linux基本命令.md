@@ -5,6 +5,7 @@ linux系统命令大全
 
 常用基本命令
 ```
+openssl engine                                                       #获取本机opensll支持的引擎id
 strace -p 9586 -o strace.log                                         #对9586进程进行跟踪,结果写入strace.log
 source /home/oracle/.bash_profile                                    #设置oracle用户环境变量
 source /etc/profile                                                  #使修改后的环境变量生效
@@ -14,6 +15,7 @@ whoami / who am i                                                    #显示当�
 who 和 w                                                             #显示当前登录用户详细信息
 view abc.txt                                                         #vim只读版本，防止误操作
 > :%!xxd                                                             #16进制显示文件内容
+> :%!xxd -r                                                          #将当前文件转换回文本格式
 cat > gjsy.txt << end                                                #使用end作为文件结束输入标记
 cat file1 file2 file3 > outfile                                      #文件合并输出到outfile
 su - root -c "useradd  test"                                         #不切换root用户，一次执行root权限命令
@@ -128,6 +130,9 @@ wall helloword                                                       #给所有�
 
 logrotate -v /etc/logrotate.conf                                     #查看配置文件中需要日志轮替的文件
 logrotate -f /etc/logrotate.conf                                     #强制运行配置文件中的日志轮替文件
+
+[root@dwj ~]# echo $((0xac))                                         #十六进制的数字转成十进制
+[root@dwj ~]# printf "%x" 655410                                     #十进制的数字转成十六进制
 
 [root@dwj ~]# echo '- - -' >/sys/class/scsi_host/host2/scan          #让系统识别新增加的磁盘
 
@@ -323,7 +328,7 @@ rwxrw-rwt     表示有sticky标志
 <font color=#FF0000 size=5> <p align="center">内核参数和环境变量修改</p></font>
 
 >[root@dwj ~]# ulimit -a              #显示系统部分内核参数配置信息  <br>
->[root@dwj ~]# ulimit -SHn 102400     #修改当前session有效文件描述符的限制
+>[root@dwj ~]# ulimit -SHn 102400     #修改当前session有效文件描述符的限制  <br>
 >[root@dwj ~]# ulimit -c unlimited    #开启program core dump的支持
 
 长期开启core dump功能需要修改/etc/profile，在末尾加上命令：

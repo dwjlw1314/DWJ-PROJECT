@@ -211,6 +211,21 @@ export RABBITMQ_HOME
 启用management管理插件
 >[root@dwj rabbitmq]# rabbitmq-plugins enable rabbitmq_management
 
+数据文件和日志文件更换位置(该步骤可选)
+```
+1、先创建数据文件和日志文件存放位置的目录并给权限
+mkdir -p /usr/local/rabbitmq/mnesia
+mkdir -p /usr/local/rabbitmq/log
+chmod -R 777 /usr/local/rabbitmq
+2、创建或新增环境参数配置文件
+vi /etc/rabbitmq/rabbitmq-env.conf
+增加如下两行内容
+RABBITMQ_MNESIA_BASE=/usr/local/rabbitmq/mnesia
+RABBITMQ_LOG_BASE=/usr/local/rabbitmq/log
+
+注：更换完位置后原有队列中的数据就没有了，而且原有的rabbitmq用户也需要重建
+```
+
 配置完成后运行服务，如果有如下界面表示安装成功
 >[root@dwj rabbitmq]# rabbitmq-server
 
@@ -266,9 +281,64 @@ RabbitMQ 是用 Erlang 语言写的，在Erlang 中有两个概念：节点和�
 如果是在一台机器上同时启动多个 RabbitMQ 节点来组建集群的话，会因为节点名称和端口冲突导致启动失败。所以在每次调用 rabbitmq-server 命令前，设置环境变量 RABBITMQ_NODENAME 和 RABBITMQ_NODE_PORT 来明确指定唯一的节点名称和端口
 >[root@dwj rabbitmq]# RABBITMQ_NODENAME=test_rabbit_1 RABBITMQ_NODE_PORT=5672 rabbitmq-server -detached
 
+<font color=#FF0000 size=5> <p align="center">RabbitMQ SSL支持</p></font>
+
+1.确保已经安装好openssl 检测方法：
+>[root@dwj rabbitmq]# openssl version
+
+2.通过git命令获取shell脚本到本地方便生成证书(最好新建个文件夹AMQPSSL)
+>[root@dwj rabbitmq]# git clone https://github.com/Berico-Technologies/CMF-AMQP-Configuration.git  
+
+在clone后的项目目录中，doc文件夹下有详细的说明shell脚本如何使用
+
+3.RabbitMQ SSL官方文档地址 https://www.rabbitmq.com/ssl.html
+
+4.确保已经安装好了openssl，切换到 CMF-AMQP-Configuration/ssl 文件夹(”MyRabbitMQCA”，这个可以自行指定，用于在证书中显示证书颁发机构名)
+>[root@dwj ssl]# sh setup_ca.sh MyRabbitMQCA
+
+5.生成服务器证书(第一个参数是服务器名，第二个参数是密码)
+>[root@dwj ssl]# sh make_server_cert.sh rabbitmq-server rabbit
+
+6.生成客户端证书(第一个参数是客户端名称，第二个参数是密码)
+>[root@dwj ssl]# sh create_client_cert.sh rabbit-client rabbit
+
+执行完以上步骤之后，会在ssl目录下生成：ca、server、client三个文件夹
+
+配置RabbitMQ SSL只会用到以下3个文件
+```
+ca/cacert.pem
+server/rabbitmq-server.cert.pem
+server/rabbitmq-server.key.pem
+```
+将这三个文件拷贝到RabbitMQ配置文件目录下 ssl 目录(没有ssl文件夹的话可以新建)
+
+7.修改MQ配置文件(ssl_listeners 指定SSL监听端口;fail_if_no_peer_cert 是否强制验证证书)
+```
+vi /rabbitmqinaction/rabbitmq/etc/rabbitmq/rabbitmq.config
+
+[
+{rabbit, [{vm_memory_high_watermark_paging_ratio, 0.4},
+{vm_memory_high_watermark, 0.4},
+{tcp_listeners, [5672]},
+{ssl_listeners, [5671]},
+{ssl_options, [{cacertfile,"/rabbitmqinaction/rabbitmq/etc/rabbitmq/ssl/cacert.pem"},
+{certfile,"/rabbitmqinaction/rabbitmq/etc/rabbitmq/ssl/rabbitmq-server.cert.pem"},
+{keyfile,"/rabbitmqinaction/rabbitmq/etc/rabbitmq/ssl/rabbitmq-server.key.pem"},
+{verify, verify_peer},
+{fail_if_no_peer_cert, true}
+]}
+]}
+].
+```
+8.重启RabbitMQ
+>[root@dwj ssl]# rabbitmqctl stop   <br>
+>[root@dwj ssl]# rabbitmq-server -detached
+
+9.在WEB控制台中查看是否开启，在<Ports and contexts> 中有amqp/ssl 表示配置成功
+
 <font color=#FF0000 size=5> <p align="center">RabbitMQ 集群安装</p></font>
 
-1、环境介绍
+1.环境介绍
 ```
 rabbitmq1 192.168.0.111
 rabbitmq2 192.168.0.112
