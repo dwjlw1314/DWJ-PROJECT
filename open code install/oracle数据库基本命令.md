@@ -271,6 +271,7 @@ unix下查看进程的最后几个字母就是sid
 SQL> select count(*) from v$instance;              #数据库实例所有参数字段
 SQL> select status from v$instance;                #查看oracle启动状
 SQL> select owner from dba_segments;               #查询表空间下的用户
+SQL> SELECT owner, table_name from dba_lobs;       #查询LOBSEGMENT对象所属表和列字段
 SQL> select * from user_source;                    #查看所有对象源代码
 SQL> select * from user_errors;                    #查看所有子程序(procedure)错误信息
 SQL> select object_name,created from user_objects; #查看数据表名和创建时间
