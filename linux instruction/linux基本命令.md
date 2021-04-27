@@ -89,6 +89,7 @@ tee 1.xml << EOF                                                     #读取标�
 partprobe                                                            #重新读取分区表信息
 pstree -p                                                            #查看进程树结构
 parted -l                                                            #输出文件系统类型
+pkg-config --list-all                                                #查看pkg-config的所有模块信息
 lsblk / lscpu / lsscsi / lspci / lsusb                               #查看磁盘分区树状结构
 blkid [-kU]                                                          #locate/print block device attributes
 lsof                                                                 #列出系统或进程调用打开和使用了哪些文件和动态库
@@ -579,6 +580,18 @@ Banner /etc/ssh/banner
 >[root@dwj ~]# service sshd reload
 
 注意：此信息只在 ssh 输入用户名后显示，在普通登录输入用户名后不显示
+
+<font color=#FF0000 size=5> <p align="center">ssh无痕登录</p></font>
+```
+[root@dwj ~]# ssh -T root@127.0.0.1 /bin/bash -i
+#-T 表示不分配伪终端 （正常的会话，在分配伪终端之后才会调用utmp和wtmp的日志接口）
+# /usr/bin/bash -i 表示在登录之后 调用bash命令
+#不留下.bash_history
+[root@dwj ~]# unset HISTORY HISTFILE HISTSAVE HISTZONE HISTORY HISTLOG
+[root@dwj ~]# export HISTFILE=/dev/null
+[root@dwj ~]# export HISTSIZE=0
+[root@dwj ~]# export HISTFILESIZE=0
+```
 
 <font color=#FF0000 size=5> <p align="center">NFS参数</p></font>
 

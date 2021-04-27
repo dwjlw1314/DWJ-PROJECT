@@ -101,6 +101,7 @@ major   minor   #blocks    name
 <font color=#FF0000 size=5> <p align="center">其他</p></font>
 
 ```
+~/.local/share/Trash/files/                         #ubuntu系统回收站目录
 /usr/src/kernels/3.10.0-327.el7.x86_64/fs           #centos系统支持的文件系统目录
 /usr/share/vim/vim72/tutor/tutor.zh.utf-8           #vim基础学习文档
 /usr/share/zoneinfo                                 #城市的timezone文件

@@ -39,3 +39,27 @@ Public key saved to  C:/Users/hsql/Application Data/SSH/UserKeys/id_rsa_2048_a.p
 >[root@node1 .ssh]# ssh-keygen -i -f id_rsa_2048_a.pub >> authorized_keys
 
 重新使用SSH Secure Shell客户端，然后重新登录并在登录认证状态栏中选择Public Key方式，这样就可以免密码登录了
+
+<font color=#FF0000 size=5> <p align="center">ssh保持长连接设置</p></font>
+
+一 找到所在用户的.ssh目录,如root用户该目录在：
+>[root@node1 ~]# cd /root/.ssh/   #在该目录创建config文件
+
+>[root@node1 .ssh]# vim /root/.ssh/config   #加入下面一句:
+```
+ServerAliveInterval 60  #client每隔60秒发送一次请求给server，然后server响应，从而保持连接
+```
+
+二 修改client端的etc/ssh/ssh_config添加以下：（在没有权限改server配置的情形下）
+```
+ServerAliveInterval 60   #client每隔60秒发送一次请求给server，然后server响应，从而保持连接
+ServerAliveCountMax 3    #client发出请求后，服务器端没有响应得次数达到3，就自动断开连接，正常情况下，server不会不响应
+```
+
+三 修改server端的etc/ssh/sshd_config
+```
+ClientAliveInterval 60   #server每隔60秒发送一次请求给client，然后client响应，从而保持连接
+ClientAliveCountMax 3    #server发出请求后，客户端没有响应得次数达到3，就自动断开连接，正常情况下，client不会不响应
+```
+
+>[root@node1 ssh]# systemctl reload sshd

@@ -32,3 +32,53 @@ Docker仓库是集中存放镜像文件的场所。仓库和仓库注册服务�
 <font color=#FF0000 size=4> <p align="center">Docker安装</p></font>
 
 官方网站上有各种环境下的安装指南，该文档是CentOS的安装
+
+<font color=#FF0000 size=4> <p align="center">Docker基本命令</p></font>
+
+docker启动命令
+>[root@dwj /]# systemctl start docker
+
+获取docker所有启动参数
+>[root@dwj /]# docker help run
+
+通过镜像创建容器(-p大小写不一样)
+>[root@dwj /]# docker run -itd --gpus all --privileged --name caailast_dwj -p hostport:containerport -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video,display,graphics -e NVIDIA_VISIBLE_DEVICES=all caai0318 /bin/bash
+
+进入启动的镜像，加权限
+>[root@dwj /]# sudo docker exec -it 775c7c9ee1e1 /bin/bash
+
+通过镜像创建容器，挂载宿主机的/test目录到容器的/soft目录
+>[root@dwj /]# docker run -it -v /test:/soft centos /bin/bash
+
+特权模式启动容器
+>[root@dwj /]# docker run -it --privileged centos /bin/bash
+
+启动容器,containerId是容器的ID
+>[root@dwj /]# docker start containerId
+
+停止容器
+>[root@dwj /]# docker stop containerId
+
+stop停止所有容器
+>[root@dwj /]# docker stop $(docker ps -a -q)
+
+查看指定容器启动参数详情
+>[root@dwj /]# docker inspect containerId
+
+查看容器的IP
+>[root@dwj /]# docker network inspect bridge  <br>
+>[root@dwj /]# ip addr show docker0
+
+查看路由信息
+>[root@dwj /]# ip route show
+
+<font color=#FF0000 size=4> <p align="center">Docker错误汇总</p></font>
+
+进入docker容器后，想创建文件，但是提示 cannot touch 'xxx': Permission denied
+```
+解决方法：
+第一种、进入容器的命令改为 sudo docker exec -it -u root 9b98c3dcb2d0 /bin/bash
+第二种、创建容器实例的时候，增加参数--privileged=true
+```
+
+<font color=#FF0000 size=4> <p align="center">Dockerfile</p></font>
