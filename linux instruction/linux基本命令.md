@@ -89,7 +89,10 @@ tee 1.xml << EOF                                                     #读取标�
 partprobe                                                            #重新读取分区表信息
 pstree -p                                                            #查看进程树结构
 parted -l                                                            #输出文件系统类型
+pkg-config --variable pc_path pkg-config                             #查看pkg-config的搜索路径
 pkg-config --list-all                                                #查看pkg-config的所有模块信息
+pkg-config --cflags name                                             #print compiler flags
+pkg-config --libs name                                               #print linker flags
 lsblk / lscpu / lsscsi / lspci / lsusb                               #查看磁盘分区树状结构
 blkid [-kU]                                                          #locate/print block device attributes
 lsof                                                                 #列出系统或进程调用打开和使用了哪些文件和动态库
@@ -99,6 +102,7 @@ lsmod |grep ftp                                                      #显示linu
 modprobe -l|grep ftp                                                 #查看系统内核模块名字*.ko文件
 modprobe  nf_conntrack_ftp                                           #加载内核模块ftp
 getconf LONG_BIT / PAGE_SIZE                                         #查看CPU位数 / 内存分页大小
+getconf GNU_LIBPTHREAD_VERSION                                       #查看posix线程库实现方式和版本(1：1模型的NPTL比M:N的NGPT)
 tune2fs -l /dev/sda1 | grep "Block size"                             #查看文件系统块大小
 umask -p                                                             #设置新创建目录或文件的默认权限
 > umask 0022  目录：7- 掩码权限数字 ; 文件：目录权限去掉执行权限         #--案例--
@@ -145,6 +149,8 @@ logrotate -f /etc/logrotate.conf                                     #强制运�
 [root@dwj /usr/sbin]# sendmail diwenjie@gsafety.com                  #发送邮件命令
 [root@dwj /usr/sbin]# mail                                           #该命令可以查看邮件发送状态，直接回车查看应答内容
 [root@dwj /usr/sbin]# mailq                                          #该命令检测邮件发送Queue(/var/spool/mqueue)
+
+[root@dwj ~]# apt list --installed | grep mongodb                    #查看当前环境是否已经安装MongoDB
 
 [root@dwj ~/Desktop]# jobs                                           #查看后台运行程序，fg和bg把程序调到前台和后台执行
 -l：显示进程号
@@ -675,12 +681,14 @@ fi
 ```
 其他常用技巧
 ```
-ctrl+g   #显示当前编辑的文件名
-d+G      #删除光标到末尾全部行
-:noh     #取消高亮显示
-:e!      #还原编辑文件到最初状态
-set ls=2 #总是显示状态栏 ls : laststatus
-~/.viminfo   #vim操作日志
+:set ff        #查看当前编码格式
+:set ff=unix   #设置编码格式
+ctrl+g         #显示当前编辑的文件名
+d+G            #删除光标到末尾全部行
+:noh           #取消高亮显示
+:e!            #还原编辑文件到最初状态
+set ls=2       #总是显示状态栏 ls : laststatus
+~/.viminfo     #vim操作日志
 vim -O /etc/passwd /opt/gjsy.txt    #左右分屏显示,使用ctrl+w两次进行左右光标切换
 ```
 

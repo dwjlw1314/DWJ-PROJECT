@@ -14,6 +14,9 @@ GVP -- Gitee最具有价值开源项目汇总
 MinGW安装说明
 >https://blog.csdn.net/AMDDMA/article/details/111600238
 
+gcc,llvm,clang编译器描述
+>https://developer.51cto.com/art/202011/630677.htm
+
 vscode的launch.json以及tasks.json变量参考
 >https://code.visualstudio.com/docs/editor/variables-reference
 
@@ -25,7 +28,16 @@ FFmpeg部分源代码分析
 OpenCV 3.0 + CUDA相关头文件和库名称说明
 >https://blog.csdn.net/kelvin_yan/article/details/48734707
 
+google protobuf使用案例
+>https://blog.csdn.net/A_L_A_N/article/details/102696115
+
 <font color=#FF0000 size=4> <p align="center">配置类</p></font>
 
 pkg-config 详解
 >https://blog.csdn.net/newchenxf/article/details/51750239
+
+CentOS7搭建Xrdp服务器
+>https://jingyan.baidu.com/article/a3aad71a12e5b6b1fb009693.html
+
+CentOS7搭建VNC Viewer
+>https://zhuanlan.zhihu.com/p/34940427
