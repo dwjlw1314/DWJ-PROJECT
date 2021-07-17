@@ -8,37 +8,44 @@ PostgreSQL是以加州大学伯克利分校计算机系开发的 POSTGRES 版本
 <font color=#FF0000 size=5>二、 PostgreSQL安装</font>
 
 1.安装依赖包，某些系统只需要部分安装
+>[root@dwj ~]# yum -y install perl-ExtUtils-Embed readline-devel zlib-devel pam-devel
 
-    [root@dwj ~]# yum -y install perl-ExtUtils-Embed readline-devel zlib-devel pam-devel
-    [root@dwj ~]# yum -y install libxml2-devel libxslt-devel openldap-devel python-devel openssl-devel cmake
+>[root@dwj ~]# yum -y install libxml2-devel libxslt-devel openldap-devel python-devel openssl-devel cmake
 
 2.解压编译源码
+>[root@dwj ~]# mkdir /usr/local/pgsql
 
-    [root@dwj ~]# mkdir /usr/local/pgsql
-    [root@dwj ~]# tar -zxvf postgresql-9.4.1.tar.gz
-    [root@dwj ~]# cd postgresql-9.4.1
-    [root@dwj postgresql-9.4.1]# ./configure --prefix=/usr/local/pgsql --with-perl --with-python --with-libxml --with-libxslt
-    [root@dwj postgresql-9.4.1]# gmake && gmake install
+>[root@dwj ~]# tar -zxvf postgresql-9.4.1.tar.gz
+
+>[root@dwj ~]# cd postgresql-9.4.1
+
+>[root@dwj postgresql-9.4.1]# ./configure --prefix=/usr/local/pgsql --with-perl --with-python --with-libxml --with-libxslt
+
+>[root@dwj postgresql-9.4.1]# gmake && gmake install
 
 3.安装PG插件
+>[root@dwj postgresql-9.4.1]# cd contrib/
 
-    [root@dwj postgresql-9.4.1]# cd contrib/
-    [root@dwj contrib]# gmake
-    [root@dwj contrib]# gmake install
-    [root@dwj contrib]# echo "/usr/local/pgsql/lib" >> /etc/ld.so.conf.d/pgsql.conf
-    [root@dwj contrib]# ldconfig
+>[root@dwj contrib]# gmake
+
+>[root@dwj contrib]# gmake install
+
+>[root@dwj contrib]# echo "/usr/local/pgsql/lib" >> /etc/ld.so.conf.d/pgsql.conf
+
+>[root@dwj contrib]# ldconfig
 
 4.创建用户postgres
+>[root@dwj contrib]# useradd postgres
 
-    [root@dwj contrib]# useradd postgres
-    [root@dwj contrib]# echo "postgres"|passwd --stdin postgres
+>[root@dwj contrib]# echo "postgres"|passwd --stdin postgres
 
 5.创建PG数据目录，初始化数据库
+>[root@dwj contrib]# mkdir -p /data/pg/data
 
-    [root@dwj contrib]# mkdir -p /data/pg/data
-    [root@dwj contrib]# chown -R postgres:postgres /data/pg
-    [postgres@dwj contrib]$ /usr/local/pgsql/bin/initdb --no-locale -U postgres -E utf8 -D /data/pg/data/ -W
-    （切换到postgres用户下运行，在初始化的时候，看提示添加超级用户的密码）
+>[root@dwj contrib]# chown -R postgres:postgres /data/pg
+
+>[postgres@dwj contrib]$ /usr/local/pgsql/bin/initdb --no-locale -U postgres -E utf8 -D /data/pg/data/ -W
+  （切换到postgres用户下运行，在初始化的时候，看提示添加超级用户的密码）
 
 ```
   参数备注:
@@ -89,21 +96,29 @@ PostgreSQL是以加州大学伯克利分校计算机系开发的 POSTGRES 版本
 7.postgresql服务管理
 >[root@dwj contrib]# su postgres
 
-启动： [postgres@dwj contrib]$ pg_ctl start -D /data/pg/data
+启动：
+>[postgres@dwj contrib]$ pg_ctl start -D /data/pg/data
 
-重启： [postgres@dwj contrib]$ pg_ctl restart -D /data/pg/data
+重启：
+>[postgres@dwj contrib]$ pg_ctl restart -D /data/pg/data
 
-停止： [postgres@dwj contrib]$ pg_ctl stop -D /data/pg/data
+停止：
+>[postgres@dwj contrib]$ pg_ctl stop -D /data/pg/data
 
-强制重启： [postgres@dwj contrib]$ pg_ctl restart -D /data/pg/data -m f
+强制重启：
+>[postgres@dwj contrib]$ pg_ctl restart -D /data/pg/data -m f
 
-强制停止： [postgres@dwj contrib]$ pg_ctl stop -D /data/pg/data -m f     #-m f 指定快速关闭
+强制停止：
+>[postgres@dwj contrib]$ pg_ctl stop -D /data/pg/data -m f     #-m f 指定快速关闭
 
-加载配置： [postgres@dwj contrib]$ pg_ctl reload -D  /data/pg/data
+加载配置：
+>[postgres@dwj contrib]$ pg_ctl reload -D  /data/pg/data
 
-显示服务状态： [postgres@dwj contrib]$ pg_ctl status -D  /data/pg/data
+显示服务状态：
+>[postgres@dwj contrib]$ pg_ctl status -D  /data/pg/data
 
-连接数据库：[postgres@dwj contrib]$ psql -h 127.0.0.1 -U postgres -p 5432 -d postgres -W
+连接数据库：
+>[postgres@dwj contrib]$ psql -h 127.0.0.1 -U postgres -p 5432 -d postgres -W
 
 -d 指定数据库 ,-W 输入密码 , -U 指定用户,-p 指定端口,-h 指定IP
 

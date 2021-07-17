@@ -26,6 +26,7 @@ mount -t iso9660                                                     #查看文�
 mtype [-st] [filename]                                               #是mtools工具集指令，模拟MS-DOS的指令显示文件的内容
 > -s:去除8位字符码集的第一个位，使它兼容于7位的ASCII; -t:将MS-DOS文件中的"换行+光标移至行首"字符转换成Linux的换行字符
 nm -a *.so                                                           #查看动态库文件中的函数名
+readelf -s *.so                                                      #查看动态库文件中的函数名
 free  -m / -h                                                        #以MB为单位显示当前内存使用情况
 autoconf                                                             #生成编译configure文件
 ldd  name                                                            #输出程序name使用的动态库和动态库的位置
@@ -94,10 +95,12 @@ pkg-config --list-all                                                #查看pkg-
 pkg-config --cflags name                                             #print compiler flags
 pkg-config --libs name                                               #print linker flags
 lsblk / lscpu / lsscsi / lspci / lsusb                               #查看磁盘分区树状结构
+> lspci | grep -i vga                                                #--案例--
 blkid [-kU]                                                          #locate/print block device attributes
 lsof                                                                 #列出系统或进程调用打开和使用了哪些文件和动态库
 fuser -m -u -v                                                       #与lsof效果相似
 find  ! -name '.*' -a ! -regex '.*/\.[^/]*/.*'                       #查找除隐藏文件以外的文件
+find ./ -inum 10318352 -exec rm -f {} \;                             #删除inode=10318352的文件
 lsmod |grep ftp                                                      #显示linux系统内核模块ftp是否加载
 modprobe -l|grep ftp                                                 #查看系统内核模块名字*.ko文件
 modprobe  nf_conntrack_ftp                                           #加载内核模块ftp
@@ -128,6 +131,7 @@ mkswap /dev/sdb6                                                     #新建swap
 swapon/swapoff /dev/sdb6                                             #加入和取消新扩容的swap交换分区
 swapon -a / swapon -s                                                #激活交换空间和查看交换空间命令
 mount -a                                                             #重新读取</etc/fstab>文件进行挂载文件系统
+nohup ./admin/index &                                                #设置程序后台执行
 
 mesg [y/n]                                                           #设置其他用户是否可以发信息到当前终端
 write gjsy                                                           #给gjsy在线用户发送消息

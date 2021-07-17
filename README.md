@@ -63,6 +63,7 @@
     28. ZeroMQ基本使用详情
     29. Clamav的安装和使用
     30. oracle数据库基本术语
+    31. PostgreSQL 基本命令
 
 四. linux常用指令
     1. linux基本命令
