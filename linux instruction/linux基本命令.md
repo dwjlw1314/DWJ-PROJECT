@@ -46,6 +46,7 @@ bc                                                                   #linux计�
 cal                                                                  #显示当前日历或指定日期的日历
 iconv                                                                #文件编码转换命令
 grep -rn "AC" ./                                                     #当前目录查找AC所在文件
+ps --no-headers -o comm 1                                            #查看系统使用systemctl还是service
 dos2unix/unix2dos                                                    #将文件中的\r\n和\n互相转换
 ethtool eth0                                                         #主要用于查询配置网卡参数
 brctl show                                                           #查看网桥和端口连接信息
@@ -139,6 +140,8 @@ wall helloword                                                       #给所有�
 
 logrotate -v /etc/logrotate.conf                                     #查看配置文件中需要日志轮替的文件
 logrotate -f /etc/logrotate.conf                                     #强制运行配置文件中的日志轮替文件
+
+[root@dwj ~]# echo | gcc -v -x c -E -                                #查看c/c++配置参数信息
 
 [root@dwj ~]# echo $((0xac))                                         #十六进制的数字转成十进制
 [root@dwj ~]# printf "%x" 655410                                     #十进制的数字转成十六进制
