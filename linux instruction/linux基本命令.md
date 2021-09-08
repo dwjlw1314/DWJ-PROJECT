@@ -102,6 +102,7 @@ lsof                                                                 #列出系�
 fuser -m -u -v                                                       #与lsof效果相似
 find  ! -name '.*' -a ! -regex '.*/\.[^/]*/.*'                       #查找除隐藏文件以外的文件
 find ./ -inum 10318352 -exec rm -f {} \;                             #删除inode=10318352的文件
+find ./ -inum 10318352 -delete                                       #删除inode=10318352的文件
 lsmod |grep ftp                                                      #显示linux系统内核模块ftp是否加载
 modprobe -l|grep ftp                                                 #查看系统内核模块名字*.ko文件
 modprobe  nf_conntrack_ftp                                           #加载内核模块ftp

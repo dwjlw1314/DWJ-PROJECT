@@ -4,6 +4,10 @@
 
 <font color=#FF0000 size=5> <p align="center">常用语句</p></font>
 
+查看数据库版本
+>postgres=# show server_version;
+>postgres=#  select version();
+
 查看哪些用户在链接数据库
 >postgres=# select * from pg_stat_activity;
 

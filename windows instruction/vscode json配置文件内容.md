@@ -6,6 +6,57 @@
 {
 	"version": "2.0.0",
 	"tasks": [
+				{
+            "type": "cppbuild",
+            "label": "nvidia-build",
+            "command": "/usr/local/cuda-10.0/bin/nvcc",
+            "args": [
+                "${workspaceFolder}/src/*.cu",
+                "-I/usr/local/cuda/include",
+                "-L/usr/local/cuda/lib64",
+                "-I/opt/opencv-3.4.9/install/include",
+                "-shared",
+                "-Xcompiler",
+                "-fPIC",
+                "-o",
+                "/opt/result/libCudaFunction.so"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "编译器: /usr/local/cuda-10.0/bin/nvcc"
+        },
+				{
+            "type": "cppbuild",
+            "label": "gcc/g++",
+            "command": "/usr/bin/g++",
+            "args": [
+                "-g",
+                "/src/*.cpp",
+                "-I/usr/local/cuda/include",
+                "-L/usr/local/cuda/lib64",
+                "-lopencv_world",
+                "-fPIC",
+                "-shared",
+                "-o",
+                "/opt/result/libxxx.so"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            // "dependsOn": [
+            //     "CudaFunction_build"
+            // ],
+            "group": "build",
+            "detail": "编译器: /usr/bin/g++"
+        },
         {
             "type": "shell",
             "label": "CreateBuildDir",
@@ -27,7 +78,7 @@
                 ]
             },
             "options": {
-                "cwd": "${workspaceFolder}/CAAIImagePro/FFmpegDecode/"
+                "cwd": "${workspaceFolder}/dir/"
             },
             "problemMatcher": [
                 "$gcc"
@@ -41,7 +92,7 @@
                 "../"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/CAAIImagePro/FFmpegDecode/build"
+                "cwd": "${workspaceFolder}/build"
             },
             "dependsOn": [
                 "CreateBuildDir"
@@ -55,7 +106,7 @@
             "command": "make",
             "args": [],
             "options": {
-                "cwd": "${workspaceFolder}/CAAIImagePro/FFmpegDecode/build"
+                "cwd": "${workspaceFolder}/build"
             },
             "dependsOn": [
                 "cmakeRun"

@@ -41,6 +41,9 @@ docker启动命令
 获取docker所有启动参数
 >[root@dwj /]# docker help run
 
+查看镜像层组成和大小
+>[root@dwj /]# docker history imageName
+
 通过镜像创建容器(-p大小写不一样)
 >[root@dwj /]# docker run -itd --gpus all --privileged --name caailast_dwj -p hostport:containerport -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video,display,graphics -e NVIDIA_VISIBLE_DEVICES=all caai0318 /bin/bash
 
@@ -72,13 +75,29 @@ stop停止所有容器
 查看路由信息
 >[root@dwj /]# ip route show
 
+容器转镜像
+>[root@dwj /]# docker commit containerId videoAccess-1.0
+
+镜像保存
+>[root@dwj /]# docker save -o videoAccess.tar 4ce61b979dbb
+
+镜像加载
+>[root@dwj /]# docker load -i videoAccess.tar
+
 <font color=#FF0000 size=4> <p align="center">Docker错误汇总</p></font>
 
-进入docker容器后，想创建文件，但是提示 cannot touch 'xxx': Permission denied
+1.进入docker容器后，想创建文件，但是提示 cannot touch 'xxx': Permission denied
 ```
 解决方法：
 第一种、进入容器的命令改为 sudo docker exec -it -u root 9b98c3dcb2d0 /bin/bash
 第二种、创建容器实例的时候，增加参数--privileged=true
+```
+
+2.进入docker容器后，运行systemclt，但是提示 Failed to connect to bus: Host is down
+```
+原因：dbus-daemon没能启动,systemctl并不是不能使用。将CMD或者entrypoint设置为/usr/sbin/init即可
+解决方法：
+docker run --name test -it --privileged=true -p 8090:22 -v /home/:/home 300e315adb2f /usr/sbin/init
 ```
 
 <font color=#FF0000 size=4> <p align="center">Dockerfile</p></font>
