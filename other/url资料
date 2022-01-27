@@ -8,6 +8,9 @@ Raid 0 1 5 10的原理、特点、性能区别
 
 <font color=#FF0000 size=4> <p align="center">工具类</p></font>
 
+PostgreSQL 13.1 手册
+>http://www.postgres.cn/docs/13/index.html
+
 GVP -- Gitee最具有价值开源项目汇总
 >https://gitee.com/gvp
 
@@ -21,12 +24,24 @@ vscode的launch.json以及tasks.json变量参考
 >https://code.visualstudio.com/docs/editor/variables-reference
 
 ffmpeg常用视频格式转换命令
-https://www.cnblogs.com/yuancr/p/7272321.html
+>https://www.cnblogs.com/yuancr/p/7272321.html
+
+ffmpeg命令行工具之ffplay详解
+>https://blog.csdn.net/ice_ly000/article/details/87906003
+
+搭建流媒体服务器 PingOS 平台搭建
+>https://zhuanlan.zhihu.com/p/124035946
 
 <font color=#FF0000 size=4> <p align="center">源码类</p></font>
 
+libevent http client源代码
+https://www.cnblogs.com/keepsimple/archive/2013/05/14/3077183.html
+
 FFmpeg部分源代码分析
 >https://blog.csdn.net/leixiaohua1020/article/details/44084557
+
+FFmpeg时间戳详解
+>https://www.cnblogs.com/leisure_chn/p/10584910.html
 
 OpenCV 3.0 + CUDA相关头文件和库名称说明
 >https://blog.csdn.net/kelvin_yan/article/details/48734707
@@ -48,6 +63,9 @@ CentOS7搭建Xrdp服务器
 
 CentOS7搭建VNC Viewer
 >https://zhuanlan.zhihu.com/p/34940427
+
+linux利用mail和sendmail发送邮件
+>https://blog.csdn.net/u012219371/article/details/84929028
 
 nvidia-container-toolkit 安装
 >https://blog.csdn.net/u011119817/category_10621689.html

@@ -31,7 +31,8 @@ Docker仓库是集中存放镜像文件的场所。仓库和仓库注册服务�
 
 <font color=#FF0000 size=4> <p align="center">Docker安装</p></font>
 
-官方网站上有各种环境下的安装指南，该文档是CentOS的安装
+官方网站上有各种环境下的安装指南
+https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
 
 <font color=#FF0000 size=4> <p align="center">Docker基本命令</p></font>
 
@@ -44,6 +45,9 @@ docker启动命令
 查看镜像层组成和大小
 >[root@dwj /]# docker history imageName
 
+查看docker配置信息
+>[root@dwj /]# docker info
+
 通过镜像创建容器(-p大小写不一样)
 >[root@dwj /]# docker run -itd --gpus all --privileged --name caailast_dwj -p hostport:containerport -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video,display,graphics -e NVIDIA_VISIBLE_DEVICES=all caai0318 /bin/bash
 
@@ -55,6 +59,9 @@ docker启动命令
 
 特权模式启动容器
 >[root@dwj /]# docker run -it --privileged centos /bin/bash
+
+自动重启模式启动容器
+>[root@dwj /]# docker run -it --restart=always centos /bin/bash
 
 启动容器,containerId是容器的ID
 >[root@dwj /]# docker start containerId
@@ -74,6 +81,9 @@ stop停止所有容器
 
 查看路由信息
 >[root@dwj /]# ip route show
+
+登录镜像仓库
+>[root@dwj /]# docker login 127.0.0.1:5000
 
 容器转镜像
 >[root@dwj /]# docker commit containerId videoAccess-1.0
@@ -101,3 +111,47 @@ docker run --name test -it --privileged=true -p 8090:22 -v /home/:/home 300e315a
 ```
 
 <font color=#FF0000 size=4> <p align="center">Dockerfile</p></font>
+
+```
+# 使用标准的Ubuntu 18.04系统
+FROM ubuntu:18.04
+
+# 镜像作者
+MAINTAINER gsafety
+
+# 刷新日期
+#ENV REFRESHED_AT 2021-11-20
+
+# 设置宿主机ip、port
+ENV KAFKA_ADVERTISED_HOST_NAME 10.3.9.107
+ENV KAFKA_ADVERTISED_PORT 9092
+
+# COPY命令可以复制文件，但是似乎不能递归复制文件
+COPY kafka_2.12-2.5.1.tgz /opt
+COPY jdk-8u141-linux-x64.tar.gz /opt
+# 复制启动脚本
+COPY start.sh /opt/start.sh
+#COPY run.sh /opt/run.sh
+COPY /sources.list /opt/sources.list
+
+# 解压安装包和删除安装包
+RUN tar -xvf /opt/kafka_2.12-2.5.1.tgz -C /usr/local > /dev/null && tar -xvf /opt/jdk-8u141-linux-x64.tar.gz -C  /usr/local > /dev/null \
+&& sed -i '$a\\nexport JAVA_HOME=/usr/local/jdk1.8.0_141\nexport CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar\nexport PATH=$JAVA_HOME/bin:$PATH' /root/.bashrc \
+&& chmod +x /opt/start.sh && rm -rf /opt/kafka_2.12-2.5.1.tgz && rm -rf /opt/jdk-8u141-linux-x64.tar.gz && rm -rf /etc/apt/sources.list && mv /opt/sources.list /etc/apt/ \
+&& apt-get update && apt-get install tzdata && apt-get install net-tools && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+# 添加任务服务
+#RUN apt-get install cron
+
+# 解决:debconf: delaying package configuration, since apt-utils is not installed
+#RUN apt-get install --assume-yes apt-utils
+
+# 设置需要暴露的端口,宿主机端口随机分配
+EXPOSE 9092
+
+# 创建挂载点，无法指定主机上对应的目录，是自动生成的
+#VOLUME ["/opt"]
+
+# 设置启动目录以及启动脚本
+ENTRYPOINT cd /opt; ./start.sh;
+```

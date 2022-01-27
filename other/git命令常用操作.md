@@ -152,7 +152,7 @@ s commitver '注释*********'
 列出指定配置的字段
 >[root@dwj /]# git config user.name
 
-取消ssh认证
+取消ssh认证(OpenSSL SSL_read: Connection was reset, errno 10054)
 >[root@dwj /]# git config --global http.sslVerify false
 
 配置默认文本编辑器
@@ -297,3 +297,18 @@ Git在当前 commit 对象上新建一个分支指针,该命令仅仅是建立�
 
 找到可能的空白错误并将它们为你列出来
 >[root@dwj /]# git diff --check
+
+放弃所有的文件修改可以使用
+>[root@dwj /]# git checkout .
+
+放弃指定文件的修改
+>[root@dwj /]# git checkout -- filepathname
+
+清除已经使用了git add的文件修改
+```
+git reset HEAD filepathname
+git reset HEAD .
+```
+
+清除已经用git commit提交了代码的修改, 可以使用git log查看commitid
+>[root@dwj /]# git reset --hard commitid

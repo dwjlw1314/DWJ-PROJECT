@@ -6,7 +6,7 @@
     1. Linux 虚拟文件系统(图)
     2. 网卡设置和错误提示问题
     3. DNS--服务器搭建
-    4. Redhat iptables 防火墙问题
+    4. iptables 防火墙问题
     5. 程序开机顺序和自启动设置
     6. Linux runlevel 运行级别
     7. Centos更改网卡名称
@@ -22,6 +22,7 @@
     17. linux系统添加新硬盘
     18. 远程调用linux图像界面
     19. linux系统根目录扩展空间
+    20. firewalld 防火墙配置
 
 二. windows系统
     1. Win7 FTP服务器部署
@@ -64,6 +65,7 @@
     29. Clamav的安装和使用
     30. oracle数据库基本术语
     31. PostgreSQL 基本命令
+    32. GitLab私有代码仓库部署
 
 四. linux常用指令
     1. linux基本命令

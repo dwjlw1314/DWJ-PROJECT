@@ -29,6 +29,7 @@ nm -a *.so                                                           #查看动�
 readelf -s *.so                                                      #查看动态库文件中的函数名
 free  -m / -h                                                        #以MB为单位显示当前内存使用情况
 autoconf                                                             #生成编译configure文件
+locale                                                               #查看linux支持的字符编码
 ldd  name                                                            #输出程序name使用的动态库和动态库的位置
 diff -u file1 file2                                                  #比较file1和file2两个文件
 vimdiff file1 file2                                                  #左右屏幕比较文件
@@ -88,6 +89,13 @@ xdpyinfo                                                             #查看系�
 dmesg                                                                #查看系统启动过程的所有信息
 time 命令                                                            #显示命令执行的时间
 tee 1.xml << EOF                                                     #读取标准输入数据写入文件
+cut -d : -f 1,5 /etc/passwd  #冒号表示字段的分隔符，1,5取哪些字段       #字符串分割命令
+> cut -d: -f 3- /etc/passwd                                          #从第三个字段开始显示，直到最后一个字段
+> cut -c 1-4 /etc/passwd                                             #取每行的前1-4个字符
+> cut -c-4 /etc/passwd                                               #取每行的前4个字符
+> cut -c4- /etc/passwd                                               #取每行的第4个到最后字符
+> cut -c1,4 /etc/passwd                                              #取每行的第一个和第四个字符
+> cut -c1-4,5 /etc/passwd                                            #取每行的1-4和第5个字符
 partprobe                                                            #重新读取分区表信息
 pstree -p                                                            #查看进程树结构
 parted -l                                                            #输出文件系统类型
@@ -95,8 +103,10 @@ pkg-config --variable pc_path pkg-config                             #查看pkg-
 pkg-config --list-all                                                #查看pkg-config的所有模块信息
 pkg-config --cflags name                                             #print compiler flags
 pkg-config --libs name                                               #print linker flags
+export PKG_CONFIG_LIBDIR=/usr/lib/pkgconfig/                         #添加路径到pkg中
 lsblk / lscpu / lsscsi / lspci / lsusb                               #查看磁盘分区树状结构
-> lspci | grep -i vga                                                #--案例--
+> lspci | grep -iw vga                                               #--精确匹配案例--
+> lspci | grep -Fx vga                                               #--完全匹配案例--
 blkid [-kU]                                                          #locate/print block device attributes
 lsof                                                                 #列出系统或进程调用打开和使用了哪些文件和动态库
 fuser -m -u -v                                                       #与lsof效果相似
@@ -124,6 +134,7 @@ locate stdio.h                                                       #从文件�
 ldconfig -v                                                          #显示所有软链接对应关系
 updatedb                                                             #定期更新locate数据库，命令由cron运行
 HISTTIMEFORMAT="%F %T "                                              #history历史查看显示时间格式环境变量设置
+> export HISTTIMEFORMAT="%F %T:`whoami` "                            #history历史查看执行时间和执行者
 systemctl list-unit-files                                            #查看系统中所有服务启动状态
 tune2fs -l /dev/sdb5 || dumpe2fs -h /dev/sdb5                        #查看分区文件系统信息
 tune2fs -l /dev/sda1 | grep create || passwd -S root                 #查看操作系统的安装时间
@@ -289,6 +300,17 @@ swapon /swapimage/swap
 或者修改/etc/fstab文件，实现交换分区随系统启动生效
 >[root@node1 swapimage]# vim /etc/fstab  <br>
 /swapimage/swap swap  swap defaults 0 0
+
+<font color=#FF0000 size=5> <p align="center">设置系统支持的语言包</p></font>
+
+安装英文的utf-8语言包
+>[root@dwj ~]# sudo locale-gen en_US.UTF-8
+
+查看自己系统支持哪些语言包
+>[root@dwj ~]# locale -a
+
+语言包配置永久生效
+>[root@dwj ~]# sudo dpkg-reconfigure locales
 
 <font color=#FF0000 size=5> <p align="center">Linux 命令提示符显示全路径设置</p></font>
 
@@ -594,6 +616,19 @@ Banner /etc/ssh/banner
 >[root@dwj ~]# service sshd reload
 
 注意：此信息只在 ssh 输入用户名后显示，在普通登录输入用户名后不显示
+
+<font color=#FF0000 size=5> <p align="center">ssh配置root用户远程登录</p></font>
+
+修改ssh服务配置文件
+>[root@dwj ~]# vim /etc/ssh/sshd_config
+```
+#调整PermitRootLogin参数值为yes
+PermitEmptyPasswords no #不允许空密码登录
+PasswordAuthentication yes # 设置是否使用口令验证
+```
+
+修改完后，执行如下命令重新加载
+>[root@dwj ~]# service sshd reload
 
 <font color=#FF0000 size=5> <p align="center">ssh无痕登录</p></font>
 ```

@@ -58,6 +58,7 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release           #GPG-KEY路�
 
 常用命令如下：
 ```
+yum localinstall              #安装本地指定的rpm包，自动解决依赖
 yum clean all                 #清除yum缓存
 yum makecache                 #缓存本地yum源中的软件包信息
 yum -y install *packet*       #可以安装软件包
