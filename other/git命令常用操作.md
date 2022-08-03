@@ -162,6 +162,18 @@ s commitver '注释*********'
 >[root@dwj /]# git config --global user.name "dwjlw1314" <br>
 >[root@dwj /]# git config --global user.email dwjlw1314@qq.com
 
+添加远程地址的
+>[root@dwj /]# git remote add origin http://10.3.9.151/wuxi/publiclibrary.git
+
+删除本地指定的远程地址
+>[root@dwj /]# git remote remove origin
+
+查看远程库，看到远程分支和本地分支的对应关系
+>[root@dwj /]# git remote show origin
+
+删除远程没有,本地有的分支
+>[root@dwj /]# git remote prune origin
+
 可以通过git config来轻松地为每一个完整的git命令设置一个别名
 >[root@dwj /]# git config --global alias.last 'log -1 HEAD'
 
@@ -195,6 +207,9 @@ M lib/simplegit.rb
 
 从服务器上抓取本地没有的数据,其含义是一个 git fetch 紧接着一个git merge 命令
 >[root@dwj /]# git fetch origin
+
+git fetch不会删除在远程计算机上不再具有对应分支的远程分支,需要显式地修剪远程分支列表
+>[root@dwj /]# git fetch --prune
 
 从远程仓库克隆数据
 >[root@dwj /]# git clone -o lgl https://github.com/dwjlw1314/DWJ.git
@@ -312,3 +327,10 @@ git reset HEAD .
 
 清除已经用git commit提交了代码的修改, 可以使用git log查看commitid
 >[root@dwj /]# git reset --hard commitid
+
+git删除已经add的文件的两种方法：
+```
+用版本库内容清空暂存区，git reset HEAD（谨慎使用）
+查看暂存区有哪些文件，git ls-files
+只把特定文件从暂存区删除，git rm --cached xxx
+```

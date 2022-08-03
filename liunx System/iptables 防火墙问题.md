@@ -220,7 +220,7 @@ iptables中使用“-m 模块关键字”的形式调用显示匹配。咱们这
 >[root@dwj ~]# iptables -A INPUT -p tcp -m state --state ESTABLISHED,RELATED -j ACCEPT <br>
 "ESTABLISHED" 表示已经响应请求或者已经建立连接的数据包，"RELATED" 表示与已建立的连接有相关性的，比如FTP数据连接等
 
-* 只开放本机的web服务（80）、FTP(20、21、20450-20480)，放行外部主机发住服务器其它端口的应答数据包，将其他入站数据包均予以丢弃处理。
+* 只开放本机的web服务（80）、FTP(20、21、20450-20480)，允许外部主机到服务器其它端口的数据包，将其他入站数据包均予以丢弃处理
 
 >[root@dwj ~]# iptables -I INPUT -p tcp -m multiport --dport 20,21,80 -j ACCEPT
 

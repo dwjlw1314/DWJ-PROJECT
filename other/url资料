@@ -32,6 +32,9 @@ ffmpeg命令行工具之ffplay详解
 搭建流媒体服务器 PingOS 平台搭建
 >https://zhuanlan.zhihu.com/p/124035946
 
+搭建fastdfs服务器
+>https://blog.csdn.net/qq_40942490/article/details/110182615
+
 <font color=#FF0000 size=4> <p align="center">源码类</p></font>
 
 libevent http client源代码
@@ -48,6 +51,9 @@ OpenCV 3.0 + CUDA相关头文件和库名称说明
 
 google protobuf使用案例
 >https://blog.csdn.net/A_L_A_N/article/details/102696115
+
+zeromq中文文档
+>https://www.kancloud.cn/wizardforcel/zmq-guide/146967
 
 linux下c/c++调用外部程序
 >https://blog.csdn.net/weixin_43868793/article/details/113932536

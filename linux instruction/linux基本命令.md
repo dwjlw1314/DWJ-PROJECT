@@ -30,7 +30,8 @@ readelf -s *.so                                                      #查看动�
 free  -m / -h                                                        #以MB为单位显示当前内存使用情况
 autoconf                                                             #生成编译configure文件
 locale                                                               #查看linux支持的字符编码
-ldd  name                                                            #输出程序name使用的动态库和动态库的位置
+ldd -r name                                                          #输出程序name使用的动态库和动态库的位置
+readelf -d xxx.so | grep NEEDED                                      #查看交叉编译的可执行程序和库文件的相关依赖关系
 diff -u file1 file2                                                  #比较file1和file2两个文件
 vimdiff file1 file2                                                  #左右屏幕比较文件
 hexdump -C filename                                                  #16进制方式查看filename内容
@@ -139,6 +140,7 @@ systemctl list-unit-files                                            #查看系�
 tune2fs -l /dev/sdb5 || dumpe2fs -h /dev/sdb5                        #查看分区文件系统信息
 tune2fs -l /dev/sda1 | grep create || passwd -S root                 #查看操作系统的安装时间
 e2label /dev/sdb5 mydisk                                             #设置分区卷标信息,默认是查看
+ssh-keygen -f "/root/.ssh/known_hosts" -R "10.3.10.113"              #重新生成ssh远程登录主机的认证信息
 mkfs -t ext4 /dev/sdb1 或者 mkfs.ext4 /dev/sdb1                      #新建分区后格式化普通文件系统
 mkswap /dev/sdb6                                                     #新建swap分区后格式化交换文件系统
 swapon/swapoff /dev/sdb6                                             #加入和取消新扩容的swap交换分区
@@ -189,6 +191,20 @@ logrotate -f /etc/logrotate.conf                                     #强制运�
 [root@dwj /opt]# date --date='@1199116800'
 [root@dwj /opt]# date -d "10 days" #获取当前时间10天以后的日期
 [root@dwj /opt]# date -d "164224 second ago" #获取164224秒之前的日期
+```
+cpu硬件信息查看命令
+```
+总核数 = 物理CPU个数 X 每颗物理CPU的核数
+总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数
+
+#查看物理CPU个数
+[root@dwj /opt]# cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l
+#查看每个物理CPU中core的个数(即核数)
+[root@dwj /opt]# cat /proc/cpuinfo| grep "cpu cores"| uniq
+#查看逻辑CPU的个数
+[root@dwj /opt]# cat /proc/cpuinfo| grep "processor"| wc -l
+#查看CPU信息（型号）
+[root@dwj /opt]# cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c
 ```
 Linux下查看系统启动时间和运行时间
 ```
@@ -877,7 +893,10 @@ c：切换显示命令名称和完整命令行。 显示完整的命令。 这�
 M: 根据驻留内存大小进行排序
 P：根据CPU使用百分比大小进行排序
 T：根据时间/累计时间进行排序
+b: 打开/关闭加亮效果
+x: 排序列的加亮效果，top默认的排序列是"%CPU"
 W：将当前设置写入~/.toprc文件中。这是写top配置文件的推荐方法
+shift + >: 可以向右或左改变排序列
 ```
 
 <font color=#FF0000 size=5> <p align="center">vmstat</p></font>

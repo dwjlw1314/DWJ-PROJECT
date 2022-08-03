@@ -32,7 +32,7 @@ Docker仓库是集中存放镜像文件的场所。仓库和仓库注册服务�
 <font color=#FF0000 size=4> <p align="center">Docker安装</p></font>
 
 官方网站上有各种环境下的安装指南
-https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
+> https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
 
 <font color=#FF0000 size=4> <p align="center">Docker基本命令</p></font>
 
@@ -50,6 +50,9 @@ docker启动命令
 
 通过镜像创建容器(-p大小写不一样)
 >[root@dwj /]# docker run -itd --gpus all --privileged --name caailast_dwj -p hostport:containerport -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video,display,graphics -e NVIDIA_VISIBLE_DEVICES=all caai0318 /bin/bash
+
+容器使用指定显卡
+>[root@dwj /]# docker run -itd --name test-wuxi-1 -e NVIDIA_DRIVER_CAPABILITIES=compute,utility,video -e NVIDIA_VISIBLE_DEVICES=1 test-wuxi:v1 /bin/bash
 
 进入启动的镜像，加权限
 >[root@dwj /]# sudo docker exec -it 775c7c9ee1e1 /bin/bash
@@ -154,4 +157,14 @@ EXPOSE 9092
 
 # 设置启动目录以及启动脚本
 ENTRYPOINT cd /opt; ./start.sh;
+```
+
+```
+Dockerfile文件COPY命令遵循以下规则(重点规则）:
+src路径必须在构建的当前路径，因为docker构建的第一步是将上下文目录（和子目录）发送到docker守护进程
+如果src是一个目录，则复制该目录的全部内容，包括文件系统元数据。注意：目录本身不复制，只是它的内容
+如果src是任何其他类型的文件，则会将其与其元数据一起单独复制。在这种情况下，如果dst以尾部斜杠结尾，则它将被视为一个目录
+如果直接或由于使用通配符而指定了多个src资源，则dst必须是一个目录，并且必须以斜杠/结尾
+如果dst没有以斜杠结尾，它将被视为常规文件，src的内容将写入dst
+如果dst不存在，它将与路径中所有缺失的目录一起创建
 ```

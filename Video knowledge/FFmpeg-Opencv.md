@@ -1,10 +1,16 @@
 <font color=#FF0000 size=4> <p align="center">FFmpeg、FFprobe、FFplay</p></font>
 
-//读取本地视频文件推理至媒体服务器
+//读取本地视频文件推送至媒体服务器
 root@dwj:/bin# ffmpeg -re -i "/root/123.mp4" -vcodec copy -f flv "rtmp://10.3.9.106:1935/live/2"
+
+//循环推送至媒体服务器
+root@dwj:/bin# ffmpeg -stream_loop -1 -i "/root/123.mp4" -vcodec copy -f flv "rtmp://10.3.9.106:1935/live/2"
 
 //拉取流媒体视频保存本地视频文件
 root@dwj:/bin# ffmpeg -re -i "rtmp://10.3.9.106:1935/live/2" -vcodec copy -f flv "/root/123.flv"
+
+//拉取流媒体视频推向rtsp
+root@dwj:/bin# ffmpeg -re -i "rtmp://10.3.9.106:1935/live/2" -vcodec copy -f rtsp "rtsp://10.3.9.107:554/1"
 
 //使用硬件加速解码文件
 root@dwj:/bin# ffmpeg -y -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i input.mp4 -c:a copy -c:v h264_nvenc -b:v 5M output.mp4
