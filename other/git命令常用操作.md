@@ -319,6 +319,9 @@ Git在当前 commit 对象上新建一个分支指针,该命令仅仅是建立�
 放弃指定文件的修改
 >[root@dwj /]# git checkout -- filepathname
 
+删掉用户名和密码信息
+>[root@dwj /]# git credential-manager uninstall
+
 清除已经使用了git add的文件修改
 ```
 git reset HEAD filepathname

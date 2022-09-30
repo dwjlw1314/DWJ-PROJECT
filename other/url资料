@@ -1,10 +1,16 @@
 <font color=#FF0000 size=4> <p align="center">网络类</p></font>
 
+常见默认端口大全
+>https://blog.csdn.net/zykzyksdxzs/article/details/113749687
+
 内网入口——代理搭建&端口转发
 >https://blog.csdn.net/Captain_RB/article/details/108250946
 
 Raid 0 1 5 10的原理、特点、性能区别
 >https://blog.csdn.net/gpcsy/article/details/81116548
+
+RPC远程过程调用详解
+>https://blog.csdn.net/lgxzzz/article/details/120921461
 
 <font color=#FF0000 size=4> <p align="center">工具类</p></font>
 
@@ -32,6 +38,9 @@ ffmpeg命令行工具之ffplay详解
 搭建流媒体服务器 PingOS 平台搭建
 >https://zhuanlan.zhihu.com/p/124035946
 
+EasyDarwin流媒体服务器-推流拉流(Windows)
+>https://www.codenong.com/cs109591882/
+
 搭建fastdfs服务器
 >https://blog.csdn.net/qq_40942490/article/details/110182615
 
@@ -46,6 +55,9 @@ FFmpeg部分源代码分析
 FFmpeg时间戳详解
 >https://www.cnblogs.com/leisure_chn/p/10584910.html
 
+FFmpeg实现RTSP推流
+>https://blog.csdn.net/m0_60259116/article/details/125855009
+
 OpenCV 3.0 + CUDA相关头文件和库名称说明
 >https://blog.csdn.net/kelvin_yan/article/details/48734707
 
@@ -57,6 +69,9 @@ zeromq中文文档
 
 linux下c/c++调用外部程序
 >https://blog.csdn.net/weixin_43868793/article/details/113932536
+
+C++11新特性
+>https://blog.csdn.net/qq_56044032/article/details/125230984
 
 <font color=#FF0000 size=4> <p align="center">配置类</p></font>
 
@@ -75,3 +90,8 @@ linux利用mail和sendmail发送邮件
 
 nvidia-container-toolkit 安装
 >https://blog.csdn.net/u011119817/category_10621689.html
+
+<font color=#FF0000 size=4> <p align="center">协议类别</p></font>
+
+RTSP协议详解
+>https://blog.csdn.net/sinat_36002055/article/details/123801585
