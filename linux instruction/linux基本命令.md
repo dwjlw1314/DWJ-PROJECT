@@ -899,6 +899,17 @@ W：将当前设置写入~/.toprc文件中。这是写top配置文件的推荐�
 shift + >: 可以向右或左改变排序列
 ```
 
+<font color=#FF0000 size=5> <p align="center">sar</p></font>
+
+>[root@dwj ~]# sar -n DEV 1 5   #使用sar每一秒统计一次网络接口的活动状况，连续显示5次
+```
+IFACE是网卡接口名称
+rxpck/s、txpck/s 每秒收或发的数据包数量
+rxkB/s、txkB/s 每秒收或发的字节数，以kB/s为单位
+rxcmp/s、txcmp/s 每秒收或发的压缩过的数据包数量
+rxmcst/s 每秒收到的多播(多播是一点对多点的通信)数据包
+```
+
 <font color=#FF0000 size=5> <p align="center">vmstat</p></font>
 
 vmstat命令是Linux监控工具，可以展现给定时间间隔的服务器的状态值,包括服务器的CPU使用率，内存使用，虚拟内存交换，IO读写情况

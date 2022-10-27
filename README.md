@@ -23,6 +23,8 @@
     18. 远程调用linux图像界面
     19. linux系统根目录扩展空间
     20. firewalld 防火墙配置
+    21. SSH Secure Shell实现免密登录
+    22. 网络丢包问题查找
 
 二. windows系统
     1. Win7 FTP服务器部署
