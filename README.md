@@ -68,6 +68,7 @@
     30. oracle数据库基本术语
     31. PostgreSQL 基本命令
     32. GitLab私有代码仓库部署
+    33. Ubuntu安装samba服务器
 
 四. linux常用指令
     1. linux基本命令
@@ -135,13 +136,13 @@ Markdown文档编辑小技巧
 设置粗体： 将需要设置为斜体的文字两端使用2个“\*”或者“\_”夹起来
 设置删除内容： 在字体两边使用2个“~”夹起来
 行分隔符： 在空白行下方添加三条“-”横线或者三个“\*”
-设置段落标识： 在段落开头使用 *+space
+设置段落标识： 在段落开头使用 *+space, 可以实现圆点和自动换行
 设置引用： 行首使用 > 加上一个空格表示引用一个段落，可嵌套
 设置字体下划线： 在字体2端使用 <u>test</u>
 字体样式： <font color=#FF0000 size=4> <p align="center">样式</p></font>
 
 设置对齐方式：
-|   left  |  right  | center |
+|   left  |  right  | <center>center</center> |
 |:--------|--------:|:------:|
 |gjsy     |     gjsy|  gjsy  |
 ```

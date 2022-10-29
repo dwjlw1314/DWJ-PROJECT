@@ -97,6 +97,7 @@ cut -d : -f 1,5 /etc/passwd  #冒号表示字段的分隔符，1,5取哪些字�
 > cut -c4- /etc/passwd                                               #取每行的第4个到最后字符
 > cut -c1,4 /etc/passwd                                              #取每行的第一个和第四个字符
 > cut -c1-4,5 /etc/passwd                                            #取每行的1-4和第5个字符
+pwdx pid                                                             #通过进程pid查找程序路径
 partprobe                                                            #重新读取分区表信息
 pstree -p                                                            #查看进程树结构
 parted -l                                                            #输出文件系统类型
@@ -236,6 +237,7 @@ terminal终端常用组合键含义
 [root@dwj /opt]# ctrl + w                                #删除当前光标到命令行首的内容
 [root@dwj /opt]# ctrl + a                                #跳转到输入命令行首
 [root@dwj /opt]# ctrl + k                                #删除当前光标到命令行末的内容
+[root@dwj /opt]# ctrl + u                                #删除当前光标到命令行首的内容
 [root@dwj /opt]# ctrl + r                                #进入history关键字查找 #(reverse-i-search)`':
 [root@dwj /opt]# ctrl + t                                #互换输入命令末尾两个单词
 [root@dwj /opt]# ctrl + p                                #向上逐条调出history历史命令
@@ -473,7 +475,7 @@ dd在执行时每次都会进行同步写入操作。也就是说，这条命令
 
 6.备份与恢复MBR   <br>
 备份磁盘开始的512个字节大小的MBR信息到指定文件：
->[root@dwj ~]# dd if=/dev/hda of=/root/image count=1 bs=512
+>[root@dwj ~]# dd if=/dev/hda of=/root/image count=1 bs=512   <br>
    count=1指仅拷贝一个块；bs=512指块大小为512个字节。
 
 备份恢复(将备份的MBR信息写到磁盘开始部分)：
@@ -489,12 +491,12 @@ dd在执行时每次都会进行同步写入操作。也就是说，这条命令
 >[root@dwj ~]# dd if=/dev/cdrom(hdc) of=/root/cd.iso
 
 10.销毁磁盘数据
->[root@dwj ~]# dd if=/dev/urandom of=/dev/hda1
+>[root@dwj ~]# dd if=/dev/urandom of=/dev/hda1   <br>
 注意：利用随机的数据填充硬盘，在某些必要的场合可以用来销毁数据
 
 12.测试硬盘的读写速度
->[root@dwj ~]# dd if=/dev/zero bs=1024 count=1000000 of=/root/1Gb.file
->[root@dwj ~]# dd if=/root/1Gb.file bs=64k | dd of=/dev/null
+>[root@dwj ~]# dd if=/dev/zero bs=1024 count=1000000 of=/root/1Gb.file   <br>
+>[root@dwj ~]# dd if=/root/1Gb.file bs=64k | dd of=/dev/null    <br>
 通过以上两个命令输出的命令执行时间，可以计算出硬盘的读、写速度
 
 13.确定硬盘的最佳块大小：
@@ -508,34 +510,33 @@ dd if=/dev/zero bs=8192 count=125000 of=/root/1Gb.file
 
 14.修复硬盘：
 >[root@dwj ~]# dd if=/dev/sda of=/dev/sda
+
 当硬盘较长时间(一年以上)放置不使用后，磁盘上会产生magnetic flux point，当磁头读到这些区域时会遇到困难，并可能导致I/O错误。当这种情况影响到硬盘的第一个扇区时，可能导致硬盘报废。上边的命令有可能使这些数据起死回生。并且这个过程是安全、高效的
 
 15.利用netcat远程备份
->[root@dwj ~]# dd if=/dev/hda bs=16065b | netcat < targethost-IP > 1234
+>[root@dwj ~]# dd if=/dev/hda bs=16065b | netcat targethost-IP 8080
 
-在源主机上执行此命令备份/dev/hda
->[root@dwj ~]# netcat -l -p 1234 | dd of=/dev/hdc bs=16065b
+第一种是直接在目标主机上执行此命令备份/dev/hda -> /dev/hdc
+>[root@dwj ~]# netcat -l -p 8080 | dd of=/dev/hdc bs=16065b
 
-在目的主机上执行此命令来接收数据并写入/dev/hdc
->[root@dwj ~]# netcat -l -p 1234 | bzip2 > partition.img <br>
->[root@dwj ~]# netcat -l -p 1234 | gzip > partition.img
-以上两条指令是目的主机指令的变化分别采用bzip2、gzip对数据进行压缩，并将备份文件保存在当前目录。
+第二种是在目的主机上执行此命令来接收数据，同时进行压缩保存partition.img文件
+>[root@dwj ~]# netcat -l -p 8080 | bzip2 > partition.img <br>
+>[root@dwj ~]# netcat -l -p 8080 | gzip > partition.img <br>
+以上两条指令分别采用bzip2、gzip对数据进行压缩，并将备份文件保存在当前目录
 
 将一个很大的视频文件中的第i个字节的值改成0x41（也就是大写字母A的ASCII值）
 >[root@dwj ~]# echo A | dd of=bigfile seek=$i bs=1 count=1 conv=notrunc
 
 三、/dev/null和/dev/zero的区别
-/dev/null，外号叫无底洞，你可以向它输出任何数据，它通吃，并且不会撑着
-/dev/zero，是一个输入设备，你可你用它来初始化文件。该设备无穷尽地提供0
-/dev/null, 它是空设备，任何写入它的输出都会被抛弃。如果不想让消息以标准输出显示或写入文件，那么可以将消息重定向到位桶
 
-把/dev/null看作"黑洞"， 它等价于一个只写文件，所有写入它的内容都会永远丢失.，而尝试从它那儿读取内容则什么也读不到。然而， /dev/null对命令行和脚本都非常的有用
+/dev/null，外号叫无底洞，如果不想让消息以标准输出显示或写入文件，那么可以将消息重定向到null，它等价于一个只写文件，而尝试从它那儿读取内容则什么也读不到
+
+/dev/zero，是一个输入设备，你可你用它来初始化文件。该设备无穷尽地提供0
 
 l.禁止标准输出
 >[root@dwj ~]# cat $filename >/dev/null
 
-2.隐藏cookie而不再使用
-特别适合处理这些由商业Web站点发送的讨厌的"cookies"
+2.隐藏cookie而不再使用，特别适合处理这些由商业Web站点发送的讨厌的"cookies"
 ```
 if [ -f ~/.netscape/cookies ] then  #如果存在则删除
 rm -f ~/.netscape/cookies
@@ -544,8 +545,10 @@ ln -s /dev/null ~/.netscape/cookies
 现在所有的cookies都会丢入黑洞而不会保存在磁盘上了
 ```
 3.使用/dev/zero
-像/dev/null一样， /dev/zero也是一个伪文件，但它实际上产生连续不断的null的流（二进制的零流，而不是ASCII型的）。 写入它的输出会丢失不见，而从/dev/zero读出一连串的null也比较困难， 虽然这也能通过od或一个十六进制编辑器来做到。 /dev/zero主要的用处是用来创建一个指定长度用于初始化的空文件，就像临时交换文件。
-用/dev/zero创建一个交换临时文件
+
+/dev/zero是一个伪文件，但它实际上产生连续不断的null的流（二进制的零流，而不是ASCII型的）。写入它的输出会丢失不见，而从/dev/zero读出一连串的null也比较困难， 虽然这也能通过od或一个十六进制编辑器来做到
+
+/dev/zero主要的用处是用来创建一个指定长度用于初始化的空文件，就像临时交换文件。用/dev/zero创建一个交换临时文件
 
 <font color=#FF0000 size=5> <p align="center">系统时间</p></font>
 
@@ -637,6 +640,7 @@ Banner /etc/ssh/banner
 
 修改ssh服务配置文件
 >[root@dwj ~]# vim /etc/ssh/sshd_config
+
 ```
 #调整PermitRootLogin参数值为yes
 PermitEmptyPasswords no #不允许空密码登录
@@ -674,6 +678,7 @@ exportfs #命令用来管理当前NFS共享的文件系统列表
 <font color=#FF0000 size=5> <p align="center">用户添加-删除</p></font>
 
 >[root@dwj ~]# useradd -d /usr/dwj -m dwj
+
 ```
 -d 　指定用户根目录
 -s 　指定用户登陆shell
@@ -910,6 +915,82 @@ rxcmp/s、txcmp/s 每秒收或发的压缩过的数据包数量
 rxmcst/s 每秒收到的多播(多播是一点对多点的通信)数据包
 ```
 
+<font color=#FF0000 size=5> <p align="center">netcat</p></font>
+
+```
+参数说明：
+-d  后台模式
+-e  prog 程序重定向，一旦连接，就执行 [危险!!]
+-g  gateway source-routing hop point[s], up to 8
+-G  num source-routing pointer: 4, 8, 12, ...
+-i  secs 延时的间隔
+-l  监听模式，用于入站连接
+-L  连接关闭后,仍然继续监听
+-n  指定数字的IP地址，不能用hostname
+-o  file 记录16进制的传输
+-p  port 本地端口号
+-r  随机本地及远程端口
+-s  addr 本地源地址
+-t  使用TELNET交互方式
+-u  UDP模式
+-v  详细输出--用两个-v可得到更详细的内容
+-w  secs timeout的时间
+-z  将输入输出关掉--用于扫描时
+```
+
+nc是一个功能强大的网络工具，该命令在linux系统中实际命令是netcat，主要作用如下：
+
+```
+1. 实现任意TCP/UDP端口的侦听，nc可以作为server以TCP或UDP方式侦听指定端口
+2. 端口的扫描
+3. 可以作为client发起TCP或UDP连接，实现聊天功能
+4. 机器之间传输文件
+5. 机器之间网络测速
+6. 内网不同端口映射，未验证多机
+```
+
+验证服务器端口是否通
+>[root@dwj ~]# netcat -vz 192.168.1.1 8080
+
+端口 22-8080 的扫描
+>[root@dwj ~]# netcat -v -w 1 192.168.1.1 22-8080
+
+作为client发起TCP或UDP连接，udp端口加 -u 参数
+>[root@dwj ~]# netcat -nv 192.168.1.1 8080
+
+终端之间通信聊天，udp端口加 -u 参数
+>[root@dwj ~]# netcat 192.168.1.1 8080        #client  <br>
+>[root@dwj ~]# netcat -lp 192.168.1.1 8080    #server
+
+机器之间传输文件 src.json -> dst.txt
+>[root@dwj ~]# netcat -lp 8080 > dst.txt                   #server  <br>
+>[root@dwj ~]# nc -w 1 192.168.11.1 8080 < src.json        #client
+
+内网不同端口映射，udp端口加 -u 参数
+```
+首先使用mkfifo建立管道文件
+>[root@dwj ~]# mkfifo /root/pipo
+
+>[root@dwj ~]# netcat -l 192.168.1.1 8080
+
+建立端口映射将内网已有服务8080端口映射到本地的8888端口
+>[root@dwj ~]# nc -l -p 8888 < /root/pipo | nc 192.168.1.1 8080 > /root/pipo
+
+>[root@dwj ~]# nc 192.168.1.1 8888
+```
+
+机器之间网络测速
+```
+先启动发送的数据，谁连接这个端口时就会接收来自zero设备的数据
+>[root@dwj ~]# nc -l 8888 < /dev/zero
+
+后启动接收数据的命令，把来自8888这个端口的数据都输出给空设备
+>[root@dwj ~]# nc 192.168.1.1 8888 > /dev/null
+
+查看端口的流量命令: iptraf-ng
+>>>>>>> Stashed changes
+```
+
 <font color=#FF0000 size=5> <p align="center">vmstat</p></font>
 
 vmstat命令是Linux监控工具，可以展现给定时间间隔的服务器的状态值,包括服务器的CPU使用率，内存使用，虚拟内存交换，IO读写情况
@@ -917,6 +998,7 @@ vmstat命令是Linux监控工具，可以展现给定时间间隔的服务器的
 一般vmstat工具的使用是通过两个数字参数来完成的，第一个参数是采样的时间间隔数，单位是秒，第二个参数是采样的次数
 
 >[root@dwj ~]# vmstat 2 1   #运行命令，参数2表示每个两秒采集一次服务器状态，1表示只采集一次
+
 ```
 procs ----------------memory---------------swap------------io----------system----------cpu-------
  r     b    swpd    free     buff     cache    si   so    bi    bo   in   cs  us  sy   id  wa  st
@@ -953,7 +1035,9 @@ count 采样的次数，count只能和delay一起使用
 有interval时，第一行的信息自系统启动以来的平均信息，从第二行开始，输出为前一个interval时间段的平均信息
 ```
 [root@dwj ~]# mpstat -P ALL 2
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.1.3.png)
+
 ```
 %user       在internal时间段里，用户态的CPU时间(%)，不包含nice值为负进程  (usr/total)*100
 %nice       在internal时间段里，nice值为负进程的CPU时间(%)   (nice/total)*100
@@ -970,7 +1054,9 @@ pidstat主要用于监控全部或指定进程占用系统资源的情况，如C
 执行pidstat，将输出系统启动后所有活动进程的cpu统计信息
 
 [root@dwj ~]# pidstat -r -p 3512
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.1.4.png)
+
 ```
 以上各列输出的含义如下：
 minflt/s: 每秒次缺页错误次数(minor page faults)，次缺页错误次数意即虚拟内存地址映射成物理内存地址产生的page fault次数
@@ -981,7 +1067,9 @@ RSS:      该进程使用的物理内存(以kB为单位)
 Command:  拉起进程对应的命令
 ```
 [root@dwj ~]# pidstat -d -p 3512 1 2
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.1.5.png)
+
 ```
 输出信息含义：
 kB_rd/s: 每秒进程从磁盘读取的数据量(以kB为单位)
@@ -994,7 +1082,9 @@ Command: 拉起进程对应的命令
 iostat命令查看IO请求下发情况、系统IO处理能力，以及命令执行结果中各字段的含义详解
 
 1.不加选项执行iostat，我们先来看直接执行iostat的输出结果
+
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.1.6.png)
+
 ```
 最上面指示系统版本、主机名和日期的一行外
 avg-cpu: 总体cpu使用情况统计信息，对于多核cpu，这里为所有cpu的平均值，主要看iowait的值，它指示cpu用于等待io请求完成的时间
@@ -1014,6 +1104,7 @@ Device: 各磁盘设备的IO统计信息，各列含义如下：
 3.更详细的io统计信息可以使用-x选项，在分析io瓶颈时，一般都会开启-x选项
 
 ![image](https://github.com/dwjlw1314/DWJ-PROJECT/raw/master/PictureSource/4.1.7.png)
+
 ```
 以上各列的含义如下：
 rrqm/s: 每秒对该设备的读请求被合并次数，文件系统会对读取同块(block)的请求进行合并
@@ -1095,6 +1186,7 @@ dstat可以取代vmstat、iostat、netstat、ifstat的程序,可以实时的监�
   -t：显示时间信息
 	--output 文件：此选项也比较有用，可以把状态信息以csv的格式重定向到指定的文件中，例：dstat --output /root/dstat.csv & 此时让程序默默的在后台运行并把结果输出到/root/dstat.csv文件中
 ```
+
 监控swap，process，sockets，filesystem并显示监控的时间,若要将结果输出到文件可以加 --output filename
 >[root@dwj ~]# dstat -tsp --socket --fs
 
@@ -1120,6 +1212,7 @@ traceroute 是用来发出数据包从主机到目标主机之间所经过的网
 	-r  绕过正常的路由表，直接发送到网络相连的主机；
 	-w n 把对外发探测包的等待响应时间设置为n秒，默认值为3秒；
 ```
+
 序列号从1开始，每个纪录就是一跳，每跳表示一个网关，我们看到每行有三个时间，单位是ms，其实就是-q的默认参数。探测数据包向每个网关发送三个数据包后，网关响应后返回的时间
 
 常用的一些参数的用法示例
