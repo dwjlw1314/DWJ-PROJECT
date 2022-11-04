@@ -30,6 +30,8 @@
 
 >[root@dwj Desktop]# apt-get install pkg-config   //pkg-config
 
+>[root@dwj Desktop]# apt-get install apache2-utils  //ab Apache压力测试
+
 <font color=#FF0000 size=4> <p align="center">yum</p></font>
 
 >[root@dwj Desktop]# yum -y install initscripts   //service
@@ -43,3 +45,5 @@
 >[root@dwj Desktop]# yum -y install *lsb*  //lsb_release
 
 >[root@dwj Desktop]# yum install openssh-clients  //scp
+
+>[root@dwj Desktop]# yum -y install httpd-tools   //ab -n 100 -c 10 http://www.baidu.com/ Apache压力测试
