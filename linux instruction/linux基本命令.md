@@ -745,15 +745,23 @@ fi
 ```
 其他常用技巧
 ```
-:set ff        #查看当前编码格式
-:set ff=unix   #设置编码格式
-ctrl+g         #显示当前编辑的文件名
-d+G            #删除光标到末尾全部行
-:noh           #取消高亮显示
-:e!            #还原编辑文件到最初状态
-set ls=2       #总是显示状态栏 ls : laststatus
-~/.viminfo     #vim操作日志
+:set ff              #查看当前编码格式
+:set ff=unix         #设置编码格式
+ctrl+g               #显示当前编辑的文件名
+d+G                  #删除光标到末尾全部行
+:noh                 #取消高亮显示
+:e!                  #还原编辑文件到最初状态
+:sp filename         #打开列窗口（横）
+:vsp filename        #打开列窗口（竖）
+set ls=2             #总是显示状态栏 ls : laststatus
+~/.viminfo           #vim操作日志
+:%s/^(.*)n1/1$/      #删除重复行
 vim -O /etc/passwd /opt/gjsy.txt    #左右分屏显示,使用ctrl+w两次进行左右光标切换
+
+ctrl+v,输入 =        #选定需要整齐的行，对齐归整
+dL                   #删除直到屏幕上最后一行的内容
+dH                   #删除直到屏幕上第一行的内容
+dG                   #删除直到工作缓存区结尾的内容
 ```
 
 <font color=#FF0000 size=5> <p align="center">SELinux设置</p></font>
@@ -914,6 +922,25 @@ rxkB/s、txkB/s 每秒收或发的字节数，以kB/s为单位
 rxcmp/s、txcmp/s 每秒收或发的压缩过的数据包数量
 rxmcst/s 每秒收到的多播(多播是一点对多点的通信)数据包
 ```
+
+<font color=#FF0000 size=5> <p align="center">iperf3</p></font>
+
+iperf3是一款带宽测试工具，它支持调节各种参数，比如通信协议，数据包个数，发送持续时间，测试完会报告网络带宽，丢包率和其他参数
+
+TCP通信测试：服务端设备启动shell窗口输入指令
+>[root@dwj ~]# iperf -s -i 1    # 作为服务端运行，报告回显间隔时间1s
+
+TCP上行测试：客户端设备启动shell窗口输入指令
+>[root@dwj ~]# iperf3 -c 192.168.3.250 -i 1 -t 10 -b 7M   #连接服务端ip地址192.168.3.250，报告回显间隔1s，测试时间10s,带宽限制为7M
+
+TCP下行测试：客户端设备启动shell窗口输入指令
+>[root@dwj ~]# iperf3 -c 192.168.3.250 -i 1 -t 10 -b 7M -R  #-R为反向测试，这个参数也是iperf3的主要亮点，支持直接转换数据发送方向
+
+UDP上行测试：客户端设备启动shell窗口输入指令
+>[root@dwj ~]# iperf3 -u -c 192.168.3.250 -b 70M -i 1 -t 10
+
+UDP下行测试：客户端设备启动shell窗口输入指令
+>[root@dwj ~]# iperf3 -u -c 192.168.3.250 -b 70M -i 1 -t 10 -R
 
 <font color=#FF0000 size=5> <p align="center">netcat</p></font>
 

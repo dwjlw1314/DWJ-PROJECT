@@ -32,6 +32,10 @@
 
 >[root@dwj Desktop]# apt-get install apache2-utils  //ab Apache压力测试
 
+>[root@dwj Desktop]# apt-get install iperf3      //iperf3
+
+>[root@dwj Desktop]# apt-get install bridge-utils  //brctl
+
 <font color=#FF0000 size=4> <p align="center">yum</p></font>
 
 >[root@dwj Desktop]# yum -y install initscripts   //service

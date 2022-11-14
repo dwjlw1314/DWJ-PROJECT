@@ -39,6 +39,7 @@
                 "/src/*.cpp",
                 "-I/usr/local/cuda/include",
                 "-L/usr/local/cuda/lib64",
+								"/opt/lib/libLog.a",   //引用静态库
                 "-lopencv_world",
                 "-fPIC",
                 "-shared",
