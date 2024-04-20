@@ -331,6 +331,9 @@ git reset HEAD .
 清除已经用git commit提交了代码的修改, 可以使用git log查看commitid
 >[root@dwj /]# git reset --hard commitid
 
+清除已经用git add提交到暂存区的文件
+>[root@dwj /]# git reset --soft commit_id
+
 git删除已经add的文件的两种方法：
 ```
 用版本库内容清空暂存区，git reset HEAD（谨慎使用）

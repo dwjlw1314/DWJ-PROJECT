@@ -14,11 +14,17 @@ RPC远程过程调用详解
 
 <font color=#FF0000 size=4> <p align="center">工具类</p></font>
 
+护照裁剪
+>https://cn.idphoto4you.com/
+
+文档，视频，图片免费转换软件
+>https://tinywow.com/
+
 基于systemback的Ubuntu系统镜像制作
 >https://guyuehome.com/34452
 
->ubuntu制作apt本地源
-https://blog.csdn.net/weixin_46285678/article/details/126725186
+ubuntu制作apt本地源
+>https://blog.csdn.net/weixin_46285678/article/details/126725186
 
 PostgreSQL 13.1 手册
 >http://www.postgres.cn/docs/13/index.html
@@ -59,7 +65,7 @@ EasyDarwin流媒体服务器搭建
 <font color=#FF0000 size=4> <p align="center">源码类</p></font>
 
 libevent http client源代码
-https://www.cnblogs.com/keepsimple/archive/2013/05/14/3077183.html
+>https://www.cnblogs.com/keepsimple/archive/2013/05/14/3077183.html
 
 FFmpeg部分源代码分析
 >https://blog.csdn.net/leixiaohua1020/article/details/44084557
@@ -90,6 +96,9 @@ Qt输入法V2019终极版
 
 <font color=#FF0000 size=4> <p align="center">配置类</p></font>
 
+KMS一键激活 windows/office
+>https://kms.cx/
+
 pkg-config 详解
 >https://blog.csdn.net/newchenxf/article/details/51750239
 
@@ -116,3 +125,6 @@ RTSP协议详解
 
 Samba服务详解
 >https://blog.csdn.net/shenyuanhaojie/article/details/121873174
+
+ssl加密证书一键生成网站
+>https://github.com/acmesh-official/acme.sh

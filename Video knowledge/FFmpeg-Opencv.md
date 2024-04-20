@@ -27,6 +27,9 @@ root@dwj:/bin# ffplay -i 1.mp4 -x 500 -y 300 -window_title "gjsy"
 //nodisp窗体将被隐藏，但声音正常能播放，noborder窗体无边框显示，fs全屏显示
 root@dwj:/bin# ffplay -i 1.mp4 -fs -nodisp -noborder
 
+//视频转图片（%nd 为图片命名格式，%4d 就用 4 位命名）
+root@dwj:/bin# ffmpeg -i "/root/123.flv" "/root/%nd.png"
+
 //ffmpeg取消控制台打印信息，不打印log日志
 root@dwj:/bin# ffmpeg -y -vsync 0 -c:v h264_cuvid -i /opt/bin/input.mp4 output.yuv -loglevel quiet
 

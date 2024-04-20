@@ -13,7 +13,15 @@ C:\Users\dwj> slmgr.vbs -dlv   #查看激活的详情
 C:\Users\dwj> netsh wlan set hostednetwork mode=allow ssid=dwj key=abcd,1234
 C:\Users\dwj> netsh wlan start hostednetwork
 C:\Users\dwj> netsh wlan show hostednetwork
+```
+查看wifi基本信息和密码
+```
+C:\Users\dwj> netsh wlan show profile gsafety key=clear
 ````
+强制远程主机弹窗信息窗口
+```
+C:\Users\dwj> msg /server:192.168.2.8 * "message test"
+```
 win+R可以运行命令：
 ```
 credwiz                   #备份或还原储存的用户名和密码
@@ -98,9 +106,12 @@ comp.exe                  #比较两个文件和文件集的内容
 convert.exe               #转换文件系统到ntfs
 defrag                    #磁盘碎片整理
 diskpart / list disk      #查看磁盘信息
+net user                  #查看本机所有用户名
+color /all                #设置cmd字体显示颜色
 sc                        #用于与服务控制管理器和服务进行通信的命令行程序
 wmic                      #扩展WMI(Windows管理工具)
 dumpbin -exports gjsy.lib #查看lib文件中的函数名和函数参数
 ipconfig /displaydns      #显示dns缓存
 ipconfig /flushdns        #刷新dns记录
+curl -L ip.tool.lu        #获取当前上网的外网ip地址
 ```
